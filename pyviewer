@@ -1,0 +1,1528 @@
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim: set filetype=python:
+
+import os
+import sys
+import argparse
+import tarfile
+import re
+import mimetypes
+import urllib.request
+import json
+from importlib import import_module
+from pathlib import Path,PurePath
+from functools import partial
+
+# global variables
+debug = False
+if 'XDG_CONFIG_HOME' in os.environ:
+    conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
+else:
+    conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
+curses_debug = False
+inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
+
+# load config file.
+if not conf_dir.exists():
+    os.makedirs(conf_dir, mode=0o755)
+if (conf_dir/'setting.json').is_file():
+    with open(conf_dir/'setting.json') as f:
+        json_opts = json.load(f)
+    if 'debug' in json_opts:
+        debug = bool(json_opts['debug'])
+else:
+    json_opts = {}
+
+# load local libraries.
+def add_lib(file_name):
+    libpath = conf_dir/'lib'
+    libfile = libpath/file_name
+    if not libpath.exists():
+        if debug:
+            print('make {}'.format(libpath))
+        os.makedirs(libpath, mode=0o755)
+    if libpath not in sys.path:
+        sys.path.append(libpath)
+    if debug:
+        print('searching {}...'.format(libfile))
+    if not libfile.is_file():
+        if debug:
+            print('downloading {}'.format(file_name))
+        with urllib.request.urlopen('https://raw.githubusercontent.com/MeF0504/basic_setup/master/opt/lib/{}'.format(file_name)) as web_lib:
+            data = web_lib.read()
+            with open(libfile, 'wb') as local_lib:
+                local_lib.write(data)
+
+add_lib('libtree.py')
+from libtree import tree_viewer, show_tree, branch_str, get_list
+add_lib('local_lib_color.py')
+from local_lib_color import BG, FG, END, make_bitmap
+
+def args_chk(args, attr):
+    if not hasattr(args, attr):
+        return False
+    if attr == 'type':
+        return args.type is not None
+    elif attr == 'verbose':
+        return args.verbose
+    elif attr == 'key':
+        return args.key is not None
+    elif attr == 'interactive':
+        return args.interactive
+    elif attr == 'image_viewer':
+        return args.image_viewer is not None
+    elif attr == 'encoding':
+        return args.encoding is not None
+    elif attr == 'cui':
+        return args.cui
+    else:
+        return False
+
+def cprint(str1, str2='', fg=None, bg=None, **kwargs):
+    print_str = str1
+    if fg is not None:
+        print_str = FG[fg]+print_str
+    if bg is not None:
+        print_str = BG[bg]+print_str
+    if (fg is not None) or (bg is not None):
+        print_str += END
+    print_str += str2
+    print(print_str, **kwargs)
+
+def get_filetype(fpath):
+    ext = fpath[fpath.rfind('.')+1:].lower()
+    if 'type' in json_opts:
+        for typ in json_opts['type']:
+            if ext in typ['ext'].split(','):
+                return typ['type_name']
+    if tarfile.is_tarfile(fpath):
+        return 'tar'
+    elif ext == 'hdf5':
+        return 'hdf5'
+    elif ext == 'pkl' or ext == 'pickle':
+        return 'pickle'
+    elif ext in 'npy npz'.split(' '):
+        return 'numpy'
+    elif ext == 'zip':
+        return 'zip'
+    elif ext in 'db db3 sql sql3 sqlite sqlite3'.split(' '):
+        return 'sqlite3'
+    elif ext in 'raw nef nrw cr3 cr2 crw tif arw'.split(' '):   # nikon, canon, sony
+        return 'raw_image'
+    elif ext == 'ipynb':
+        return 'jupyter'
+    elif ext == 'xpm':
+        return 'xpm'
+    elif ext == 'py':
+        return 'text'
+    else:
+        return None
+
+def is_image(path):
+    mime = mimetypes.guess_type(path)[0]
+    if mime is None:
+        return False
+    elif mime.split('/')[0] == 'image':
+        return True
+    else:
+        return False
+
+def get_image_viewer(args):
+    if args_chk(args, 'image_viewer'):
+        if debug: print('set image viewer from args')
+        img_viewer = args.image_viewer
+        if img_viewer == 'PIL':
+            from PIL import Image
+            global Image
+        elif img_viewer == 'matplotlib':
+            import matplotlib.pyplot as plt
+            global plt
+        elif img_viewer == 'OpenCV':
+            import cv2
+            global cv2
+        else:
+            # external command
+            img_viewer = os.path.expanduser(img_viewer)
+            img_viewer = os.path.expandvars(img_viewer)
+            if os.path.isfile(img_viewer) and os.access(img_viewer, os.X_OK):
+                if debug:
+                    print('find image_viewer: {}'.format(img_viewer))
+                return img_viewer
+            else:
+                if 'PATH' in os.environ:
+                    for path in os.environ['PATH'].split(os.pathsep):
+                        cmd_path = os.path.join(path, img_viewer)
+                        if os.path.isfile(cmd_path) and os.access(cmd_path, os.X_OK):
+                            if debug:
+                                print('find image_viewer {} in {}'.format(img_viewer, path))
+                            return img_viewer
+                    print('external command "{}" is not found.'.format(img_viewer))
+                    return None
+                else:
+                    print('PATH is not set')
+                    return None
+    else:
+        if debug:
+            print('search available image_viewer')
+        try:
+            from PIL import Image
+            global Image
+            if debug: print(' => image_viewer: PIL')
+        except ImportError:
+            try:
+                import matplotlib.pyplot as plt
+                global plt
+                if debug: print(' => image_viewer: matplotlib')
+            except ImportError:
+                try:
+                    import cv2
+                    global cv2
+                    if debug: print(' => image_viewer: OpenCV')
+                except ImportError:
+                    if debug: print("can't find image_viewer")
+                    img_viewer = None
+                else:
+                    img_viewer = 'OpenCV'
+            else:
+                img_viewer = 'matplotlib'
+        else:
+            img_viewer = 'PIL'
+    return img_viewer
+
+def clear_mpl_axes(axes):
+    # not display axes
+    axes.xaxis.set_visible(False)
+    axes.yaxis.set_visible(False)
+    axes.spines['top'].set_visible(False)
+    axes.spines['bottom'].set_visible(False)
+    axes.spines['right'].set_visible(False)
+    axes.spines['left'].set_visible(False)
+
+def get_exec_cmds(args, fname):
+    if 'exec_cmd' in json_opts:
+        res = []
+        for cmd in json_opts['exec_cmd']:
+            if cmd == '%s':
+                res.append(fname)
+            elif cmd == '%c':
+                res.append(args.image_viewer)
+            else:
+                res.append(cmd)
+    else:
+        res = [args.image_viewer, fname]
+    if debug:
+        print('executed command: {}'.format(res))
+    return res
+
+def interactive_view(tree, fname, show_func):
+    cpath = PurePath('.')
+    inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
+    tv = tree_viewer(tree, '.')
+    while(True):
+        files, dirs = tv.get_contents(cpath)
+        cprint('current path:', ' {}/{}'.format(fname, cpath), bg='c')
+        cprint('contents in this dict:', ' ', bg='g', end='')
+        for d in dirs:
+            print('{}/, '.format(d), end='')
+        for f in files:
+            print('{}, '.format(f), end='')
+        print('\n')
+        key_name = input(inter_str)
+        if key_name == 'q':
+            if debug: print('quit')
+            break
+        elif key_name == '':
+            if debug: print('continue')
+            continue
+        elif key_name == '..':
+            if debug: print('go up')
+            if str(cpath) != '.':
+                cpath = cpath.parent
+        else:
+            if debug: print('specify key:{}'.format(key_name))
+            if key_name.endswith('/'):
+                key_name = key_name[:-1]
+            if key_name in files:
+                cprint('output::', '\n', bg='r')
+                info, err = show_func(str(cpath/key_name), False)
+                if err is None:
+                    print("\n".join(info))
+                else:
+                    cprint(err, fg='r')
+            elif key_name in dirs:
+                cpath /= key_name
+            else:
+                cprint('"{}" is not a correct name'.format(key_name), '', fg='r')
+
+def interactive_cui(tree, fname, show_func):
+    import curses
+    from curses.textpad import Textbox, rectangle
+    cpath = PurePath('.')
+    tv = tree_viewer(tree, '.')
+
+    def editer_cmd(key):
+        if key == 10:       # Enter
+            return 7        # Ctrl-G
+        elif key == 127:    # back space
+            return 263      # Ctrl-h
+        else:
+            return key
+
+    def curses_main(cpath, tv, stdscr):
+        # clear screen
+        stdscr.clear()
+        winy, winx = stdscr.getmaxyx()
+        win_h = 3   # height of top window
+        win_w = int(winx*3/10)  # width of side bar
+        search_h = 1    # height of search window
+        scroll_h = 5
+        scroll_w = 5
+        scroll_side = 3
+        win_pwd  = curses.newwin(win_h, winx, 0, 0)
+        win_side  = curses.newwin(winy-win_h, win_w, win_h, 0)
+        win_main = curses.newwin(winy-win_h, winx-win_w, win_h, win_w)
+        win_search = curses.newwin(search_h, winx-win_w-2, win_h+2, win_w+1)
+
+        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_GREEN)     # pwd background
+        curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE)      # bar background
+        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)       # error
+        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)    # file info
+        curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_WHITE)     # dir index
+        curses.init_pair(6, curses.COLOR_MAGENTA, curses.COLOR_WHITE)   # file index
+        win_pwd.bkgd(' ', curses.color_pair(1))
+        win_side.bkgd(' ', curses.color_pair(2))
+
+        sel_idx = 0
+        side_shift_ud = 0
+        side_shift_lr = 0
+        files, dirs = tv.get_contents(cpath)
+        contents = dirs+files
+
+        main_info = []
+        main_err = None
+        main_shift_ud = 0
+        main_shift_lr = 0
+        sel_cont = ''
+
+        key = ''
+        search_word = ''
+        is_search = False
+        stdscr.refresh()
+        while key != 'q':
+            # showed indices are side_shift_ud ~ side_shift_ud+(winy-win_h)
+
+            if key == 'KEY_DOWN':
+                if len(contents) <= winy-win_h:
+                    # all contents are shown
+                    if sel_idx < len(contents)-1:
+                        sel_idx += 1
+                elif side_shift_ud+(winy-win_h) < len(contents):
+                    # not bottom
+                    sel_idx += 1
+                    if sel_idx >= side_shift_ud+(winy-win_h):
+                        side_shift_ud += 1
+                else:
+                    # bottom
+                    if sel_idx < len(contents)-1:
+                        sel_idx += 1
+
+            elif key == 'KEY_UP':
+                if len(contents) <= winy-win_h:
+                    # all contents are shown
+                    if sel_idx > 0:
+                        sel_idx -= 1
+                elif side_shift_ud > 0:
+                    # not top
+                    sel_idx -= 1
+                    if sel_idx <= side_shift_ud:
+                        side_shift_ud -= 1
+                else:
+                    # top
+                    if sel_idx > 0:
+                        sel_idx -=1
+
+            elif key == 'KEY_RIGHT':
+                side_shift_lr += scroll_side
+
+            elif key == 'KEY_LEFT':
+                if side_shift_lr < scroll_side:
+                    side_shift_lr = 0
+                else:
+                    side_shift_lr -= scroll_side
+
+            elif key in ['KEY_SR', 'KEY_SUP']:
+                if is_search:
+                    files, dirs = tv.get_contents(cpath)
+                    sel_idx = 0
+                    side_shift_ud = 0
+                    side_shift_lr = 0
+                    main_info = []
+                    main_err = None
+                    main_shift_ud = 0
+                    main_shift_lr = 0
+                    sel_cont = ''
+                    search_word = ''
+                    is_search = False
+                elif str(cpath) != '.':
+                    cpath = cpath.parent
+                    files, dirs = tv.get_contents(cpath)
+                    sel_idx = 0
+                    side_shift_ud = 0
+                    side_shift_lr = 0
+                    main_info = []
+                    main_err = None
+                    main_shift_ud = 0
+                    main_shift_lr = 0
+                    sel_cont = ''
+                    search_word = ''
+
+            elif key in ["\n", 'KEY_ENTER']:
+                sel_cont = contents[sel_idx]
+                if sel_cont in dirs:
+                    if is_search:
+                        cpath = PurePath(sel_cont)
+                    else:
+                        cpath = cpath/sel_cont
+                    files, dirs = tv.get_contents(cpath)
+                    main_info = []
+                    main_shift_ud = 0
+                    main_shift_lr = 0
+                    sel_idx = 0
+                    side_shift_ud = 0
+                    side_shift_lr = 0
+                    sel_cont = ''
+                    search_word = ''
+                    is_search = False
+                else:
+                    if is_search:
+                        fpath = sel_cont
+                    else:
+                        fpath = str(cpath/sel_cont)
+                    main_info, main_err = show_func(fpath, True)
+                    main_info = "\n".join(main_info).split("\n")
+                    main_shift_ud = 0
+                    main_shift_lr = 0
+
+            elif key == 'j':
+                if len(main_info)<(winy-win_h-1):
+                    # all contents are shown
+                    pass
+                elif main_shift_ud < len(main_info)-scroll_h-1:
+                    main_shift_ud += scroll_h
+
+            elif key == 'k':
+                if len(main_info)<(winy-win_h-1):
+                    # all contents are shown
+                    pass
+                elif main_shift_ud < scroll_h:
+                    main_shift_ud = 0
+                else:
+                    main_shift_ud -= scroll_h
+
+            elif key == 'l':
+                main_shift_lr += scroll_w
+
+            elif key == 'h':
+                if main_shift_lr < scroll_w:
+                    main_shift_lr = 0
+                else:
+                    main_shift_lr -= scroll_w
+
+            elif key == '/':
+                # search mode
+                win_main.clear()
+                win_main.addstr(0, 0, 'search word: (empty cancel)', curses.A_REVERSE)
+                rectangle(win_main, 1, 0, search_h+2, winx-win_w-1)
+                win_main.refresh()
+                win_search.clear()
+                box = Textbox(win_search)
+                box.edit(editer_cmd)
+                search_word = box.gather()
+                search_word = search_word.replace("\n", '').replace(" ", '')
+                if len(search_word) == 0:
+                    win_main.clear()
+                    win_main.refresh()
+                else:
+                    old_files = files.copy()
+                    old_dirs = dirs.copy()
+                    tmp_files, tmp_dirs = get_list(tree)
+                    files = []
+                    dirs = []
+                    for i,f in enumerate(tmp_files):
+                        if re.search(search_word, f):
+                            files.append(f)
+                    for i,d in enumerate(tmp_dirs):
+                        if re.search(search_word, d):
+                            dirs.append(d)
+                    if len(files)+len(dirs) != 0:
+                        is_search = True
+                        sel_idx = 0
+                        side_shift_ud = 0
+                        side_shift_lr = 0
+                        main_info = []
+                        main_err = None
+                        main_shift_ud = 0
+                        main_shift_lr = 0
+                        sel_cont = ''
+                        search_word = ''
+                    else:
+                        files = old_files
+                        dirs = old_dirs
+                    key = ''
+
+            contents = dirs+files
+            if key in ['', 'KEY_UP', 'KEY_DOWN', 'KEY_LEFT', 'KEY_RIGHT', 'KEY_SR', 'KEY_SUR', "\n", 'KEY_ENTER']:
+                # side bar window
+                win_side.clear()
+                for i in range(winy-win_h):
+                    if i+side_shift_ud >= len(contents):
+                        break
+                    cont = contents[i+side_shift_ud]
+                    cidx = '{:2d} '.format(i+side_shift_ud)
+                    if cont in dirs:
+                        win_side.addstr(i, 0, cidx, curses.color_pair(5))
+                        attr = curses.A_BOLD
+                    elif cont in files:
+                        win_side.addstr(i, 0, cidx, curses.color_pair(6))
+                        attr = curses.A_NORMAL
+                    cont = cont[side_shift_lr:side_shift_lr+win_w-len(cidx)-1]
+                    if i+side_shift_ud == sel_idx:
+                        win_side.addstr(i, len(cidx), cont, curses.A_REVERSE)
+                    else:
+                        win_side.addstr(i, len(cidx), cont, attr)
+                win_side.refresh()
+
+            if key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'j', 'k', 'h', 'l']:
+                # main window
+                win_main.clear()
+                win_main.addstr(0, 0, sel_cont, curses.A_REVERSE)
+                if len(sel_cont) != 0:
+                    win_main.addstr(0, len(sel_cont)+2, '{}/{}'.format(main_shift_ud+1, len(main_info)), curses.color_pair(4))
+                if main_err is None:
+                    for i in range(1, winy-win_h):
+                        if i-1+main_shift_ud >= len(main_info):
+                            break
+                        info = main_info[i-1+main_shift_ud][main_shift_lr:main_shift_lr+winx-win_w-1]
+                        win_main.addstr(i, 0, info)
+                else:
+                    win_main.addstr(1, 0, main_err, curses.color_pair(3))
+                win_main.refresh()
+
+            if key in ['', "\n", 'KEY_ENTER', 'KEY_SR']:
+                # top, print-working-directory window
+                win_pwd.clear()
+                win_pwd.addstr(0, 3, 'file: {}'.format(fname), curses.A_BOLD)
+                win_pwd.addstr(1, 5, 'current path: {}'.format(str(cpath)))
+                win_pwd.addstr(2, 1, 'q:quit ↑↓←→:select shift+↑:go back enter:open jkhl:scroll /:search')
+                win_pwd.refresh()
+
+            if curses_debug:
+                win_pwd.addstr(0, int(winx*2/3), ' '*(int(winx/3)-1))
+                win_pwd.addstr(0, int(winx*2/3), '{}x{} {}x{} {}x{} k:{}'.format(win_h, winx, winy-win_h, win_w, winy-win_h, winx-win_w, key))
+                win_pwd.addstr(1, int(winx*2/3), ' '*(int(winx/3)-1))
+                win_pwd.addstr(1, int(winx*2/3), 's:{}-{}-{}-{} m:{}-{}-{}'.format(len(contents), side_shift_ud, side_shift_lr, sel_idx, len(main_info), main_shift_ud, main_shift_lr))
+                win_pwd.addstr(2, int(winx*2/3), ' '*(int(winx/3)-1))
+                win_pwd.addstr(2, int(winx*2/3), 'srch: {}'.format(search_word.replace("\n", '')[:int(winx/3)-1-6]))
+                win_pwd.refresh()
+
+
+            key = stdscr.getkey()
+
+    curses.wrapper(partial(curses_main, cpath, tv))
+
+def print_key(key_name):
+    cprint('<<< {} >>>'.format(key_name), '', fg='k', bg='y')
+
+def main_hdf5(fpath, args):
+    import h5py
+    try:
+        import numpy as np
+    except ImportError as e:
+        imp_np = False
+    else:
+        imp_np = True
+
+    def show_hdf5(cpath, cui=False):
+        if cui:
+            fg = ''
+            bg = ''
+            end = ''
+        else:
+            fg = FG['k']
+            bg = BG['w']
+            end = END
+        data = h5_file[cpath]
+        res = []
+        res.append('{}{}attrs{}'.format(fg, bg, end))
+        for attr in data.attrs:
+            res.append('{}: {}'.format(attr, data.attrs[attr]))
+        if isinstance(data, h5py.Group):
+            res.append('{}{}contents{}'.format(fg, bg, end))
+            for k in data.keys():
+                res.append(k)
+        elif isinstance(data, h5py.Dataset):
+            res.append('{}{}value{}'.format(fg, bg, end))
+            data = data[()]
+            res.append('{}'.format(data))
+            if hasattr(data, 'shape'):
+                res.append('shape: {}'.format(data.shape))
+                is_array = True
+            elif hasattr(data, '__len__'):
+                res.append('len: {}'.format(len(data)))
+                is_array = True
+            else:
+                is_array = False
+            if imp_np and is_array and (len(data)!=0):
+                try: dmean = np.nanmean(data)
+                except Exception as e: dmean = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                res.append('mean : {}'.format(dmean))
+                try: dmax = np.nanmax(data)
+                except Exception as e: dmax = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                res.append(' max : {}'.format(dmax))
+                try: dmin = np.nanmin(data)
+                except Exception as e: dmin = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                res.append(' min : {}'.format(dmin))
+                try: dstd = np.nanstd(data)
+                except Exception as e: dstd = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                res.append(' std : {}'.format(dstd))
+                if hasattr(data, 'shape'):
+                    try:
+                        nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
+                        res.append('nan rate: {:.1f}%'.format(nan_rate*100))
+                    except Exception as e:
+                        pass
+        return res, None
+
+    list_tree = [{}]
+    def make_list(name, obj):
+        if isinstance(obj, h5py.Dataset):
+            if not (args_chk(args, 'interactive') or args_chk(args, 'cui')):
+                if args_chk(args, 'verbose'):
+                    print_key(name)
+                    print("{}".format(h5_file[name][()]))
+                elif args_chk(args, 'key') and len(args.key)==0:
+                    print(name)
+
+            tmp_list = list_tree
+            depth = 1
+            if debug: print('cpath: {}'.format(name))
+            for p in name.split('/'):
+                if p == name.split('/')[-1] and depth==len(name.split('/')):
+                    tmp_list.append(p)
+                    if debug:
+                        # print('add {} to {} @ {:d}'.format(p, tmp_list, depth))
+                        print('add {}'.format(p))
+                elif p in tmp_list[0]:
+                    tmp_list = tmp_list[0][p]
+                    depth += 1
+                else:
+                    tmp_list[0][p] = [{}]
+                    tmp_list = tmp_list[0][p]
+                    depth += 1
+
+    h5_file = h5py.File(fpath, 'r')
+    # make list_tree
+    h5_file.visititems(make_list)
+
+    if args_chk(args, 'interactive'):
+        fname = os.path.basename(fpath)
+        interactive_view(list_tree, fname, show_hdf5)
+    elif args_chk(args, 'cui'):
+        # fname = os.path.basename(fpath)
+        interactive_cui(list_tree, fpath, show_hdf5)
+    elif args_chk(args, 'key'):
+        for k in args.key:
+            print_key(k)
+            info, err = show_hdf5(k, False)
+            if err is None:
+                print("\n".join(info))
+                print()
+            else:
+                cprint(err, fg='r')
+    elif not args_chk(args, 'verbose'):
+        show_tree(list_tree)
+
+    h5_file.close()
+
+# It is difficult to rebuild a recursive dictionary by any means...
+def main_pickle(fpath, args):
+    import pickle
+    try:
+        import numpy as np
+    except ImportError:
+        imp_np = False
+    else:
+        imp_np = True
+
+    if args_chk(args, 'encoding'):
+        if debug: print('set encoding from args')
+        encoding = args.encoding
+    elif 'pickle_encoding' in json_opts:
+        if debug: print('set encoding from json')
+        encoding = json_opts['pickle_encoding']
+    else:
+        encoding = 'ASCII'
+    if debug: print('encoding: {}'.format(encoding))
+    try:
+        with open(fpath, 'rb') as f:
+            data = pickle.load(f, encoding=encoding)
+    except UnicodeDecodeError:
+        if debug: print('decode error: encoding={}'.format(encoding))
+        with open(fpath, 'rb') as f:
+            data = pickle.load(f, encoding='latin1')
+
+    if type(data) == type(dict()):
+        if args_chk(args, 'key'):
+            if len(args.key)==0:
+                for k in data:
+                    print(k)
+            else:
+                for k in data:
+                    if str(k) in args.key:
+                        print_key(str(k))
+                        print(data[k])
+                        print()
+        elif hasattr(args, 'interactive') and args.interactive:
+            selected_keys = []
+            tmp_data = data
+            while(True):
+                key_strs = [str(k) for k in selected_keys]
+                cpath = '{}/{}'.format(os.path.basename(fpath), '/'.join(key_strs))
+                cprint('current path:', ' {}'.format(cpath), bg='c')
+                cprint('contents in this dict:', ' ', bg='g', end='')
+                try:
+                    tmp_keys = sorted(tmp_data.keys())
+                except TypeError:
+                    tmp_keys = tmp_data.keys()
+                for i,k in enumerate(tmp_keys):
+                    print('{},'.format(k), end='  ')
+                print('\n')
+                key_name = input(inter_str)
+                if key_name == 'q':
+                    break
+                elif key_name == '':
+                    continue
+                elif key_name == '..':
+                    if len(selected_keys) >= 1:
+                        selected_keys = selected_keys[:-1]
+                        tmp_data = data
+                        for sk in selected_keys:
+                            tmp_data = tmp_data[sk]
+                    else:
+                        cprint('you are in root.\n', '', fg='r')
+                else:
+                    find_key = False
+                    for k in tmp_data:
+                        if str(k) == key_name:
+                            find_key = True
+                            if type(tmp_data[k]) == dict:
+                                tmp_data = tmp_data[k]
+                                selected_keys.append(k)
+                            else:
+                                cprint('output::', '\n{}'.format(tmp_data[k]), bg='r')
+                                if imp_np:
+                                    if (type(tmp_data[k])==np.ndarray) and (len(tmp_data[k])!=0):
+                                        try: dmean = np.mean(tmp_data[k])
+                                        except Exception as e: dmean = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                                        try: dmedian = np.median(tmp_data[k])
+                                        except Exception as e: dmedian = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                                        try: dstd = np.std(tmp_data[k])
+                                        except Exception as e: dstd = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                                        print('>> shape: {}, mean: {:.2e}, median: {:.2e}, std: {:.2e}'.format(tmp_data[k].shape, dmean, dmedian, dstd))
+                                print('')
+                    if not find_key:
+                        cprint('"{}" is not a correct name'.format(key_name), '', fg='r')
+        else:
+            try:
+                tmp_keys = sorted(data.keys())
+            except TypeError:
+                tmp_keys = data.keys()
+            for key in tmp_keys:
+                print(key)
+                if args.verbose:
+                    print(' >>> {}'.format(data[key]))
+                else:
+                    print('  type   : {}'.format(type(data[key]).__name__))
+                    if hasattr(data[key], '__len__'):
+                        print('  length : {}'.format(len(data[key])))
+    else:
+        print(data)
+
+def main_numpy(fpath, args):
+    import numpy as np
+    from numpy.lib.npyio import NpzFile
+    def show_numpy(data):
+        # shape
+        shape = data.shape
+        print('shape    : {}'.format(shape))
+        if np.prod(shape)==0:
+            print('  empty data.')
+            return
+        # other information
+        try:
+            if np.any(np.isnan(data)):
+                # including np.nan
+                try: d_mean = np.nanmean(data)
+                except Exception as e: d_mean = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try: d_max = np.nanmax(data)
+                except Exception as e: d_max = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try: d_min = np.nanmin(data)
+                except Exception as e: d_min = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
+                except Exception as e:
+                    nan_rate = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                prt_str = '''mean     : {}
+max      : {}
+min      : {}
+nan rate : {:.1f}%'''.format(d_mean, d_max, d_min, 100*nan_rate)
+            else:
+                # normal data
+                try: d_mean = np.mean(data)
+                except Exception as e: d_mean = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try: d_max = np.max(data)
+                except Exception as e: d_max = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try: d_min = np.min(data)
+                except Exception as e: d_min = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                prt_str = '''mean     : {}
+max      : {}
+min      : {}'''.format(d_mean, d_max, d_min)
+        except TypeError as e:
+            # string list or something
+            prt_str = 'not a array of number'
+        print(prt_str)
+
+    data = np.load(fpath)
+    if args_chk(args, 'verbose'):
+        if type(data) == NpzFile:
+            for k in data:
+                print_key(k)
+                print(data[k])
+        else:
+            print(data)
+    elif args_chk(args, 'key'):
+        if type(data) == NpzFile:
+            if len(args.key)==0:
+                for k in data:
+                    print(k)
+            for k in args.key:
+                print_key(k)
+                print(data[k])
+                show_numpy(data[k])
+                print()
+    else:
+        if type(data) == NpzFile:
+            for k in data:
+                print('\n{}'.format(k))
+                show_numpy(data[k])
+        else:
+            show_numpy(data)
+
+def main_tar(fpath, args):
+    img_viewer = get_image_viewer(args)
+    if img_viewer == 'matplotlib':
+        import tempfile
+    elif img_viewer == 'OpenCV':
+        import tempfile
+    else:
+        import tempfile
+        import subprocess
+
+    if not tarfile.is_tarfile(fpath):
+        print('{} is not a tar file.'.format(fpath))
+        return
+    tar_file = tarfile.open(fpath, 'r:*')
+    list_tree = [{}]
+    fname = os.path.basename(fpath)
+
+    def show_tar(cpath, cui=False):
+        res = []
+        # check cpath
+        try:
+            if cpath.endswith('/'):
+                key_name = cpath[:-1]
+            else:
+                key_name = cpath
+            tarinfo = tar_file.getmember(key_name)
+        except KeyError as e:
+            return [], 'Error!! Cannot open {}.'.format(cpath)
+
+        # file
+        if tarinfo.isfile():
+
+            # image file
+            if is_image(cpath):
+                if img_viewer is None:
+                    return [], 'There are no way to show image.'
+                elif img_viewer == 'PIL':
+                    with Image.open(tar_file.extractfile(cpath)) as img:
+                        img.show(title=os.path.basename(cpath))
+                elif img_viewer == 'matplotlib':
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        tar_file.extractall(path=tmpdir, members=[tarinfo])
+                        tmpfile = os.path.join(tmpdir, cpath)
+                        img = plt.imread(tmpfile)
+                    fig1 = plt.figure()
+                    ax11 = fig1.add_axes((0, 0, 1, 1))
+                    ax11.imshow(img)
+                    clear_mpl_axes(ax11)
+                    plt.show()
+                elif img_viewer == 'OpenCV':
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        tar_file.extractall(path=tmpdir, members=[tarinfo])
+                        tmpfile = os.path.join(tmpdir, cpath)
+                        img = cv2.imread(tmpfile)
+                    cv2.imshow(os.path.basename(cpath), img)
+                    cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
+                else:
+                    if cui:
+                        return [], 'external command is not supported in cui mode.'
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        tar_file.extractall(path=tmpdir, members=[tarinfo])
+                        tmpfile = os.path.join(tmpdir, cpath)
+                        cmds = get_exec_cmds(args, tmpfile)
+                        subprocess.run(cmds)
+                        # wait to open file. this is for, e.g., open command on Mac OS.
+                        input('Press Enter to continue')
+
+            # text file?
+            else:
+                for line in tar_file.extractfile(cpath):
+                    try:
+                        res.append(line.decode().replace("\n", ''))
+                    except UnicodeDecodeError as e:
+                        return [], 'Error!! {}'.format(e)
+            res.append('')
+
+        #directory
+        elif tarinfo.isdir():
+            tree = tree_viewer(list_tree, fname)
+            res.append('{}/'.format(key_name))
+            files, dirs = tree.get_contents(key_name)
+            for f in files:
+                res.append('{}{}'.format(branch_str, f))
+            for d in dirs:
+                res.append('{}{}/'.format(branch_str, d))
+        else:
+            res.append('sorry, I can\'t show information.\n')
+
+        return res, None
+
+    # make list_tree
+    for t in tar_file:
+        tmp_list = list_tree
+        depth = 1
+        tnames = t.name.split('/')
+        if debug: print('cpath: {}'.format(t.name))
+        for p in tnames:
+            if p == '': continue
+            if t.isfile() and depth==len(tnames):
+                # file
+                tmp_list.append(p)
+                if debug:
+                    print('add {}'.format(p))
+            elif p in tmp_list[0]:
+                # existing directory
+                tmp_list = tmp_list[0][p]
+                depth += 1
+            else:
+                # new directory
+                tmp_list[0][p] = [{}]
+                tmp_list = tmp_list[0][p]
+                depth += 1
+    # if debug:
+    #     print(list_tree)
+
+    if args_chk(args, 'interactive'):
+        interactive_view(list_tree, fname, show_tar)
+    elif args_chk(args, 'cui'):
+        interactive_cui(list_tree, fpath, show_tar)
+    elif args_chk(args, 'key'):
+        if len(args.key)==0:
+            tar_file.list(verbose=False)
+        for k in args.key:
+            print_key(k)
+            info, err = show_tar(k)
+            if err is None:
+                print("\n".join(info))
+                print()
+            else:
+                cprint(err, fg='r')
+    elif args_chk(args, 'verbose'):
+        tar_file.list(verbose=True)
+    else:
+        show_tree(list_tree, fname)
+
+    tar_file.close()
+
+def main_zip(fpath, args):
+    import zipfile
+    img_viewer = get_image_viewer(args)
+    if img_viewer == 'PIL':
+        import io
+    elif img_viewer == 'matplotlib':
+        import tempfile
+    elif img_viewer == 'OpenCV':
+        import tempfile
+    else:
+        import tempfile
+        import subprocess
+
+    if not zipfile.is_zipfile(fpath):
+        print('{} is not a zip file.'.format(fpath))
+        return
+    zip_file = zipfile.ZipFile(fpath, 'r')
+    list_tree = [{}]
+    fname = os.path.basename(fpath)
+
+    def show_zip(cpath, cui=False):
+        res = []
+        try:
+            key_name = cpath
+            if key_name+'/' in zip_file.namelist():
+                key_name += '/'
+            zipinfo = zip_file.getinfo(key_name)
+        except KeyError as e:
+            if debug:
+                print(e)
+            return [], 'Error!! cannnot open {}.'.format(cpath)
+
+        # directory
+        if zipinfo.is_dir():
+            tree = tree_viewer(list_tree, fname)
+            res.append('{}/'.format(key_name))
+            files, dirs = tree.get_contents(key_name)
+            for f in files:
+                res.append('{}{}'.format(branch_str, f))
+            for d in dirs:
+                res.append('{}{}/'.format(branch_str, d))
+
+        # file
+        else:
+            if is_image(cpath):
+                if img_viewer is None:
+                    return [], 'There are no way to show image.'
+                elif img_viewer == 'PIL':
+                    with Image.open(io.BytesIO(zip_file.read(cpath))) as img:
+                        img.show(title=os.path.basename(cpath))
+                elif img_viewer == 'matplotlib':
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        zip_file.extract(zipinfo, path=tmpdir)
+                        tmpfile = os.path.join(tmpdir, cpath)
+                        img = plt.imread(tmpfile)
+                    fig1 = plt.figure()
+                    ax11 = fig1.add_axes((0, 0, 1, 1))
+                    ax11.imshow(img)
+                    clear_mpl_axes(ax11)
+                    plt.show()
+                elif img_viewer == 'OpenCV':
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        zip_file.extract(zipinfo, path=tmpdir)
+                        tmpfile = os.path.join(tmpdir, cpath)
+                        img = cv2.imread(tmpfile)
+                    cv2.imshow(os.path.basename(cpath), img)
+                    cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
+                else:
+                    if cui:
+                        return [], 'external command is not supported in cui mode.'
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        zip_file.extract(zipinfo, path=tmpdir)
+                        tmpfile = os.path.join(tmpdir, cpath)
+                        cmds = get_exec_cmds(args, tmpfile)
+                        subprocess.run(cmds)
+                        # wait to open file. this is for, e.g., open command on Mac OS.
+                        input('Press Enter to continue')
+
+            # text file?
+            else:
+                for line in zip_file.open(cpath, 'r'):
+                    try:
+                        res.append(line.decode().replace("\n", ''))
+                    except UnicodeDecodeError as e:
+                        return [], 'Error!! {}'.format(e)
+
+        return res, None
+
+    # make list_tree
+    if args_chk(args, 'encoding'):
+        if debug: print('set encoding from args')
+        zip_codec = args.encoding
+    elif 'zip_encoding' in json_opts:
+        if debug: print('set encoding from args')
+        zip_codec = json_opts['zip_encoding']
+    else:
+        zip_codec = 'cp437' # test codec.
+    if debug: print('encoding: {}'.format(zip_codec))
+    for z in zip_file.infolist():
+        tmp_list = list_tree
+        depth = 1
+        znames = z.filename.split('/')
+        if debug: print('cpath: {}'.format(z.filename))
+        for p in znames:
+            try:
+                # try to decode
+                p = p.encode(zip_codec, 'replace').decode()
+            except Exception as e:
+                if debug:
+                    print(e)
+            if p == '': continue
+            if (not z.is_dir()) and depth==len(znames):
+                # file
+                tmp_list.append(p)
+                if debug:
+                    print('add {}'.format(p))
+            elif p in tmp_list[0]:
+                # existing directory
+                tmp_list = tmp_list[0][p]
+                depth += 1
+            else:
+                tmp_list[0][p] = [{}]
+                tmp_list = tmp_list[0][p]
+                depth += 1
+    # if debug:
+    #     print()
+    #     print(list_tree)
+
+    if args_chk(args, 'interactive'):
+        interactive_view(list_tree, fname, show_zip)
+    elif args_chk(args, 'cui'):
+        interactive_cui(list_tree, fpath, show_zip)
+    elif args_chk(args, 'key'):
+        if len(args.key)==0:
+            for fy in zip_file.namelist():
+                print(fy)
+        for k in args.key:
+            print_key(k)
+            info, err = show_zip(k)
+            if err is None:
+                print("\n".join(info))
+                print()
+            else:
+                cprint(err, fg='r')
+    elif args_chk(args, 'verbose'):
+        zip_file.printdir()
+    else:
+        show_tree(list_tree, fname)
+
+    zip_file.close()
+
+def main_sqlite3(fpath, args):
+    import sqlite3
+    try:
+        from tabulate import tabulate
+    except ImportError:
+        print("I can't find tabulate library.")
+        is_tabulate = False
+    else:
+        is_tabulate = True
+    shift = '  '
+
+    def show_table(table_path, cui=False, verbose=True):
+        res = []
+        if '/' in table_path:
+            table, column = table_path.split('/')
+            if column == '':
+                column = None
+            if debug:
+                print('table, column: {}, {}'.format(table, column))
+        else:
+            table = table_path
+            column = None
+            if debug:
+                print('table: {}'.format(table))
+        cursor.execute("pragma table_info('{}')".format(table))
+        table_info = cursor.fetchall()
+
+        res.append(table)
+        if not verbose:
+            for tinfo in table_info:
+                if tinfo[2] == '':
+                    ctype = 'none'
+                else:
+                    ctype = tinfo[2]
+                res.append('{}{} [ {} ]'.format(branch_str, tinfo[1], ctype))
+
+        else:
+            if column is None:
+                headers = []
+                for tinfo in table_info:
+                    headers.append(tinfo[1])
+                cursor.execute('select * from {}'.format(table))
+            else:
+                headers = column.split(',')
+                cursor.execute('select {} from {}'.format(column, table))
+            columns = cursor.fetchall()
+            table = []
+            for col in columns:
+                table.append([])
+                for item in col:
+                    table[-1].append(item)
+
+            if is_tabulate:
+                table_str = tabulate(table, headers, tablefmt='orgtbl')
+                table_str = table_str.replace('\n', '\n'+shift)
+                res.append(shift + table_str)
+            else:
+                tmp_res = ''
+                tmp_res += shift+'|'
+                for hd in headers:
+                    tmp_res += ' {} |'.format(hd)
+                res.append(tmp_res)
+                for itms in table:
+                    tmp_res = ''
+                    tmp_res += shift+'|'
+                    for itm in itms:
+                        tmp_res += ' {} |'.format(itm)
+                    res.append(tmp_res)
+        return res, None
+
+    database = sqlite3.connect(fpath)
+    cursor = database.cursor()
+    cursor.execute("select name from sqlite_master where type='table'")
+    tables = cursor.fetchall()
+
+    if args_chk(args, 'interactive') or args_chk(args, 'cui'):
+        # make list_tree
+        list_tree = [{}]
+        for table, in tables:
+            if debug:
+                print(table)
+            list_tree[0][table] = [{}]
+            cursor.execute("pragma table_info('{}')".format(table))
+            table_info = cursor.fetchall()
+            for tinfo in table_info:
+                if debug:
+                    print(tinfo)
+                name = tinfo[1]
+                list_tree[0][table].append(name)
+        # if debug:
+        #     print(list_tree)
+        if args_chk(args, 'interactive'):
+            fname = os.path.basename(fpath)
+            interactive_view(list_tree, fname, show_table)
+        elif args_chk(args, 'cui'):
+            interactive_cui(list_tree, fpath, show_table)
+
+    elif args_chk(args, 'key'):
+        if len(args.key)==0:
+            for t in tables:
+                print(t[0])
+        for k in args.key:
+            print_key(k)
+            info, err = show_table(k, verbose=True)
+            if err is None:
+                print("\n".join(info))
+                print()
+            else:
+                cprint(err, fg='r')
+    else:
+        for table, in tables:
+            info, err = show_table(table, args.verbose)
+            if err is None:
+                print("\n".join(info))
+
+def main_raw(fpath, args):
+    try:
+        import rawpy
+    except ImportError:
+        print("I can't find rawpy.")
+        return
+
+    img_viewer = get_image_viewer(args)
+    if img_viewer is None:
+        print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
+        return
+    elif img_viewer not in 'PIL matplotlib OpenCV'.split(' '):
+        import tempfile
+        import subprocess
+
+    try:
+        from screeninfo import get_monitors
+    except ImportError:
+        get_screen = False
+    else:
+        get_screen = True
+
+    with rawpy.imread(fpath) as raw:
+        rgb = raw.postprocess(demosaic_algorithm=rawpy.DemosaicAlgorithm.LINEAR)
+
+    if debug:
+        print(rgb.shape)
+        print('use {}'.format(img_viewer))
+    if img_viewer == 'PIL':
+        img = Image.fromarray(rgb)
+        img.show(title=os.path.basename(fpath))
+    elif img_viewer == 'matplotlib':
+        if get_screen:
+            height = get_monitors()[0].height
+        else:
+            height = 1080   # assume a full-HD display
+        rate = rgb.shape[0]/height*100
+        h = int(rgb.shape[0]/rate)
+        w = int(rgb.shape[1]/rate)
+        fig1 = plt.figure(figsize=(w,h))
+        # full display
+        ax1 = fig1.add_axes((0, 0, 1, 1))
+        ax1.imshow(rgb)
+        clear_mpl_axes(ax1)
+        plt.show()
+    elif img_viewer == 'OpenCV':
+        img = rgb[:,:,::-1] # RGB -> BGR
+        cv2.imshow(os.path.basename(fpath), img)
+        cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+    else:
+        with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
+            make_bitmap(tmp.name, rgb, verbose=debug)
+            cmds = get_exec_cmds(args, tmp.name)
+            subprocess.run(cmds)
+            # wait to open file. this is for, e.g., open command on Mac OS.
+            input('Press Enter to continue')
+
+def main_jupyter(fpath, args):
+    import json
+    import base64
+
+    img_viewer = get_image_viewer(args)
+    if img_viewer == 'PIL':
+        import io
+    elif img_viewer == 'matplotlib':
+        import tempfile
+    elif img_viewer == 'OpenCV':
+        import tempfile
+    else:
+        import tempfile
+        import subprocess
+        import time
+
+    with open(fpath, 'r') as f:
+        data = json.load(f)
+    if debug:
+        print('keys: {}'.format(data.keys()))
+
+    if args_chk(args, 'verbose'):
+        meta = data['metadata']
+        if debug: print(meta)
+        print('kernel   : {}'.format(meta['kernelspec']['display_name']))
+        if 'language_info' in meta:
+            print('language : {}-{}'.format( \
+                    meta['language_info']['name'], \
+                    meta['language_info']['version']))
+        if 'colab' in meta:
+            print('colab : {}'.format(meta['colab']['name']))
+
+    tmp_images = []
+    for cell in data['cells']:
+        if debug:
+            print(' ---- cell ----')
+            print(cell)
+            print('---------------')
+        if cell['cell_type'] == 'code':
+            cnt = cell['execution_count']
+            if cnt is None:
+                cnt = ' '
+            # Input
+            cprint('In [{}]'.format(cnt), fg='c')
+            for instr in cell['source']:
+                print(instr, end='')
+            print()
+            # Output
+            if len(cell['outputs']) != 0:
+                cprint('Out [{}]'.format(cnt), fg='r')
+            for output in cell['outputs']:
+                if 'text' in output:
+                    for text in output['text']:
+                        print(text, end='')
+                    print()
+                elif 'data' in output:
+                    out_data = output['data']
+                    for out_type in out_data:
+                        if out_type == 'text/plain':
+                            for text in out_data['text/plain']:
+                                print(text, end='')
+                            print()
+                        elif out_type == 'image/png':
+                            if img_viewer is None:
+                                continue
+                            img_code = out_data['image/png']
+                            img_bin = base64.b64decode(img_code.encode())
+                            if img_viewer == 'PIL':
+                                with Image.open(io.BytesIO(img_bin)) as img:
+                                    # title doesn't work?
+                                    img.show(title='Out [{}]'.format(cnt))
+                            elif img_viewer == 'matplotlib':
+                                with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
+                                    tmp.write(img_bin)
+                                    img = plt.imread(tmp.name)
+                                fig1 = plt.figure()
+                                ax11 = fig1.add_axes((0, 0, 1, 1))
+                                ax11.imshow(img)
+                                clear_mpl_axes(ax11)
+                                plt.show()
+                            elif img_viewer == 'OpenCV':
+                                with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
+                                    tmp.write(img_bin)
+                                    img = cv2.imread(tmp.name)
+                                cv2.imshow('Out [{}]'.format(cnt), img)
+                                cv2.waitKey(500)
+                            else:
+                                tmp = tempfile.NamedTemporaryFile(suffix='.png')
+                                tmp_images.append(tmp)
+                                tmp.write(img_bin)
+                                cmds = get_exec_cmds(args, tmp.name)
+                                subprocess.run(cmds)
+                                if args_chk(args, 'verbose'):
+                                    time.sleep(1.)
+
+        elif cell['cell_type'] == 'markdown':
+            cprint('markdown', fg='g')
+            for instr in cell['source']:
+                print(instr, end='')
+            print()
+
+        elif cell['cell_type'] == 'raw':
+            cprint('raw', fg='g')
+            for instr in cell['source']:
+                print(instr, end='')
+            print()
+
+        else:
+            if debug:
+                print('not a supported type of cell: {}'.format(cell['cell_type']))
+
+        if not args_chk(args, 'verbose'):
+            input(' >>> Press ENTER to continue')
+
+    # image closing
+    for tmp in tmp_images:
+        if debug: print('close {}'.format(tmp.name))
+        tmp.close()
+    if img_viewer == 'OpenCV':
+        if args_chk(args, 'verbose'): cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+def main_xpm(fpath, args):
+    add_lib('xpm_loader.py')
+    from xpm_loader import XPMLoader
+
+    img_viewer = get_image_viewer(args)
+    if img_viewer is None:
+        print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
+        return
+    elif img_viewer not in 'PIL matplotlib OpenCV'.split(' '):
+        import tempfile
+        import subprocess
+
+    xpm = XPMLoader(fpath)
+    xpm.xpm_to_ndarray()
+    data = xpm.ndarray
+    width = xpm.info['width']
+    height = xpm.info['height']
+
+    if debug:
+        print(data.shape)
+        print('use {}'.format(img_viewer))
+    if img_viewer == 'PIL':
+        img = Image.fromarray(data)
+        img.show(title=os.path.basename(fpath))
+    elif img_viewer == 'matplotlib':
+        fig1 = plt.figure(figsize=(width/100, height/100))
+        # full display
+        ax1 = fig1.add_axes((0, 0, 1, 1))
+        ax1.imshow(data)
+        clear_mpl_axes(ax1)
+        plt.show()
+    elif img_viewer == 'OpenCV':
+        img = data[:,:,[2,1,0,3]] # RGBA -> BGRA
+        cv2.imshow(os.path.basename(fpath), img)
+        cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+    else:
+        with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
+            make_bitmap(tmp.name, data, verbose=debug)
+            cmds = get_exec_cmds(args, tmp.name)
+            subprocess.run(cmds)
+            # wait to open file. this is for, e.g., open command on Mac OS.
+            input('Press Enter to continue')
+
+
+def main(args):
+
+    fpath = os.path.expandvars(os.path.expanduser(args.file))
+    if not os.path.exists(fpath):
+        print("file doesn't exists!")
+        return
+    if os.path.isdir(fpath):
+        print("{} is a directory.".format(fpath))
+        return
+
+    if not args_chk(args, 'type'):
+        args.type = get_filetype(fpath)
+
+    if args.type == 'text':
+        if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
+            print('vimでも使ってろ！')
+        else:
+            print("Why Don't you use vim???")
+        return
+
+    if 'type' in json_opts:
+        for typ in json_opts['type']:
+            if args.type == typ['type_name']:
+                mod = import_module(typ['lib'])
+                exec('mod.main_{}(fpath, args)'.format(typ['type_name']))
+                return
+
+    if args.type == 'hdf5':
+        main_hdf5(fpath, args)
+    elif args.type == 'pickle':
+        main_pickle(fpath, args)
+    elif args.type == 'numpy':
+        main_numpy(fpath, args)
+    elif args.type == 'tar':
+        main_tar(fpath, args)
+    elif args.type == 'zip':
+        main_zip(fpath, args)
+    elif args.type == 'sqlite3':
+        main_sqlite3(fpath, args)
+    elif args.type == 'raw_image':
+        main_raw(fpath, args)
+    elif args.type == 'jupyter':
+        main_jupyter(fpath, args)
+    elif args.type == 'xpm':
+        main_xpm(fpath, args)
+    else:
+        print('this file is not supported.')
+
+    return
+
+if __name__ == "__main__":
+    supported_type = 'hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm'.split(', ')
+    if 'type' in json_opts:
+        for typ in json_opts['type']:
+            supported_type.append(typ['type_name'])
+    parser = argparse.ArgumentParser(description="show the constitution of a file. support file types ... {}".format(', '.join(supported_type)))
+    parser.add_argument('file', help='input file')
+    parser.add_argument('-t', '--type', dest='type', help='file type', choices=supported_type)
+    parser.add_argument('-iv', '--image_viewer', help="set image viewer. supported args are 'matplotlib' (use matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV' (use cv2.imshow), and other string is treated as an external command (e.g. gosr, open).")
+    parser.add_argument('--encoding', dest='encoding', help='specify the encoding format in pickle and zip file.', type=str)
+    ex_group = parser.add_mutually_exclusive_group()
+    ex_group.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='show details')
+    ex_group.add_argument('-k', '--key', dest='key', help='Dictionary key name in a pickle, path to a Group/Dataset in hdf5, a path to a file/dictionary in tar/zip, a table[/column[,column2...]] in sqlite3 or a key name in npz. If no key is specified, return the list of keys.', nargs='*')
+    ex_group.add_argument('-i', '--interactive', dest='interactive', help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3.', action='store_true')
+    ex_group.add_argument('-c', '--interactive_cui', dest='cui', help='open a file with interactive CUI mode. support hdf5, tar, zip, sqlite3.', action='store_true')
+    args = parser.parse_args()
+
+    if args_chk(args, 'cui') and debug:
+        debug = False
+        curses_debug = True
+    if not args_chk(args, 'image_viewer'):
+        if 'image_viewer' in json_opts:
+            args.image_viewer = json_opts['image_viewer']
+    args.opts = json_opts
+
+    main(args)
+
