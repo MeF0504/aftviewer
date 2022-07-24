@@ -11,7 +11,7 @@ import mimetypes
 import urllib.request
 import json
 from importlib import import_module
-from pathlib import Path,PurePath
+from pathlib import Path, PurePath
 from functools import partial
 
 # global variables
@@ -34,6 +34,7 @@ if (conf_dir/'setting.json').is_file():
 else:
     json_opts = {}
 
+
 # load local libraries.
 def add_lib(file_name):
     libpath = conf_dir/'lib'
@@ -54,10 +55,12 @@ def add_lib(file_name):
             with open(libfile, 'wb') as local_lib:
                 local_lib.write(data)
 
+
 add_lib('libtree.py')
 from libtree import tree_viewer, show_tree, branch_str, get_list
 add_lib('local_lib_color.py')
 from local_lib_color import BG, FG, END, make_bitmap
+
 
 def args_chk(args, attr):
     if not hasattr(args, attr):
@@ -79,6 +82,7 @@ def args_chk(args, attr):
     else:
         return False
 
+
 def cprint(str1, str2='', fg=None, bg=None, **kwargs):
     print_str = str1
     if fg is not None:
@@ -89,6 +93,7 @@ def cprint(str1, str2='', fg=None, bg=None, **kwargs):
         print_str += END
     print_str += str2
     print(print_str, **kwargs)
+
 
 def get_filetype(fpath):
     ext = fpath[fpath.rfind('.')+1:].lower()
@@ -108,7 +113,8 @@ def get_filetype(fpath):
         return 'zip'
     elif ext in 'db db3 sql sql3 sqlite sqlite3'.split(' '):
         return 'sqlite3'
-    elif ext in 'raw nef nrw cr3 cr2 crw tif arw'.split(' '):   # nikon, canon, sony
+    elif ext in 'raw nef nrw cr3 cr2 crw tif arw'.split(' '):
+        # nikon, canon, sony
         return 'raw_image'
     elif ext == 'ipynb':
         return 'jupyter'
@@ -119,6 +125,7 @@ def get_filetype(fpath):
     else:
         return None
 
+
 def is_image(path):
     mime = mimetypes.guess_type(path)[0]
     if mime is None:
@@ -128,9 +135,11 @@ def is_image(path):
     else:
         return False
 
+
 def get_image_viewer(args):
     if args_chk(args, 'image_viewer'):
-        if debug: print('set image viewer from args')
+        if debug:
+            print('set image viewer from args')
         img_viewer = args.image_viewer
         if img_viewer == 'PIL':
             from PIL import Image
@@ -168,19 +177,23 @@ def get_image_viewer(args):
         try:
             from PIL import Image
             global Image
-            if debug: print(' => image_viewer: PIL')
+            if debug:
+                print(' => image_viewer: PIL')
         except ImportError:
             try:
                 import matplotlib.pyplot as plt
                 global plt
-                if debug: print(' => image_viewer: matplotlib')
+                if debug:
+                    print(' => image_viewer: matplotlib')
             except ImportError:
                 try:
                     import cv2
                     global cv2
-                    if debug: print(' => image_viewer: OpenCV')
+                    if debug:
+                        print(' => image_viewer: OpenCV')
                 except ImportError:
-                    if debug: print("can't find image_viewer")
+                    if debug:
+                        print("can't find image_viewer")
                     img_viewer = None
                 else:
                     img_viewer = 'OpenCV'
@@ -190,6 +203,7 @@ def get_image_viewer(args):
             img_viewer = 'PIL'
     return img_viewer
 
+
 def clear_mpl_axes(axes):
     # not display axes
     axes.xaxis.set_visible(False)
@@ -198,6 +212,7 @@ def clear_mpl_axes(axes):
     axes.spines['bottom'].set_visible(False)
     axes.spines['right'].set_visible(False)
     axes.spines['left'].set_visible(False)
+
 
 def get_exec_cmds(args, fname):
     if 'exec_cmd' in json_opts:
@@ -215,6 +230,7 @@ def get_exec_cmds(args, fname):
         print('executed command: {}'.format(res))
     return res
 
+
 def interactive_view(tree, fname, show_func):
     cpath = PurePath('.')
     inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
@@ -230,17 +246,21 @@ def interactive_view(tree, fname, show_func):
         print('\n')
         key_name = input(inter_str)
         if key_name == 'q':
-            if debug: print('quit')
+            if debug:
+                print('quit')
             break
         elif key_name == '':
-            if debug: print('continue')
+            if debug:
+                print('continue')
             continue
         elif key_name == '..':
-            if debug: print('go up')
+            if debug:
+                print('go up')
             if str(cpath) != '.':
                 cpath = cpath.parent
         else:
-            if debug: print('specify key:{}'.format(key_name))
+            if debug:
+                print('specify key:{}'.format(key_name))
             if key_name.endswith('/'):
                 key_name = key_name[:-1]
             if key_name in files:
@@ -254,6 +274,7 @@ def interactive_view(tree, fname, show_func):
                 cpath /= key_name
             else:
                 cprint('"{}" is not a correct name'.format(key_name), '', fg='r')
+
 
 def interactive_cui(tree, fname, show_func):
     import curses
@@ -279,8 +300,8 @@ def interactive_cui(tree, fname, show_func):
         scroll_h = 5
         scroll_w = 5
         scroll_side = 3
-        win_pwd  = curses.newwin(win_h, winx, 0, 0)
-        win_side  = curses.newwin(winy-win_h, win_w, win_h, 0)
+        win_pwd = curses.newwin(win_h, winx, 0, 0)
+        win_side = curses.newwin(winy-win_h, win_w, win_h, 0)
         win_main = curses.newwin(winy-win_h, winx-win_w, win_h, win_w)
         win_search = curses.newwin(search_h, winx-win_w-2, win_h+2, win_w+1)
 
@@ -340,7 +361,7 @@ def interactive_cui(tree, fname, show_func):
                 else:
                     # top
                     if sel_idx > 0:
-                        sel_idx -=1
+                        sel_idx -= 1
 
             elif key == 'KEY_RIGHT':
                 side_shift_lr += scroll_side
@@ -405,14 +426,14 @@ def interactive_cui(tree, fname, show_func):
                     main_shift_lr = 0
 
             elif key == 'j':
-                if len(main_info)<(winy-win_h-1):
+                if len(main_info) < (winy-win_h-1):
                     # all contents are shown
                     pass
                 elif main_shift_ud < len(main_info)-scroll_h-1:
                     main_shift_ud += scroll_h
 
             elif key == 'k':
-                if len(main_info)<(winy-win_h-1):
+                if len(main_info) < (winy-win_h-1):
                     # all contents are shown
                     pass
                 elif main_shift_ud < scroll_h:
@@ -449,10 +470,10 @@ def interactive_cui(tree, fname, show_func):
                     tmp_files, tmp_dirs = get_list(tree)
                     files = []
                     dirs = []
-                    for i,f in enumerate(tmp_files):
+                    for i, f in enumerate(tmp_files):
                         if re.search(search_word, f):
                             files.append(f)
-                    for i,d in enumerate(tmp_dirs):
+                    for i, d in enumerate(tmp_dirs):
                         if re.search(search_word, d):
                             dirs.append(d)
                     if len(files)+len(dirs) != 0:
@@ -526,19 +547,20 @@ def interactive_cui(tree, fname, show_func):
                 win_pwd.addstr(2, int(winx*2/3), 'srch: {}'.format(search_word.replace("\n", '')[:int(winx/3)-1-6]))
                 win_pwd.refresh()
 
-
             key = stdscr.getkey()
 
     curses.wrapper(partial(curses_main, cpath, tv))
 
+
 def print_key(key_name):
     cprint('<<< {} >>>'.format(key_name), '', fg='k', bg='y')
+
 
 def main_hdf5(fpath, args):
     import h5py
     try:
         import numpy as np
-    except ImportError as e:
+    except ImportError:
         imp_np = False
     else:
         imp_np = True
@@ -573,42 +595,52 @@ def main_hdf5(fpath, args):
                 is_array = True
             else:
                 is_array = False
-            if imp_np and is_array and (len(data)!=0):
-                try: dmean = np.nanmean(data)
-                except Exception as e: dmean = '{}: {}'.format(str(type(e)).split("'")[1], e)
+            if imp_np and is_array and (len(data) != 0):
+                try:
+                    dmean = np.nanmean(data)
+                except Exception as e:
+                    dmean = '{}: {}'.format(str(type(e)).split("'")[1], e)
                 res.append('mean : {}'.format(dmean))
-                try: dmax = np.nanmax(data)
-                except Exception as e: dmax = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    dmax = np.nanmax(data)
+                except Exception as e:
+                    dmax = '{}: {}'.format(str(type(e)).split("'")[1], e)
                 res.append(' max : {}'.format(dmax))
-                try: dmin = np.nanmin(data)
-                except Exception as e: dmin = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    dmin = np.nanmin(data)
+                except Exception as e:
+                    dmin = '{}: {}'.format(str(type(e)).split("'")[1], e)
                 res.append(' min : {}'.format(dmin))
-                try: dstd = np.nanstd(data)
-                except Exception as e: dstd = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    dstd = np.nanstd(data)
+                except Exception as e:
+                    dstd = '{}: {}'.format(str(type(e)).split("'")[1], e)
                 res.append(' std : {}'.format(dstd))
                 if hasattr(data, 'shape'):
                     try:
                         nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
                         res.append('nan rate: {:.1f}%'.format(nan_rate*100))
-                    except Exception as e:
+                    except Exception:
                         pass
         return res, None
 
     list_tree = [{}]
+
     def make_list(name, obj):
         if isinstance(obj, h5py.Dataset):
             if not (args_chk(args, 'interactive') or args_chk(args, 'cui')):
                 if args_chk(args, 'verbose'):
                     print_key(name)
                     print("{}".format(h5_file[name][()]))
-                elif args_chk(args, 'key') and len(args.key)==0:
+                elif args_chk(args, 'key') and len(args.key) == 0:
                     print(name)
 
             tmp_list = list_tree
             depth = 1
-            if debug: print('cpath: {}'.format(name))
+            if debug:
+                print('cpath: {}'.format(name))
             for p in name.split('/'):
-                if p == name.split('/')[-1] and depth==len(name.split('/')):
+                if p == name.split('/')[-1] and depth == len(name.split('/')):
                     tmp_list.append(p)
                     if debug:
                         # print('add {} to {} @ {:d}'.format(p, tmp_list, depth))
@@ -645,6 +677,7 @@ def main_hdf5(fpath, args):
 
     h5_file.close()
 
+
 # It is difficult to rebuild a recursive dictionary by any means...
 def main_pickle(fpath, args):
     import pickle
@@ -656,25 +689,29 @@ def main_pickle(fpath, args):
         imp_np = True
 
     if args_chk(args, 'encoding'):
-        if debug: print('set encoding from args')
+        if debug:
+            print('set encoding from args')
         encoding = args.encoding
     elif 'pickle_encoding' in json_opts:
-        if debug: print('set encoding from json')
+        if debug:
+            print('set encoding from json')
         encoding = json_opts['pickle_encoding']
     else:
         encoding = 'ASCII'
-    if debug: print('encoding: {}'.format(encoding))
+    if debug:
+        print('encoding: {}'.format(encoding))
     try:
         with open(fpath, 'rb') as f:
             data = pickle.load(f, encoding=encoding)
     except UnicodeDecodeError:
-        if debug: print('decode error: encoding={}'.format(encoding))
+        if debug:
+            print('decode error: encoding={}'.format(encoding))
         with open(fpath, 'rb') as f:
             data = pickle.load(f, encoding='latin1')
 
     if type(data) == type(dict()):
         if args_chk(args, 'key'):
-            if len(args.key)==0:
+            if len(args.key) == 0:
                 for k in data:
                     print(k)
             else:
@@ -695,7 +732,7 @@ def main_pickle(fpath, args):
                     tmp_keys = sorted(tmp_data.keys())
                 except TypeError:
                     tmp_keys = tmp_data.keys()
-                for i,k in enumerate(tmp_keys):
+                for i, k in enumerate(tmp_keys):
                     print('{},'.format(k), end='  ')
                 print('\n')
                 key_name = input(inter_str)
@@ -722,13 +759,19 @@ def main_pickle(fpath, args):
                             else:
                                 cprint('output::', '\n{}'.format(tmp_data[k]), bg='r')
                                 if imp_np:
-                                    if (type(tmp_data[k])==np.ndarray) and (len(tmp_data[k])!=0):
-                                        try: dmean = np.mean(tmp_data[k])
-                                        except Exception as e: dmean = '{}: {}'.format(str(type(e)).split("'")[1], e)
-                                        try: dmedian = np.median(tmp_data[k])
-                                        except Exception as e: dmedian = '{}: {}'.format(str(type(e)).split("'")[1], e)
-                                        try: dstd = np.std(tmp_data[k])
-                                        except Exception as e: dstd = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                                    if (type(tmp_data[k]) == np.ndarray) and (len(tmp_data[k]) != 0):
+                                        try:
+                                            dmean = np.mean(tmp_data[k])
+                                        except Exception as e:
+                                            dmean = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                                        try:
+                                            dmedian = np.median(tmp_data[k])
+                                        except Exception as e:
+                                            dmedian = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                                        try:
+                                            dstd = np.std(tmp_data[k])
+                                        except Exception as e:
+                                            dstd = '{}: {}'.format(str(type(e)).split("'")[1], e)
                                         print('>> shape: {}, mean: {:.2e}, median: {:.2e}, std: {:.2e}'.format(tmp_data[k].shape, dmean, dmedian, dstd))
                                 print('')
                     if not find_key:
@@ -749,26 +792,34 @@ def main_pickle(fpath, args):
     else:
         print(data)
 
+
 def main_numpy(fpath, args):
     import numpy as np
     from numpy.lib.npyio import NpzFile
+
     def show_numpy(data):
         # shape
         shape = data.shape
         print('shape    : {}'.format(shape))
-        if np.prod(shape)==0:
+        if np.prod(shape) == 0:
             print('  empty data.')
             return
         # other information
         try:
             if np.any(np.isnan(data)):
                 # including np.nan
-                try: d_mean = np.nanmean(data)
-                except Exception as e: d_mean = '{}: {}'.format(str(type(e)).split("'")[1], e)
-                try: d_max = np.nanmax(data)
-                except Exception as e: d_max = '{}: {}'.format(str(type(e)).split("'")[1], e)
-                try: d_min = np.nanmin(data)
-                except Exception as e: d_min = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    d_mean = np.nanmean(data)
+                except Exception as e:
+                    d_mean = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    d_max = np.nanmax(data)
+                except Exception as e:
+                    d_max = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    d_min = np.nanmin(data)
+                except Exception as e:
+                    d_min = '{}: {}'.format(str(type(e)).split("'")[1], e)
                 try:
                     nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
                 except Exception as e:
@@ -779,16 +830,22 @@ min      : {}
 nan rate : {:.1f}%'''.format(d_mean, d_max, d_min, 100*nan_rate)
             else:
                 # normal data
-                try: d_mean = np.mean(data)
-                except Exception as e: d_mean = '{}: {}'.format(str(type(e)).split("'")[1], e)
-                try: d_max = np.max(data)
-                except Exception as e: d_max = '{}: {}'.format(str(type(e)).split("'")[1], e)
-                try: d_min = np.min(data)
-                except Exception as e: d_min = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    d_mean = np.mean(data)
+                except Exception as e:
+                    d_mean = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    d_max = np.max(data)
+                except Exception as e:
+                    d_max = '{}: {}'.format(str(type(e)).split("'")[1], e)
+                try:
+                    d_min = np.min(data)
+                except Exception as e:
+                    d_min = '{}: {}'.format(str(type(e)).split("'")[1], e)
                 prt_str = '''mean     : {}
 max      : {}
 min      : {}'''.format(d_mean, d_max, d_min)
-        except TypeError as e:
+        except TypeError:
             # string list or something
             prt_str = 'not a array of number'
         print(prt_str)
@@ -803,7 +860,7 @@ min      : {}'''.format(d_mean, d_max, d_min)
             print(data)
     elif args_chk(args, 'key'):
         if type(data) == NpzFile:
-            if len(args.key)==0:
+            if len(args.key) == 0:
                 for k in data:
                     print(k)
             for k in args.key:
@@ -818,6 +875,7 @@ min      : {}'''.format(d_mean, d_max, d_min)
                 show_numpy(data[k])
         else:
             show_numpy(data)
+
 
 def main_tar(fpath, args):
     img_viewer = get_image_viewer(args)
@@ -845,7 +903,7 @@ def main_tar(fpath, args):
             else:
                 key_name = cpath
             tarinfo = tar_file.getmember(key_name)
-        except KeyError as e:
+        except KeyError:
             return [], 'Error!! Cannot open {}.'.format(cpath)
 
         # file
@@ -896,7 +954,7 @@ def main_tar(fpath, args):
                         return [], 'Error!! {}'.format(e)
             res.append('')
 
-        #directory
+        # directory
         elif tarinfo.isdir():
             tree = tree_viewer(list_tree, fname)
             res.append('{}/'.format(key_name))
@@ -915,10 +973,12 @@ def main_tar(fpath, args):
         tmp_list = list_tree
         depth = 1
         tnames = t.name.split('/')
-        if debug: print('cpath: {}'.format(t.name))
+        if debug:
+            print('cpath: {}'.format(t.name))
         for p in tnames:
-            if p == '': continue
-            if t.isfile() and depth==len(tnames):
+            if p == '':
+                continue
+            if t.isfile() and depth == len(tnames):
                 # file
                 tmp_list.append(p)
                 if debug:
@@ -940,7 +1000,7 @@ def main_tar(fpath, args):
     elif args_chk(args, 'cui'):
         interactive_cui(list_tree, fpath, show_tar)
     elif args_chk(args, 'key'):
-        if len(args.key)==0:
+        if len(args.key) == 0:
             tar_file.list(verbose=False)
         for k in args.key:
             print_key(k)
@@ -956,6 +1016,7 @@ def main_tar(fpath, args):
         show_tree(list_tree, fname)
 
     tar_file.close()
+
 
 def main_zip(fpath, args):
     import zipfile
@@ -1048,19 +1109,23 @@ def main_zip(fpath, args):
 
     # make list_tree
     if args_chk(args, 'encoding'):
-        if debug: print('set encoding from args')
+        if debug:
+            print('set encoding from args')
         zip_codec = args.encoding
     elif 'zip_encoding' in json_opts:
-        if debug: print('set encoding from args')
+        if debug:
+            print('set encoding from args')
         zip_codec = json_opts['zip_encoding']
     else:
-        zip_codec = 'cp437' # test codec.
-    if debug: print('encoding: {}'.format(zip_codec))
+        zip_codec = 'cp437'  # test codec.
+    if debug:
+        print('encoding: {}'.format(zip_codec))
     for z in zip_file.infolist():
         tmp_list = list_tree
         depth = 1
         znames = z.filename.split('/')
-        if debug: print('cpath: {}'.format(z.filename))
+        if debug:
+            print('cpath: {}'.format(z.filename))
         for p in znames:
             try:
                 # try to decode
@@ -1068,8 +1133,9 @@ def main_zip(fpath, args):
             except Exception as e:
                 if debug:
                     print(e)
-            if p == '': continue
-            if (not z.is_dir()) and depth==len(znames):
+            if p == '':
+                continue
+            if (not z.is_dir()) and depth == len(znames):
                 # file
                 tmp_list.append(p)
                 if debug:
@@ -1091,7 +1157,7 @@ def main_zip(fpath, args):
     elif args_chk(args, 'cui'):
         interactive_cui(list_tree, fpath, show_zip)
     elif args_chk(args, 'key'):
-        if len(args.key)==0:
+        if len(args.key) == 0:
             for fy in zip_file.namelist():
                 print(fy)
         for k in args.key:
@@ -1108,6 +1174,7 @@ def main_zip(fpath, args):
         show_tree(list_tree, fname)
 
     zip_file.close()
+
 
 def main_sqlite3(fpath, args):
     import sqlite3
@@ -1207,7 +1274,7 @@ def main_sqlite3(fpath, args):
             interactive_cui(list_tree, fpath, show_table)
 
     elif args_chk(args, 'key'):
-        if len(args.key)==0:
+        if len(args.key) == 0:
             for t in tables:
                 print(t[0])
         for k in args.key:
@@ -1223,6 +1290,7 @@ def main_sqlite3(fpath, args):
             info, err = show_table(table, args.verbose)
             if err is None:
                 print("\n".join(info))
+
 
 def main_raw(fpath, args):
     try:
@@ -1263,14 +1331,14 @@ def main_raw(fpath, args):
         rate = rgb.shape[0]/height*100
         h = int(rgb.shape[0]/rate)
         w = int(rgb.shape[1]/rate)
-        fig1 = plt.figure(figsize=(w,h))
+        fig1 = plt.figure(figsize=(w, h))
         # full display
         ax1 = fig1.add_axes((0, 0, 1, 1))
         ax1.imshow(rgb)
         clear_mpl_axes(ax1)
         plt.show()
     elif img_viewer == 'OpenCV':
-        img = rgb[:,:,::-1] # RGB -> BGR
+        img = rgb[:, :, ::-1]  # RGB -> BGR
         cv2.imshow(os.path.basename(fpath), img)
         cv2.waitKey(0)
         # cv2.destroyAllWindows()
@@ -1281,6 +1349,7 @@ def main_raw(fpath, args):
             subprocess.run(cmds)
             # wait to open file. this is for, e.g., open command on Mac OS.
             input('Press Enter to continue')
+
 
 def main_jupyter(fpath, args):
     import json
@@ -1305,11 +1374,12 @@ def main_jupyter(fpath, args):
 
     if args_chk(args, 'verbose'):
         meta = data['metadata']
-        if debug: print(meta)
+        if debug:
+            print(meta)
         print('kernel   : {}'.format(meta['kernelspec']['display_name']))
         if 'language_info' in meta:
-            print('language : {}-{}'.format( \
-                    meta['language_info']['name'], \
+            print('language : {}-{}'.format(
+                    meta['language_info']['name'],
                     meta['language_info']['version']))
         if 'colab' in meta:
             print('colab : {}'.format(meta['colab']['name']))
@@ -1398,11 +1468,14 @@ def main_jupyter(fpath, args):
 
     # image closing
     for tmp in tmp_images:
-        if debug: print('close {}'.format(tmp.name))
+        if debug:
+            print('close {}'.format(tmp.name))
         tmp.close()
     if img_viewer == 'OpenCV':
-        if args_chk(args, 'verbose'): cv2.waitKey(0)
+        if args_chk(args, 'verbose'):
+            cv2.waitKey(0)
         cv2.destroyAllWindows()
+
 
 def main_xpm(fpath, args):
     add_lib('xpm_loader.py')
@@ -1436,7 +1509,7 @@ def main_xpm(fpath, args):
         clear_mpl_axes(ax1)
         plt.show()
     elif img_viewer == 'OpenCV':
-        img = data[:,:,[2,1,0,3]] # RGBA -> BGRA
+        img = data[:, :, [2, 1, 0, 3]]  # RGBA -> BGRA
         cv2.imshow(os.path.basename(fpath), img)
         cv2.waitKey(0)
         # cv2.destroyAllWindows()
@@ -1499,6 +1572,7 @@ def main(args):
 
     return
 
+
 if __name__ == "__main__":
     supported_type = 'hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm'.split(', ')
     if 'type' in json_opts:
@@ -1525,4 +1599,3 @@ if __name__ == "__main__":
     args.opts = json_opts
 
     main(args)
-
