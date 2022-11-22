@@ -1538,7 +1538,10 @@ def main_stl(fpath, args):
         from mpl_toolkits import mplot3d
         fig1 = plt.figure()
         ax11 = fig1.add_subplot(111, projection='3d')
-        ax11.add_collection3d(mplot3d.art3d.Poly3DCollection(data.vectors))
+        ax11.add_collection3d(
+                mplot3d.art3d.Poly3DCollection(
+                    data.vectors, linewidth=0.7,
+                    edgecolors='Black', facecolor='Grey'))
         scale = data.points.flatten()
         ax11.auto_scale_xyz(scale, scale, scale)
         # ax11.axis('off')
