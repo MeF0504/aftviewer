@@ -164,11 +164,14 @@ def get_image_viewer(args):
                 if 'PATH' in os.environ:
                     for path in os.environ['PATH'].split(os.pathsep):
                         cmd_path = os.path.join(path, img_viewer)
-                        if os.path.isfile(cmd_path) and os.access(cmd_path, os.X_OK):
+                        if os.path.isfile(cmd_path) and \
+                           os.access(cmd_path, os.X_OK):
                             if debug:
-                                print('find image_viewer {} in {}'.format(img_viewer, path))
+                                print('find image_viewer {} in {}'.format(
+                                    img_viewer, path))
                             return img_viewer
-                    print('external command "{}" is not found.'.format(img_viewer))
+                    print('external command "{}" is not found.'.format(
+                        img_viewer))
                     return None
                 else:
                     print('PATH is not set')
@@ -275,7 +278,8 @@ def interactive_view(tree, fname, show_func):
             elif key_name in dirs:
                 cpath /= key_name
             else:
-                cprint('"{}" is not a correct name'.format(key_name), '', fg='r')
+                cprint('"{}" is not a correct name'.format(key_name),
+                       '', fg='r')
 
 
 def interactive_cui(tree, fname, show_func):
@@ -307,12 +311,18 @@ def interactive_cui(tree, fname, show_func):
         win_main = curses.newwin(winy-win_h, winx-win_w, win_h, win_w)
         win_search = curses.newwin(search_h, winx-win_w-2, win_h+2, win_w+1)
 
-        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_GREEN)     # pwd background
-        curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE)      # bar background
-        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)       # error
-        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)    # file info
-        curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_WHITE)     # dir index
-        curses.init_pair(6, curses.COLOR_MAGENTA, curses.COLOR_WHITE)   # file index
+        # pwd background
+        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_GREEN)
+        # bar background
+        curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE)
+        # error
+        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
+        # file info
+        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        # dir index
+        curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_WHITE)
+        # file index
+        curses.init_pair(6, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
         win_pwd.bkgd(' ', curses.color_pair(1))
         win_side.bkgd(' ', curses.color_pair(2))
 
@@ -455,7 +465,8 @@ def interactive_cui(tree, fname, show_func):
             elif key == '/':
                 # search mode
                 win_main.clear()
-                win_main.addstr(0, 0, 'search word: (empty cancel)', curses.A_REVERSE)
+                win_main.addstr(0, 0, 'search word: (empty cancel)',
+                                curses.A_REVERSE)
                 rectangle(win_main, 1, 0, search_h+2, winx-win_w-1)
                 win_main.refresh()
                 win_search.clear()
@@ -495,7 +506,9 @@ def interactive_cui(tree, fname, show_func):
                     key = ''
 
             contents = dirs+files
-            if key in ['', 'KEY_UP', 'KEY_DOWN', 'KEY_LEFT', 'KEY_RIGHT', 'KEY_SR', 'KEY_SUR', "\n", 'KEY_ENTER']:
+            if key in ['', 'KEY_UP', 'KEY_DOWN',
+                       'KEY_LEFT', 'KEY_RIGHT',
+                       'KEY_SR', 'KEY_SUR', "\n", 'KEY_ENTER']:
                 # side bar window
                 win_side.clear()
                 for i in range(winy-win_h):
@@ -521,7 +534,10 @@ def interactive_cui(tree, fname, show_func):
                 win_main.clear()
                 win_main.addstr(0, 0, sel_cont, curses.A_REVERSE)
                 if len(sel_cont) != 0:
-                    win_main.addstr(0, len(sel_cont)+2, '{}/{}'.format(main_shift_ud+1, len(main_info)), curses.color_pair(4))
+                    win_main.addstr(0, len(sel_cont)+2,
+                                    '{}/{}'.format(main_shift_ud+1,
+                                                   len(main_info)),
+                                    curses.color_pair(4))
                 if main_err is None:
                     for i in range(1, winy-win_h):
                         if i-1+main_shift_ud >= len(main_info):
@@ -542,11 +558,20 @@ def interactive_cui(tree, fname, show_func):
 
             if curses_debug:
                 win_pwd.addstr(0, int(winx*2/3), ' '*(int(winx/3)-1))
-                win_pwd.addstr(0, int(winx*2/3), '{}x{} {}x{} {}x{} k:{}'.format(win_h, winx, winy-win_h, win_w, winy-win_h, winx-win_w, key))
+                win_pwd.addstr(0, int(winx*2/3),
+                               '{}x{} {}x{} {}x{} k:{}'.format(
+                                   win_h, winx, winy-win_h, win_w,
+                                   winy-win_h, winx-win_w, key))
                 win_pwd.addstr(1, int(winx*2/3), ' '*(int(winx/3)-1))
-                win_pwd.addstr(1, int(winx*2/3), 's:{}-{}-{}-{} m:{}-{}-{}'.format(len(contents), side_shift_ud, side_shift_lr, sel_idx, len(main_info), main_shift_ud, main_shift_lr))
+                win_pwd.addstr(1, int(winx*2/3),
+                               's:{}-{}-{}-{} m:{}-{}-{}'.format(
+                                   len(contents),
+                                   side_shift_ud, side_shift_lr, sel_idx,
+                                   len(main_info),
+                                   main_shift_ud, main_shift_lr))
                 win_pwd.addstr(2, int(winx*2/3), ' '*(int(winx/3)-1))
-                win_pwd.addstr(2, int(winx*2/3), 'srch: {}'.format(search_word.replace("\n", '')[:int(winx/3)-1-6]))
+                win_pwd.addstr(2, int(winx*2/3),
+                               'srch: {}'.format(search_word.replace("\n", '')[:int(winx/3)-1-6]))
                 win_pwd.refresh()
 
             key = stdscr.getkey()
@@ -711,7 +736,7 @@ def main_pickle(fpath, args):
         with open(fpath, 'rb') as f:
             data = pickle.load(f, encoding='latin1')
 
-    if type(data) == type(dict()):
+    if isinstance(data, dict):
         if args_chk(args, 'key'):
             if len(args.key) == 0:
                 for k in data:
@@ -727,7 +752,8 @@ def main_pickle(fpath, args):
             tmp_data = data
             while(True):
                 key_strs = [str(k) for k in selected_keys]
-                cpath = '{}/{}'.format(os.path.basename(fpath), '/'.join(key_strs))
+                cpath = '{}/{}'.format(os.path.basename(fpath),
+                                       '/'.join(key_strs))
                 cprint('current path:', ' {}'.format(cpath), bg='c')
                 cprint('contents in this dict:', ' ', bg='g', end='')
                 try:
@@ -759,7 +785,8 @@ def main_pickle(fpath, args):
                                 tmp_data = tmp_data[k]
                                 selected_keys.append(k)
                             else:
-                                cprint('output::', '\n{}'.format(tmp_data[k]), bg='r')
+                                cprint('output::', '\n{}'.format(tmp_data[k]),
+                                       bg='r')
                                 if imp_np:
                                     if (type(tmp_data[k]) == np.ndarray) and (len(tmp_data[k]) != 0):
                                         try:
@@ -777,7 +804,8 @@ def main_pickle(fpath, args):
                                         print('>> shape: {}, mean: {:.2e}, median: {:.2e}, std: {:.2e}'.format(tmp_data[k].shape, dmean, dmedian, dstd))
                                 print('')
                     if not find_key:
-                        cprint('"{}" is not a correct name'.format(key_name), '', fg='r')
+                        cprint('"{}" is not a correct name'.format(key_name),
+                               '', fg='r')
         else:
             try:
                 tmp_keys = sorted(data.keys())
@@ -1614,14 +1642,19 @@ if __name__ == "__main__":
             supported_type.append(typ['type_name'])
     parser = argparse.ArgumentParser(description="show the constitution of a file. support file types ... {}".format(', '.join(supported_type)))
     parser.add_argument('file', help='input file')
-    parser.add_argument('-t', '--type', dest='type', help='file type', choices=supported_type)
+    parser.add_argument('-t', '--type', dest='type',
+                        help='file type', choices=supported_type)
     parser.add_argument('-iv', '--image_viewer', help="set image viewer. supported args are 'matplotlib' (use matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV' (use cv2.imshow), and other string is treated as an external command (e.g. gosr, open).")
-    parser.add_argument('--encoding', dest='encoding', help='specify the encoding format in pickle and zip file.', type=str)
+    parser.add_argument('--encoding', dest='encoding',
+                        help='specify the encoding format in pickle and zip file.', type=str)
     ex_group = parser.add_mutually_exclusive_group()
-    ex_group.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='show details')
+    ex_group.add_argument('-v', '--verbose', dest='verbose',
+                          action='store_true', help='show details')
     ex_group.add_argument('-k', '--key', dest='key', help='Dictionary key name in a pickle, path to a Group/Dataset in hdf5, a path to a file/dictionary in tar/zip, a table[/column[,column2...]] in sqlite3 or a key name in npz. If no key is specified, return the list of keys.', nargs='*')
-    ex_group.add_argument('-i', '--interactive', dest='interactive', help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3.', action='store_true')
-    ex_group.add_argument('-c', '--interactive_cui', dest='cui', help='open a file with interactive CUI mode. support hdf5, tar, zip, sqlite3.', action='store_true')
+    ex_group.add_argument('-i', '--interactive', dest='interactive',
+                          help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3.', action='store_true')
+    ex_group.add_argument('-c', '--interactive_cui', dest='cui',
+                          help='open a file with interactive CUI mode. support hdf5, tar, zip, sqlite3.', action='store_true')
     args = parser.parse_args()
 
     if args_chk(args, 'cui') and debug:
