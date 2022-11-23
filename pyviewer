@@ -96,7 +96,7 @@ def cprint(str1, str2='', fg=None, bg=None, **kwargs):
 
 
 def get_filetype(fpath):
-    ext = fpath[fpath.rfind('.')+1:].lower()
+    ext = fpath.suffix[1:]
     if 'type' in json_opts:
         for typ in json_opts['type']:
             if ext in typ['ext'].split(','):
@@ -1583,12 +1583,11 @@ def main_stl(fpath, args):
 
 
 def main(args):
-
-    fpath = os.path.expandvars(os.path.expanduser(args.file))
-    if not os.path.exists(fpath):
+    fpath = Path(args.file).expanduser()
+    if not fpath.exists():
         print("file doesn't exists!")
         return
-    if os.path.isdir(fpath):
+    if fpath.is_dir():
         print("{} is a directory.".format(fpath))
         return
 
