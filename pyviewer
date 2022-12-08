@@ -22,6 +22,10 @@ else:
     conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
 curses_debug = False
 inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
+# image viewers
+Image = None
+plt = None
+cv2 = None
 
 # load config file.
 if not conf_dir.exists():
@@ -139,19 +143,19 @@ def is_image(path):
 
 
 def get_image_viewer(args):
+    global Image
+    global plt
+    global cv2
     if args_chk(args, 'image_viewer'):
         if debug:
             print('set image viewer from args')
         img_viewer = args.image_viewer
         if img_viewer == 'PIL':
             from PIL import Image
-            global Image
         elif img_viewer == 'matplotlib':
             import matplotlib.pyplot as plt
-            global plt
         elif img_viewer == 'OpenCV':
             import cv2
-            global cv2
         else:
             # external command
             img_viewer = os.path.expanduser(img_viewer)
@@ -181,19 +185,16 @@ def get_image_viewer(args):
             print('search available image_viewer')
         try:
             from PIL import Image
-            global Image
             if debug:
                 print(' => image_viewer: PIL')
         except ImportError:
             try:
                 import matplotlib.pyplot as plt
-                global plt
                 if debug:
                     print(' => image_viewer: matplotlib')
             except ImportError:
                 try:
                     import cv2
-                    global cv2
                     if debug:
                         print(' => image_viewer: OpenCV')
                 except ImportError:
