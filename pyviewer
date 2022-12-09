@@ -99,6 +99,66 @@ def cprint(str1, str2='', fg=None, bg=None, **kwargs):
     print(print_str, **kwargs)
 
 
+def update():
+    import tempfile
+    import filecmp
+    import shutil
+    if debug:
+        print('update file: {}'.format(__file__))
+    url_list = ['https://github.com/MeF0504/pyviewer/raw/main/pyviewer',
+                'https://raw.githubusercontent.com/MeF0504/basic_setup/master/opt/lib/libtree.py',
+                'https://raw.githubusercontent.com/MeF0504/basic_setup/master/opt/lib/local_lib_color.py',
+                'https://raw.githubusercontent.com/MeF0504/basic_setup/master/opt/lib/xpm_loader.py',
+                ]
+    file_list = [Path(__file__),
+                 conf_dir/'lib'/'libtree.py',
+                 conf_dir/'lib'/'local_lib_color.py',
+                 conf_dir/'lib'/'xpm_loader.py',
+                 ]
+    cwd = os.getcwd()
+    if hasattr(tempfile, 'TemporaryDirectory'):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.chdir(tmpdir)
+            if debug:
+                print('1: {}'.format(tmpdir))
+            for url, fy in zip(url_list, file_list):
+                name = fy.name
+                if debug:
+                    print('@ {}, {} -> {}'.format(
+                        os.getcwd(), name, fy))
+                if not fy.is_file():
+                    continue
+                print('checking {} ...'.format(name))
+                urllib.request.urlretrieve(url, name)
+                if not filecmp.cmp(fy, name):
+                    print('update {}'.format(name))
+                    shutil.copy(name, fy)
+                    if name == 'pyviewer':
+                        fy.chmod(0o755)
+            os.chdir(cwd)
+    else:
+        tmpdir = tempfile.mkdtemp()
+        os.chdir(tmpdir)
+        if debug:
+            print('2: {}'.format(tmpdir))
+        for url, fy in zip(url_list, file_list):
+            name = fy.name
+            if debug:
+                print('@ {}, {} -> {}'.format(
+                    os.getcwd(), name, fy))
+            if not fy.is_file():
+                continue
+            print('checking {} ...'.format(name))
+            urllib.request.urlretrieve(url, name)
+            if not filecmp.cmp(fy, name):
+                print('update {}'.format(name))
+                shutil.copy(name, fy)
+                if name == 'pyviewer':
+                    fy.chmod(0o755)
+        os.chdir(cwd)
+        shutil.rmtree(tmpdir)
+
+
 def get_filetype(fpath):
     ext = fpath.suffix[1:]
     if 'type' in json_opts:
@@ -1584,6 +1644,10 @@ def main_stl(fpath, args):
 
 
 def main(args):
+    if args.file == 'update':
+        update()
+        return
+
     fpath = Path(args.file).expanduser()
     if not fpath.exists():
         print("file doesn't exists!")
@@ -1641,7 +1705,7 @@ if __name__ == "__main__":
         for typ in json_opts['type']:
             supported_type.append(typ['type_name'])
     parser = argparse.ArgumentParser(description="show the constitution of a file. support file types ... {}".format(', '.join(supported_type)))
-    parser.add_argument('file', help='input file')
+    parser.add_argument('file', help='input file / "pyviewer update" will update tihs file')
     parser.add_argument('-t', '--type', dest='type',
                         help='file type', choices=supported_type)
     parser.add_argument('-iv', '--image_viewer', help="set image viewer. supported args are 'matplotlib' (use matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV' (use cv2.imshow), and other string is treated as an external command (e.g. gosr, open).")
