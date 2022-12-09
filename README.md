@@ -6,17 +6,16 @@ hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm.
 
 ## usage
 ```bash
-usage: pyviewer [-h] [-t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm}] [-iv IMAGE_VIEWER] [--encoding ENCODING] [-v | -k [KEY ...] | -i | -c] file
+usage: pyviewer [-h] [-t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm,stl}] [-iv IMAGE_VIEWER] [--encoding ENCODING] [-v | -k [KEY ...] | -i | -c] file
 
-show the constitution of a file. support file types ... hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm
+show the constitution of a file. support file types ... hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm, stl
 
 positional arguments:
-  file                  input file
+  file                  input file / "pyviewer update" will update tihs file
 
 options:
   -h, --help            show this help message and exit
-  -t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,tar,zip,sqlite3
-,raw_image,jupyter,xpm}
+  -t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm,stl}, --type {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm,stl}
                         file type
   -iv IMAGE_VIEWER, --image_viewer IMAGE_VIEWER
                         set image viewer. supported args are 'matplotlib' (use matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV' (use cv2.imshow), and other string is treated as an external command (e.g. gosr, open).
@@ -25,7 +24,8 @@ options:
   -k [KEY ...], --key [KEY ...]
                         Dictionary key name in a pickle, path to a Group/Dataset in hdf5, a path to a file/dictionary in tar/zip, a table[/column[,column2...]] in sqlite3 or a key name in npz. If no key is specified, return the list of keys.
   -i, --interactive     open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3.
-  -c, --interactive_cui open a file with interactive CUI mode. support hdf5, tar, zip, sqlite3.
+  -c, --interactive_cui
+                        open a file with interactive CUI mode. support hdf5, tar, zip, sqlite3.
 ```
 
 ## costomize
