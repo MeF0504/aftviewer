@@ -52,9 +52,9 @@ def add_lib(file_name):
     if debug:
         print('searching {}...'.format(libfile))
     if not libfile.is_file():
-        if debug:
-            print('downloading {}'.format(file_name))
-        with urllib.request.urlopen('https://raw.githubusercontent.com/MeF0504/basic_setup/master/opt/lib/{}'.format(file_name)) as web_lib:
+        lib_url = 'https://raw.githubusercontent.com/MeF0504/basic_setup/master/opt/lib/{}'.format(file_name)
+        print('downloading {} from {}'.format(file_name, lib_url))
+        with urllib.request.urlopen(lib_url) as web_lib:
             data = web_lib.read()
             with open(libfile, 'wb') as local_lib:
                 local_lib.write(data)
