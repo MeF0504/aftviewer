@@ -8,7 +8,7 @@ from functools import partial
 from . import args_chk, get_image_viewer, is_image, print_key,\
     clear_mpl_axes, get_exec_cmds, json_opts, cprint, debug_print,\
         interactive_view, interactive_cui
-from libtree import tree_viewer, branch_str, show_tree
+from pymeflib.tree import tree_viewer, branch_str, show_tree
 
 
 def show_zip(zip_file, list_tree, args, cpath, cui=False):

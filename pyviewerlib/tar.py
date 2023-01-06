@@ -7,7 +7,7 @@ from functools import partial
 from . import get_exec_cmds, args_chk, print_key, cprint, debug_print,\
     get_image_viewer, is_image, clear_mpl_axes,\
     interactive_view, interactive_cui
-from libtree import branch_str, tree_viewer, show_tree
+from pymeflib.tree import branch_str, tree_viewer, show_tree
 
 
 def show_tar(tar_file, list_tree, args, cpath, cui=False):
