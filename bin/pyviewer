@@ -63,7 +63,7 @@ def get_filetype(fpath):
         "jupyter": "ipynb",
         "xpm": "xpm",
         "stl": "stl",
-        "py": "text",
+        "text": "py txt",
     }
     if 'type' in json_opts:
         type_config.update(json_opts['type'])
