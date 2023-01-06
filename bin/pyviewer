@@ -1,0 +1,144 @@
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim: set filetype=python:
+
+import os
+import sys
+import argparse
+import tarfile
+import json
+from pathlib import Path
+from importlib import import_module
+
+sys.path.append(str(Path(__file__).parent.parent))
+from pyviewerlib import args_chk, set_param, debug_print
+
+# global variables
+debug = False
+curses_debug = False
+if 'XDG_CONFIG_HOME' in os.environ:
+    conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
+else:
+    conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
+
+# load config file.
+if not conf_dir.exists():
+    os.makedirs(conf_dir, mode=0o755)
+if (conf_dir/'setting.json').is_file():
+    with open(conf_dir/'setting.json') as f:
+        json_opts = json.load(f)
+    if 'debug' in json_opts:
+        debug = bool(json_opts['debug'])
+else:
+    json_opts = {}
+
+
+def update():
+    import subprocess
+    os.chdir(Path(__file__).parent)
+    cmds = [
+        'git fetch'.split(),
+        'git merge'.split(),
+        'git submodule update --remote --merge'.split(),
+    ]
+    for cmd in cmds:
+        print('run {}...'.format(' '.join(cmd)))
+        stat = subprocess.run(cmd)
+        if stat.returncode != 0:
+            print('failed to run {}. please check {}'.format(
+                ' '.join(cmd), Path(__file__).parent.parent)
+            )
+    return
+
+
+def get_filetype(fpath):
+    ext = fpath.suffix[1:]
+    type_config = {
+        "hdf5": "hdf5",
+        "pickle": "pkl pickle",
+        "numpy": "npy npz",
+        "zip": "zip",
+        "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
+        "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
+        "jupyter": "ipynb",
+        "xpm": "xpm",
+        "stl": "stl",
+        "py": "text",
+    }
+    if 'type' in json_opts:
+        type_config.update(json_opts['type'])
+    if tarfile.is_tarfile(fpath):
+        return 'tar'
+    else:
+        for typ, exts in type_config.items():
+            if ext in exts.split():
+                return typ
+    return None
+
+
+def main(args):
+    if args.file == 'update':
+        update()
+        return
+
+    fpath = Path(args.file).expanduser()
+    if not fpath.exists():
+        print("file doesn't exists!")
+        return
+    if fpath.is_dir():
+        print("{} is a directory.".format(fpath))
+        return
+
+    if not args_chk(args, 'type'):
+        args.type = get_filetype(fpath)
+
+    if args.type == 'text':
+        if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
+            print('vimでも使ってろ！')
+        else:
+            print("Why Don't you use vim???")
+        return
+
+    try:
+        lib = import_module("pyviewerlib.{}".format(args.type))
+    except ImportError as e:
+        debug_print(e)
+        print("{} is not a supported file type".format(args.type))
+        return
+    lib.main(fpath, args)
+    return
+
+
+if __name__ == "__main__":
+    supported_type = 'hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm, stl'.split(', ')
+    if 'type' in json_opts:
+        for typ in json_opts['type']:
+            supported_type.append(typ)
+    parser = argparse.ArgumentParser(description="show the constitution of a file. support file types ... {}".format(', '.join(supported_type)))
+    parser.add_argument('file', help='input file / "pyviewer update" will update this file')
+    parser.add_argument('-t', '--type', dest='type',
+                        help='file type', choices=supported_type)
+    parser.add_argument('-iv', '--image_viewer', help="set image viewer. supported args are 'matplotlib' (use matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV' (use cv2.imshow), and other string is treated as an external command (e.g. gosr, open).")
+    parser.add_argument('--encoding', dest='encoding',
+                        help='specify the encoding format in pickle and zip file.', type=str)
+    ex_group = parser.add_mutually_exclusive_group()
+    ex_group.add_argument('-v', '--verbose', dest='verbose',
+                          action='store_true', help='show details')
+    ex_group.add_argument('-k', '--key', dest='key', help='Dictionary key name in a pickle, path to a Group/Dataset in hdf5, a path to a file/dictionary in tar/zip, a table[/column[,column2...]] in sqlite3 or a key name in npz. If no key is specified, return the list of keys.', nargs='*')
+    ex_group.add_argument('-i', '--interactive', dest='interactive',
+                          help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3.', action='store_true')
+    ex_group.add_argument('-c', '--interactive_cui', dest='cui',
+                          help='open a file with interactive CUI mode. support hdf5, tar, zip, sqlite3.', action='store_true')
+    args = parser.parse_args()
+
+    if args_chk(args, 'cui') and debug:
+        debug = False
+        curses_debug = True
+    args.debug = debug
+    args.curses_debug = curses_debug
+    if not args_chk(args, 'image_viewer'):
+        if 'image_viewer' in json_opts:
+            args.image_viewer = json_opts['image_viewer']
+    args.opts = json_opts
+    set_param(args)
+    main(args)

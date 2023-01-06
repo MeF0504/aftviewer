@@ -1,11 +1,7 @@
 {
-    "type": [
-        {
-        "type_name": "png",
-        "lib": "png_sample",
-        "ext": "png,PNG,jpeg,jpg,JPG"
-        }
-    ],
+    "type": {
+        "png_sample": "png PNG jpeg jpg JPG"
+    },
     "image_viewer": "open",
     "exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
     "zip_encoding": "cp437",

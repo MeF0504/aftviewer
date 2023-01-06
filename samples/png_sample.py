@@ -1,27 +1,30 @@
 import os
 import subprocess
-import importlib.machinery as imm
-pyv = imm.SourceFileLoader('pyv', './pyviewer').load_module()
 
-def main_png(fpath, args):
-    if args.image_viewer == 'PIL':
-        from PIL import Image
+from . import clear_mpl_axes, get_exec_cmds, get_image_viewer
+
+
+def main(fpath, args):
+    img_viewer, mod = get_image_viewer(args)
+    print(img_viewer)
+    if img_viewer == 'PIL':
+        Image = mod
         image = Image.open(fpath)
         image.show(title=os.path.basename(fpath))
-    elif args.image_viewer == 'matplotlib':
-        import matplotlib.pyplot as plt
+    elif img_viewer == 'matplotlib':
+        plt = mod
         fig1 = plt.figure()
         ax1 = fig1.add_axes((0, 0, 1, 1))
         image = plt.imread(fpath)
         ax1.imshow(image)
-        pyv.clear_mpl_axes(ax1)
+        clear_mpl_axes(ax1)
         plt.show()
-    elif args.image_viewer == 'OpenCV':
-        import cv2
+    elif img_viewer == 'OpenCV':
+        cv2 = mod
         image = cv2.omread(fpath)
         cv2.imshow(os.path.basename(fpath), image)
     else:
-        cmds = pyv.get_exec_cmds(args, fpath)
+        cmds = get_exec_cmds(args, fpath)
         subprocess.run(cmds)
 
 if __name__ == '__main__':
