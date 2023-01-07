@@ -1,6 +1,7 @@
 import os
 import tarfile
 import tempfile
+import platform
 from functools import partial
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
@@ -17,8 +18,11 @@ def show_tar(tar_file, list_tree, args, cpath, cui=False):
             key_name = cpath[:-1]
         else:
             key_name = cpath
+        if platform.system() == "Windows":
+            key_name = key_name.replace('\\', '/')
         tarinfo = tar_file.getmember(key_name)
-    except KeyError:
+    except KeyError as e:
+        debug_print(e)
         return [], 'Error!! Cannot open {}.'.format(cpath)
 
     # file

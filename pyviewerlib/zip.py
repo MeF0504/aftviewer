@@ -1,6 +1,7 @@
 import os
 import zipfile
 import tempfile
+import platform
 from functools import partial
 
 from . import args_chk, is_image, print_key, json_opts, cprint, debug_print,\
@@ -15,10 +16,12 @@ def show_zip(zip_file, list_tree, args, cpath, cui=False):
         key_name = cpath
         if key_name+'/' in zip_file.namelist():
             key_name += '/'
+        if platform.system() == "Windows":
+            key_name = key_name.replace('\\', '/')
         zipinfo = zip_file.getinfo(key_name)
     except KeyError as e:
         debug_print(e)
-        return [], 'Error!! cannnot open {}.'.format(cpath)
+        return [], 'Error!! cannot open {}.'.format(cpath)
 
     # directory
     if zipinfo.is_dir():
