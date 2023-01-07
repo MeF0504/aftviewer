@@ -4,8 +4,8 @@ from functools import partial
 import h5py
 
 from . import args_chk, print_key, cprint, debug_print,\
-    interactive_view, interactive_cui,FG, BG, END
-from libtree import show_tree
+    interactive_view, interactive_cui, FG, BG, END
+from pymeflib.tree import show_tree
 try:
     import numpy as np
 except ImportError:

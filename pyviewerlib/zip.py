@@ -1,18 +1,14 @@
 import os
 import zipfile
-import io
 import tempfile
-import subprocess
 from functools import partial
 
-from . import args_chk, get_image_viewer, is_image, print_key,\
-    clear_mpl_axes, get_exec_cmds, json_opts, cprint, debug_print,\
-        interactive_view, interactive_cui, show_image_file
+from . import args_chk, is_image, print_key, json_opts, cprint, debug_print,\
+    interactive_view, interactive_cui, show_image_file
 from pymeflib.tree import tree_viewer, branch_str, show_tree
 
 
 def show_zip(zip_file, list_tree, args, cpath, cui=False):
-    img_viewer, mod = get_image_viewer(args)
     res = []
     try:
         key_name = cpath
@@ -39,45 +35,9 @@ def show_zip(zip_file, list_tree, args, cpath, cui=False):
             with tempfile.TemporaryDirectory() as tmpdir:
                 zip_file.extract(zipinfo, path=tmpdir)
                 tmpfile = os.path.join(tmpdir, cpath)
-                res = show_image_file(tmpfile, args, cui)
-            if not res:
-                return [], 'There are no way to show image.'
-            # if img_viewer is None:
-            #     return [], 'There are no way to show image.'
-            # elif img_viewer == 'PIL':
-            #     Image = mod
-            #     with Image.open(io.BytesIO(zip_file.read(cpath))) as img:
-            #         img.show(title=os.path.basename(cpath))
-            # elif img_viewer == 'matplotlib':
-            #     plt = mod
-            #     with tempfile.TemporaryDirectory() as tmpdir:
-            #         zip_file.extract(zipinfo, path=tmpdir)
-            #         tmpfile = os.path.join(tmpdir, cpath)
-            #         img = plt.imread(tmpfile)
-            #     fig1 = plt.figure()
-            #     ax11 = fig1.add_axes((0, 0, 1, 1))
-            #     ax11.imshow(img)
-            #     clear_mpl_axes(ax11)
-            #     plt.show()
-            # elif img_viewer == 'OpenCV':
-            #     cv2 = mod
-            #     with tempfile.TemporaryDirectory() as tmpdir:
-            #         zip_file.extract(zipinfo, path=tmpdir)
-            #         tmpfile = os.path.join(tmpdir, cpath)
-            #         img = cv2.imread(tmpfile)
-            #     cv2.imshow(os.path.basename(cpath), img)
-            #     cv2.waitKey(0)
-            #     # cv2.destroyAllWindows()
-            # else:
-            #     if cui:
-            #         return [], 'external command is not supported in cui mode.'
-            #     with tempfile.TemporaryDirectory() as tmpdir:
-            #         zip_file.extract(zipinfo, path=tmpdir)
-            #         tmpfile = os.path.join(tmpdir, cpath)
-            #         cmds = get_exec_cmds(args, tmpfile)
-            #         subprocess.run(cmds)
-            #         # wait to open file. this is for, e.g., open command on Mac OS.
-            #         input('Press Enter to continue')
+                ret = show_image_file(tmpfile, args, cui)
+            if not ret:
+                return [], 'Failed to show image.'
 
         # text file?
         else:

@@ -91,61 +91,34 @@ def get_image_viewer(args):
     global Image
     global plt
     global cv2
-    mod = None
     if args_chk(args, 'image_viewer'):
         debug_print('set image viewer from args')
         img_viewer = args.image_viewer
         if img_viewer == 'PIL':
             from PIL import Image
-            mod = Image
         elif img_viewer == 'matplotlib':
             import matplotlib.pyplot as plt
-            mod = plt
         elif img_viewer == 'OpenCV':
             import cv2
-            mod = cv2
         else:
             # external command
             if chk_cmd(img_viewer, debug):
-                return img_viewer, mod
+                return img_viewer
             else:
-                return None, mod
-            # img_viewer = os.path.expanduser(img_viewer)
-            # img_viewer = os.path.expandvars(img_viewer)
-            # if os.path.isfile(img_viewer) and os.access(img_viewer, os.X_OK):
-            #     debug_print('find image_viewer: {}'.format(img_viewer))
-            #     return img_viewer, mod
-            # else:
-            #     if 'PATH' in os.environ:
-            #         for path in os.environ['PATH'].split(os.pathsep):
-            #             cmd_path = os.path.join(path, img_viewer)
-            #             if os.path.isfile(cmd_path) and \
-            #                os.access(cmd_path, os.X_OK):
-            #                 debug_print('find image_viewer {} in {}'.format(
-            #                             img_viewer, path))
-            #                 return img_viewer, mod
-            #         print('external command "{}" is not found.'.format(
-            #             img_viewer))
-            #         return None, mod
-            #     else:
-            #         print('PATH is not set')
-            #         return None, mod
+                return None
     else:
         debug_print('search available image_viewer')
         try:
             from PIL import Image
             debug_print(' => image_viewer: PIL')
-            mod = Image
         except ImportError:
             try:
                 import matplotlib.pyplot as plt
                 debug_print(' => image_viewer: matplotlib')
-                mod = plt
             except ImportError:
                 try:
                     import cv2
                     debug_print(' => image_viewer: OpenCV')
-                    mod = cv2
                 except ImportError:
                     debug_print("can't find image_viewer")
                     img_viewer = None
@@ -155,7 +128,7 @@ def get_image_viewer(args):
                 img_viewer = 'matplotlib'
         else:
             img_viewer = 'PIL'
-    return img_viewer, mod
+    return img_viewer
 
 
 def clear_mpl_axes(axes):
@@ -186,15 +159,18 @@ def get_exec_cmds(args, fname):
 
 def show_image_file(img_file, args, disable_conf=False):
     name = os.path.basename(img_file)
-    img_viewer, mod = get_image_viewer(args)
-    if os.path.isfile(img_file):
-        debug_print('image fime {} in not found'.format(img_file))
-    if img_viewer == None:
+    img_viewer = get_image_viewer(args)
+    debug_print('  use {}'.format(img_viewer))
+    if not os.path.isfile(img_file):
+        debug_print('image file {} in not found'.format(img_file))
+        return False
+    if img_viewer is None:
+        print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
         return False
     elif img_viewer == 'PIL':
         image = Image.open(img_file)
         image.show(title=name)
-    elif img_viewer == 'matploglib':
+    elif img_viewer == 'matplotlib':
         img = plt.imread(img_file)
         fig1 = plt.figure()
         ax11 = fig1.add_axes((0, 0, 1, 1))
@@ -217,8 +193,10 @@ def show_image_file(img_file, args, disable_conf=False):
 
 
 def show_image_ndarray(data, name, args, disable_conf=False):
-    img_viewer, mod = get_image_viewer(args)
-    if img_viewer == None:
+    img_viewer = get_image_viewer(args)
+    debug_print('{}\n  use {}'.format(data.shape, img_viewer))
+    if img_viewer is None:
+        print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
         return False
     elif img_viewer == 'PIL':
         img = Image.fromarray(data)
@@ -227,7 +205,7 @@ def show_image_ndarray(data, name, args, disable_conf=False):
         if get_screen:
             height = get_monitors()[0].height
         else:
-            height = 1080   # assume a full-HD display
+            height = 540
         rate = data.shape[0]/height*100
         h = int(data.shape[0]/rate)
         w = int(data.shape[1]/rate)
@@ -238,7 +216,13 @@ def show_image_ndarray(data, name, args, disable_conf=False):
         clear_mpl_axes(ax1)
         plt.show()
     elif img_viewer == 'OpenCV':
-        img = data[:, :, ::-1]  # RGB -> BGR
+        if data.shape[2] == 3:
+            img = data[:, :, ::-1]  # RGB -> BGR
+        elif data.shape[2] == 4:
+            img = data[:, :, [2, 1, 0, 3]]  # RGBA -> BGRA
+        else:
+            print('invalid data shape')
+            return False
         cv2.imshow(name, img)
         cv2.waitKey(0)
         # cv2.destroyAllWindows()
