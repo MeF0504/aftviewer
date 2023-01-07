@@ -2,9 +2,10 @@ from stl import mesh
 
 from . import get_image_viewer
 
+
 def main(fpath, args):
     print('Warning! This type is testing yet.')
-    img_viewer, mod = get_image_viewer(args)
+    img_viewer = get_image_viewer(args)
     if img_viewer is None:
         print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
         return
@@ -12,8 +13,8 @@ def main(fpath, args):
     data = mesh.Mesh.from_file(fpath)
 
     if img_viewer == 'matplotlib':
+        import matplotlib.pyplot as plt
         from mpl_toolkits import mplot3d
-        plt = mod
         fig1 = plt.figure()
         ax11 = fig1.add_subplot(111, projection='3d')
         ax11.add_collection3d(

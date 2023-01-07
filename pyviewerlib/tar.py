@@ -3,13 +3,14 @@ import tarfile
 import tempfile
 from functools import partial
 
-from . import args_chk, print_key, cprint, debug_print,\
+from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui, show_image_file
 from pymeflib.tree import branch_str, tree_viewer, show_tree
 
 
 def show_tar(tar_file, list_tree, args, cpath, cui=False):
     res = []
+    img_viewer = get_image_viewer(args)
     # check cpath
     try:
         if cpath.endswith('/'):
@@ -25,10 +26,11 @@ def show_tar(tar_file, list_tree, args, cpath, cui=False):
 
         # image file
         if is_image(cpath):
+            cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
                 tmpfile = os.path.join(tmpdir, cpath)
-                ret = show_image_file(tmpfile, args, cui)
+                ret = show_image_file(tmpfile, args, cond)
             if not ret:
                 return [], 'Failed to show image.'
 

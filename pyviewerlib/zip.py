@@ -4,12 +4,13 @@ import tempfile
 from functools import partial
 
 from . import args_chk, is_image, print_key, json_opts, cprint, debug_print,\
-    interactive_view, interactive_cui, show_image_file
+    interactive_view, interactive_cui, show_image_file, get_image_viewer
 from pymeflib.tree import tree_viewer, branch_str, show_tree
 
 
 def show_zip(zip_file, list_tree, args, cpath, cui=False):
     res = []
+    img_viewer = get_image_viewer(args)
     try:
         key_name = cpath
         if key_name+'/' in zip_file.namelist():
@@ -32,10 +33,11 @@ def show_zip(zip_file, list_tree, args, cpath, cui=False):
     # file
     else:
         if is_image(cpath):
+            cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
             with tempfile.TemporaryDirectory() as tmpdir:
                 zip_file.extract(zipinfo, path=tmpdir)
                 tmpfile = os.path.join(tmpdir, cpath)
-                ret = show_image_file(tmpfile, args, cui)
+                ret = show_image_file(tmpfile, args, cond)
             if not ret:
                 return [], 'Failed to show image.'
 

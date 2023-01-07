@@ -28,6 +28,8 @@ json_opts = {}
 Image = None
 plt = None
 cv2 = None
+img_viewer = None
+run_giv = False
 
 
 def set_param(args):
@@ -88,6 +90,10 @@ def is_image(path):
 
 
 def get_image_viewer(args):
+    global img_viewer
+    global run_giv
+    if run_giv:
+        return img_viewer
     global Image
     global plt
     global cv2
@@ -102,10 +108,8 @@ def get_image_viewer(args):
             import cv2
         else:
             # external command
-            if chk_cmd(img_viewer, debug):
-                return img_viewer
-            else:
-                return None
+            if not chk_cmd(img_viewer, debug):
+                img_viewer = None
     else:
         debug_print('search available image_viewer')
         try:
@@ -128,6 +132,7 @@ def get_image_viewer(args):
                 img_viewer = 'matplotlib'
         else:
             img_viewer = 'PIL'
+    run_giv = True
     return img_viewer
 
 
@@ -157,10 +162,12 @@ def get_exec_cmds(args, fname):
     return res
 
 
-def show_image_file(img_file, args, disable_conf=False):
+def show_image_file(img_file, args, disable_cond=False):
     name = os.path.basename(img_file)
     img_viewer = get_image_viewer(args)
     debug_print('  use {}'.format(img_viewer))
+    if disable_cond:
+        return False
     if not os.path.isfile(img_file):
         debug_print('image file {} in not found'.format(img_file))
         return False
@@ -183,8 +190,6 @@ def show_image_file(img_file, args, disable_conf=False):
         cv2.waitKey(0)
         # cv2.destroyAllWindows()
     else:
-        if disable_conf:
-            return False
         cmds = get_exec_cmds(args, img_file)
         subprocess.run(cmds)
         # wait to open file. this is for, e.g., open command on Mac OS.
@@ -192,9 +197,11 @@ def show_image_file(img_file, args, disable_conf=False):
     return True
 
 
-def show_image_ndarray(data, name, args, disable_conf=False):
+def show_image_ndarray(data, name, args, disable_cond=False):
     img_viewer = get_image_viewer(args)
     debug_print('{}\n  use {}'.format(data.shape, img_viewer))
+    if disable_cond:
+        return False
     if img_viewer is None:
         print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
         return False
@@ -227,8 +234,6 @@ def show_image_ndarray(data, name, args, disable_conf=False):
         cv2.waitKey(0)
         # cv2.destroyAllWindows()
     else:
-        if disable_conf:
-            return False
         with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
             make_bitmap(tmp.name, data, verbose=debug)
             cmds = get_exec_cmds(args, tmp.name)
