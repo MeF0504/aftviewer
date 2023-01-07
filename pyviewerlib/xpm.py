@@ -8,7 +8,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from pymeflib.xpm_loader import XPMLoader
 from pymeflib.color import make_bitmap
 from . import get_image_viewer, clear_mpl_axes, get_exec_cmds,\
-    debug_print, debug
+    debug_print, debug, show_image_ndarray
 
 
 def main(fpath, args):
@@ -24,28 +24,29 @@ def main(fpath, args):
     height = xpm.info['height']
 
     debug_print('{}\n  use {}'.format(data.shape, img_viewer))
-    if img_viewer == 'PIL':
-        Image = mod
-        img = Image.fromarray(data)
-        img.show(title=os.path.basename(fpath))
-    elif img_viewer == 'matplotlib':
-        plt = mod
-        fig1 = plt.figure(figsize=(width/100, height/100))
-        # full display
-        ax1 = fig1.add_axes((0, 0, 1, 1))
-        ax1.imshow(data)
-        clear_mpl_axes(ax1)
-        plt.show()
-    elif img_viewer == 'OpenCV':
-        cv2 = mod
-        img = data[:, :, [2, 1, 0, 3]]  # RGBA -> BGRA
-        cv2.imshow(os.path.basename(fpath), img)
-        cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-    else:
-        with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
-            make_bitmap(tmp.name, data, verbose=debug)
-            cmds = get_exec_cmds(args, tmp.name)
-            subprocess.run(cmds)
-            # wait to open file. this is for, e.g., open command on Mac OS.
-            input('Press Enter to continue')
+    show_image_ndarray(data, os.path.basename(fpath), args)
+    # if img_viewer == 'PIL':
+    #     Image = mod
+    #     img = Image.fromarray(data)
+    #     img.show(title=os.path.basename(fpath))
+    # elif img_viewer == 'matplotlib':
+    #     plt = mod
+    #     fig1 = plt.figure(figsize=(width/100, height/100))
+    #     # full display
+    #     ax1 = fig1.add_axes((0, 0, 1, 1))
+    #     ax1.imshow(data)
+    #     clear_mpl_axes(ax1)
+    #     plt.show()
+    # elif img_viewer == 'OpenCV':
+    #     cv2 = mod
+    #     img = data[:, :, [2, 1, 0, 3]]  # RGBA -> BGRA
+    #     cv2.imshow(os.path.basename(fpath), img)
+    #     cv2.waitKey(0)
+    #     # cv2.destroyAllWindows()
+    # else:
+    #     with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
+    #         make_bitmap(tmp.name, data, verbose=debug)
+    #         cmds = get_exec_cmds(args, tmp.name)
+    #         subprocess.run(cmds)
+    #         # wait to open file. this is for, e.g., open command on Mac OS.
+    #         input('Press Enter to continue')
