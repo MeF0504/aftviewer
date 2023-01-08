@@ -39,10 +39,12 @@ def update():
     cmds = [
         'git fetch'.split(),
         'git merge'.split(),
-        'git submodule update --remote --merge'.split(),
+        'git submodule update'.split(),
     ]
+    # 開発時はこれをつけないとだけど，user的には上で十分？
+    # 'git submodule update --remote --merge'.split(),
     for cmd in cmds:
-        print('run {}...'.format(' '.join(cmd)))
+        print('running "{}"...'.format(' '.join(cmd)))
         stat = subprocess.run(cmd)
         if stat.returncode != 0:
             print('failed to run {}. please check {}'.format(
