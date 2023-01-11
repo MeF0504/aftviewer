@@ -175,8 +175,8 @@ def show_image_file(img_file, args, disable_cond=False):
         print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
         return False
     elif img_viewer == 'PIL':
-        image = Image.open(img_file)
-        image.show(title=name)
+        with Image.open(img_file) as image:
+            image.show(title=name)
     elif img_viewer == 'matplotlib':
         img = plt.imread(img_file)
         fig1 = plt.figure()
@@ -184,11 +184,12 @@ def show_image_file(img_file, args, disable_cond=False):
         ax11.imshow(img)
         clear_mpl_axes(ax11)
         plt.show()
+        plt.close(fig1)
     elif img_viewer == 'OpenCV':
         img = cv2.imread(img_file)
         cv2.imshow(name, img)
         cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        cv2.destroyWindow(name)
     else:
         cmds = get_exec_cmds(args, img_file)
         subprocess.run(cmds)
@@ -206,8 +207,8 @@ def show_image_ndarray(data, name, args, disable_cond=False):
         print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
         return False
     elif img_viewer == 'PIL':
-        img = Image.fromarray(data)
-        img.show(title=name)
+        with Image.fromarray(data) as image:
+            image.show(title=name)
     elif img_viewer == 'matplotlib':
         if get_screen:
             height = get_monitors()[0].height
@@ -222,6 +223,7 @@ def show_image_ndarray(data, name, args, disable_cond=False):
         ax1.imshow(data)
         clear_mpl_axes(ax1)
         plt.show()
+        plt.close(fig1)
     elif img_viewer == 'OpenCV':
         if data.shape[2] == 3:
             img = data[:, :, ::-1]  # RGB -> BGR
@@ -232,7 +234,7 @@ def show_image_ndarray(data, name, args, disable_cond=False):
             return False
         cv2.imshow(name, img)
         cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        cv2.destroyWindow(name)
     else:
         with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
             make_bitmap(tmp.name, data, verbose=debug)
