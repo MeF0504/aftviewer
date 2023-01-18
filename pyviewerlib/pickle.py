@@ -84,15 +84,15 @@ def main(fpath, args):
                                 if imp_np:
                                     if (type(tmp_data[k]) == np.ndarray) and (len(tmp_data[k]) != 0):
                                         try:
-                                            dmean = np.mean(tmp_data[k])
+                                            dmean = np.nanmean(tmp_data[k])
                                         except Exception as e:
                                             dmean = '{}: {}'.format(str(type(e)).split("'")[1], e)
                                         try:
-                                            dmedian = np.median(tmp_data[k])
+                                            dmedian = np.nanmedian(tmp_data[k])
                                         except Exception as e:
                                             dmedian = '{}: {}'.format(str(type(e)).split("'")[1], e)
                                         try:
-                                            dstd = np.std(tmp_data[k])
+                                            dstd = np.nanstd(tmp_data[k])
                                         except Exception as e:
                                             dstd = '{}: {}'.format(str(type(e)).split("'")[1], e)
                                         print('>> shape: {}, mean: {:.2e}, median: {:.2e}, std: {:.2e}'.format(tmp_data[k].shape, dmean, dmedian, dstd))
