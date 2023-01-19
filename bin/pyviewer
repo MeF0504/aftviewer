@@ -11,7 +11,7 @@ from pathlib import Path
 from importlib import import_module
 
 sys.path.append(str(Path(__file__).parent.parent))
-from pyviewerlib import args_chk, set_param, debug_print
+from pyviewerlib import args_chk, set_param, debug_print, cprint
 
 # global variables
 debug = False
@@ -44,12 +44,13 @@ def update():
     # 開発時はこれをつけないとだけど，user的には上で十分？
     # 'git submodule update --remote --merge'.split(),
     for cmd in cmds:
-        print('running "{}"...'.format(' '.join(cmd)))
+        cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
         stat = subprocess.run(cmd)
         if stat.returncode != 0:
-            print('failed to run {}. please check {}'.format(
-                ' '.join(cmd), Path(__file__).parent.parent)
-            )
+            cprint('failed to run {}. please check {}'.format(
+                ' '.join(cmd), Path(__file__).parent.parent),
+                fg='r', file=sys.stderr)
+            break
     return
 
 
