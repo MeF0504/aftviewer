@@ -1,10 +1,24 @@
 # PyViewer
 
 CUI view tool made by python.
-## supported files
-hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm.
 
-## usage
+## Install
+
+```bash
+curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py | python
+```
+or in Windows OS,
+```bash
+curl.exe https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py | python
+```
+By default, this script installs pyviewer repository in `~/.pyviewer`.
+If you want to specify the install path,
+```bash
+curl -O https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py
+python installer.py path/to/install
+```
+
+## Usage
 ```bash
 usage: pyviewer [-h] [-t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm,stl}]
                 [-iv IMAGE_VIEWER] [--encoding ENCODING] [-v | -k [KEY ...] | -i | -c]
@@ -38,7 +52,7 @@ options:
                         sqlite3.
 ```
 
-## customize
+## Customize
 
 You can change some default values by creating `$XDG_CONFIG_HOME/pyviewer/setting.json` or `~/.config/pyviewer/setting.json`.
 The json file should contain one dictionary. The possible key names of this are following.
