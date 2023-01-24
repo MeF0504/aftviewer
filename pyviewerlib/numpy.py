@@ -1,11 +1,13 @@
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key
+from . import args_chk, print_key, json_opts
 
 
 def show_numpy(data):
     # shape
+    dtype = data.dtype
+    print('type     : {}'.format(dtype))
     shape = data.shape
     print('shape    : {}'.format(shape))
     if np.prod(shape) == 0:
@@ -59,7 +61,11 @@ min      : {}'''.format(d_mean, d_max, d_min)
 
 
 def main(fpath, args):
-    data = np.load(fpath)
+    if 'numpy_allow_pickle' in json_opts:
+        allow_pickle = json_opts['numpy_allow_pickle']
+    else:
+        allow_pickle = False
+    data = np.load(fpath, allow_pickle=allow_pickle)
     if args_chk(args, 'verbose'):
         if type(data) == NpzFile:
             for k in data:
