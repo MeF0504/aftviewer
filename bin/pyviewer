@@ -124,6 +124,8 @@ if __name__ == "__main__":
     parser.add_argument('-iv', '--image_viewer', help="set image viewer. supported args are 'matplotlib' (use matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV' (use cv2.imshow), and other string is treated as an external command (e.g. gosr, open).")
     parser.add_argument('--encoding', dest='encoding',
                         help='specify the encoding format in pickle and zip file.', type=str)
+    parser.add_argument('--ask_password', '-p', action='store_true',
+                        help='ask for the password for the file if needed.')
     ex_group = parser.add_mutually_exclusive_group()
     ex_group.add_argument('-v', '--verbose', dest='verbose',
                           action='store_true', help='show details')

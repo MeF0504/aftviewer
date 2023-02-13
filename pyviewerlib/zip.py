@@ -3,13 +3,19 @@ import zipfile
 import tempfile
 import platform
 from functools import partial
+from getpass import getpass
 
 from . import args_chk, is_image, print_key, json_opts, cprint, debug_print,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer
 from pymeflib.tree import tree_viewer, branch_str, show_tree
 
 
-def show_zip(zip_file, list_tree, args, cpath, cui=False):
+def get_pwd():
+    pwd = getpass()
+    return pwd.encode()
+
+
+def show_zip(zip_file, list_tree, pwd, args, cpath, cui=False):
     res = []
     img_viewer = get_image_viewer(args)
     try:
@@ -38,7 +44,7 @@ def show_zip(zip_file, list_tree, args, cpath, cui=False):
         if is_image(cpath):
             cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
             with tempfile.TemporaryDirectory() as tmpdir:
-                zip_file.extract(zipinfo, path=tmpdir)
+                zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
                 tmpfile = os.path.join(tmpdir, cpath)
                 ret = show_image_file(tmpfile, args, cond)
             if not ret:
@@ -46,7 +52,7 @@ def show_zip(zip_file, list_tree, args, cpath, cui=False):
 
         # text file?
         else:
-            for line in zip_file.open(cpath, 'r'):
+            for line in zip_file.open(cpath, 'r', pwd=pwd):
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:
@@ -100,18 +106,31 @@ def main(fpath, args):
                 depth += 1
 
     if args_chk(args, 'interactive'):
+        if args.ask_password:
+            pwd = get_pwd()
+        else:
+            pwd = None
         interactive_view(list_tree, fname,
-                         partial(show_zip, zip_file, list_tree, args))
+                         partial(show_zip, zip_file, list_tree, pwd, args))
     elif args_chk(args, 'cui'):
+        if args.ask_password:
+            pwd = get_pwd()
+        else:
+            pwd = None
         interactive_cui(list_tree, fpath,
-                        partial(show_zip, zip_file, list_tree, args))
+                        partial(show_zip, zip_file, list_tree, pwd, args))
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             for fy in zip_file.namelist():
                 print(fy)
+            return
+        if args.ask_password:
+            pwd = get_pwd()
+        else:
+            pwd = None
         for k in args.key:
             print_key(k)
-            info, err = show_zip(zip_file, list_tree, args, k)
+            info, err = show_zip(zip_file, list_tree, pwd, args, k)
             if err is None:
                 print("\n".join(info))
                 print()
