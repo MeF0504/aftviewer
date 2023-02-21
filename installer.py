@@ -15,5 +15,10 @@ subprocess.run(['git', 'clone', 'https://github.com/MeF0504/pyviewer.git', insta
 os.chdir(install_path)
 subprocess.run(['git', 'submodule', 'update', '--init'])
 
-if str(install_path/'bin') not in os.environ['PATH'].split(os.pathsep):
+if 'PATH' in os.environ \
+   and str(install_path/'bin') not in os.environ['PATH'].split(os.pathsep):
     print('\nplease add {} to your PATH.'.format(install_path/'bin'))
+if 'SHELL' in os.environ and 'zsh' in os.environ['SHELL']:
+    zsh_cmp = install_path/'shell/completion.zsh'
+    print('\nplease add \'[ -f "{}" ] && source "{}"\' in your .zshrc.'.format(
+        zsh_cmp, zsh_cmp))
