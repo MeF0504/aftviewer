@@ -4,7 +4,7 @@ from functools import partial
 
 from . import args_chk, print_key, cprint, debug_print,\
     interactive_view, interactive_cui
-from libtree import branch_str
+from pymeflib.tree import branch_str
 try:
     from tabulate import tabulate
 except ImportError:
