@@ -2,6 +2,22 @@
 
 CUI view tool made by python.
 
+## Requirements
+
+- [Python](https://www.python.org/) > 3.7?
+- [numpy](https://numpy.org/) for numpy, xpm
+- [h5py](https://docs.h5py.org/) for hdf5
+- [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
+- [matplotlib](https://matplotlib.org/) for stl
+
+### Optional Requirements
+
+- [numpy](https://numpy.org/) for hdf5, pickle
+- [tabulate](https://pypi.org/project/tabulate/) for sqlite3
+- [PIL (Pillow)](https://pillow.readthedocs.io/), [matplotlib](https://matplotlib.org/) or [OpenCV](https://pypi.org/project/opencv-python/) to show a image.
+    - Shell commands (e.g. "open" in macOS) are also available.  
+      In this case, a bit map file (.bmp) should be supported.
+
 ## Install
 
 ```bash
