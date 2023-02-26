@@ -12,13 +12,16 @@ _pyviewer_cmp()
     if [[ "${cur:0:1}" = "-" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
     elif [[ "${prev}" = "-h" ]]; then
+        # show help
         COMPREPLY=()
     elif [[ "${prev}" = "-t" ]]; then
-        # type
+        # select type
         COMPREPLY=( $(compgen -W "$types" -- "$cur") )
     elif [[ "${prev}" = "-iv" ]]; then
+        # select image viewer
         COMPREPLY=( $(compgen -W "$image_viewer" -- "$cur") )
     else
+        # select file
         compopt -o filenames
         COMPREPLY=( $(compgen -f -- "$cur") )
     fi

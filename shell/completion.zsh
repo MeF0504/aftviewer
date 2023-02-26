@@ -3,14 +3,14 @@
 _pyviewer_cmp()
 {
     _arguments \
-        '(- *)'-h'[show help]' \
-        -t'[type]:type:_pyviewr_types' \
-        -iv'[image viewer]:image viewer:_pyviewer_iv' \
-        -p'[ask pass]:pass' \
-        -v'[verbose]:verbose' \
-        -k'[keys]:keys' \
-        -i'[interactive]:interactive' \
-        -c'[interactive cui]:interactive cui' \
+        '(- *)'{-h,--help}'[show help]' \
+        '(-t --type)'{-t,--type}'[type]:type:_pyviewr_types' \
+        '(-iv --image_viewer)'{-iv,--image_viewer}'[image viewer]:image viewer:_pyviewer_iv' \
+        '(-p --ask_password)'{-p,--ask_password}'[ask pass]:pass' \
+        '(-v --verbose)'{-v,--verbose}'[verbose]:verbose' \
+        '(-k --key)'{-k,--key}'[keys]:keys' \
+        '(-i --interactive)'{-i,--interactive}'[interactive mode]:interactive' \
+        '(-c --interactive_cui)'{-c,--interactive_cui}'[interactive cui mode]:interactive cui' \
         --encoding'[encoding]:encoding' \
         '*:target file:_files'
 }
