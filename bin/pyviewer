@@ -48,6 +48,7 @@ def update():
     if stat.returncode != 0:
         update_err(cmd)
         return
+    # fetchの情報はstderrに出る？
     if len(stat.stderr) == 0:
         # no update
         cprint('already updated.', fg='y')
