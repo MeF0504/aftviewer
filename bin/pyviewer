@@ -48,7 +48,7 @@ def update():
     if stat.returncode != 0:
         update_err(cmd)
         return
-    if len(stat.stdout) == 0:
+    if len(stat.stderr) == 0:
         # no update
         cprint('already updated.', fg='y')
         return
@@ -61,6 +61,7 @@ def update():
         return
     # merge
     cmd = 'git merge'.split()
+    cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
     stat = subprocess.run(cmd)
     if stat.returncode != 0:
         update_err(cmd)
@@ -69,6 +70,7 @@ def update():
     # 開発時は↓をつけないとだけど，user的には上で十分？
     # 'git submodule update --remote --merge'.split(),
     cmd = 'git submodule update'.split()
+    cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
     stat = subprocess.run(cmd)
     if stat.returncode != 0:
         update_err(cmd)
