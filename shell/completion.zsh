@@ -17,7 +17,7 @@ _pyviewer_cmp()
 _pyviewr_types()
 {
     _values 'types' \
-        $(_get_pyviewr_types)
+        $(_get_pyviewer_types)
 }
 _pyviewer_iv()
 {
