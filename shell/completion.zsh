@@ -17,7 +17,7 @@ _pyviewer_cmp()
 _pyviewr_types()
 {
     _values 'types' \
-        'hdf5' 'pickle' 'numpy' 'tar' 'zip' 'sqlite3' 'raw_image' 'jupyter' 'xpm' 'stl'
+        $(_get_pyviewr_types)
 }
 _pyviewer_iv()
 {
