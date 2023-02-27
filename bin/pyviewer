@@ -55,8 +55,10 @@ def update():
         cprint('already updated.', fg='y')
         return
     else:
-        print(stat.stdout.decode())
-        print(stat.stderr.decode())
+        if stat.stdout:
+            print(stat.stdout.decode())
+        if stat.stderr:
+            print(stat.stderr.decode())
     """show log"""
     cmd = ['git', 'log', 'HEAD..origin/HEAD', '--pretty=format:%h; (%ai) %s']
     cprint('update log;', fg='y')
