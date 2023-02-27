@@ -46,13 +46,17 @@ def update():
     cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
     stat = subprocess.run(cmd, capture_output=True)
     if stat.returncode != 0:
+        cprint(stat.stderr.decode(), fg='r')
         update_err(cmd)
         return
     # fetchの情報はstderrに出る？
-    if len(stat.stderr) == 0:
+    if len(stat.stderr+stat.stdout) == 0:
         # no update
         cprint('already updated.', fg='y')
         return
+    else:
+        print(stat.stdout.decode())
+        print(stat.stderr.decode())
     # show log
     cmd = ['git', 'log', 'HEAD..origin/HEAD', '--pretty=format:%h (%ai) %s']
     cprint('show log...', fg='y')
