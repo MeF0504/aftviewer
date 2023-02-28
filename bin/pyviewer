@@ -55,17 +55,16 @@ def update():
         cprint('already updated.', fg='y')
         return
     else:
-        if stat.stdout:
-            print(stat.stdout.decode())
-        if stat.stderr:
-            print(stat.stderr.decode())
+        for out in [stat.stdout.decode(), stat.stderr.decode()]:
+            if out and out.endswith('\n'):
+                end = ''
+            else:
+                end = '\n'
+            print(out, end=end)
     # ~~~~~~~~~~~~~~~ show log ~~~~~~~~~~~~~~~
-    cmd = ['git', 'log', 'HEAD..origin/main', '--pretty=format:%h; (%ai) %s']
+    cmd = ['git', 'log', 'HEAD..origin/main', '--pretty=format:%h (%ai); %s']
     cprint('update log;', fg='y')
     stat = subprocess.run(cmd)
-    # if stat.returncode != 0:  # It is OK if showing log is failed.
-    #     update_err(cmd)
-    #     return
     # ~~~~~~~~~~~~~~~ merge ~~~~~~~~~~~~~~~
     cmd = 'git merge'.split()
     cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
@@ -75,7 +74,7 @@ def update():
         return
     # ~~~~~~~~~~~~~~~ submodule update ~~~~~~~~~~~~~~~
     # 開発時は↓をつけないとだけど，user的には上で十分？
-    # 'git submodule update --remote --merge'.split(),
+    # cmd = 'git submodule update --remote --merge'.split()
     cmd = 'git submodule update'.split()
     cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
     stat = subprocess.run(cmd)
