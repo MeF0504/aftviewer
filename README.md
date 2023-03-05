@@ -30,8 +30,7 @@ curl.exe https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py | 
 By default, this script installs pyviewer repository in `~/.pyviewer`.
 If you want to specify the install path,
 ```bash
-curl -O https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py
-python installer.py path/to/install
+python -c "$(curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py)" path/to/install
 ```
 
 ## Usage
