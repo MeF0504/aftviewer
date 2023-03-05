@@ -12,8 +12,22 @@ _pyviewer_cmp()
         '(-i --interactive)'{-i,--interactive}'[interactive mode]:interactive' \
         '(-c --interactive_cui)'{-c,--interactive_cui}'[interactive cui mode]:interactive cui' \
         --encoding'[encoding]:encoding' \
-        '*:target file:_files'
+        '*:target file:_pyviewer_targets'
 }
+
+_pyviewer_targets()
+{
+    _alternative \
+        'files:target files:_files' \
+        'update:update:_pyviewer_update'
+}
+
+_pyviewer_update()
+{
+    _values 'update' \
+        'update'
+}
+
 _pyviewr_types()
 {
     _values 'types' \
