@@ -56,11 +56,12 @@ def update():
         return
     else:
         for out in [stat.stdout.decode(), stat.stderr.decode()]:
-            if out and out.endswith('\n'):
-                end = ''
-            else:
-                end = '\n'
-            print(out, end=end)
+            if out:
+                if out.endswith('\n'):
+                    end = ''
+                else:
+                    end = '\n'
+                print(out, end=end)
     # ~~~~~~~~~~~~~~~ show log ~~~~~~~~~~~~~~~
     cmd = ['git', 'log', 'HEAD..origin/main', '--pretty=format:%h (%ai); %s']
     cprint('update log;', fg='y')
