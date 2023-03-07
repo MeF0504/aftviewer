@@ -6,5 +6,6 @@
     "exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
     "zip_encoding": "cp437",
     "pickle_encoding": "ASCII",
-    "numpy_allow_pickle": true
+    "numpy_allow_pickle": true,
+    "add_args": "add_args"
 }

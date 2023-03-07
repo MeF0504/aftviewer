@@ -28,6 +28,8 @@ if (conf_dir/'setting.json').is_file():
         json_opts = json.load(f)
     if 'debug' in json_opts:
         debug = bool(json_opts['debug'])
+    if 'force_default' in json_opts and json_opts['force_default']:
+        json_opts = {}
 else:
     json_opts = {}
 
@@ -164,6 +166,14 @@ if __name__ == "__main__":
                           help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3.', action='store_true')
     ex_group.add_argument('-c', '--interactive_cui', dest='cui',
                           help='open a file with interactive CUI mode. support hdf5, tar, zip, sqlite3.', action='store_true')
+    if 'add_args' in json_opts:
+        try:
+            # additional arguments
+            lib = import_module("pyviewerlib.{}".format(json_opts['add_args']))
+        except ImportError as e:
+            debug_print(e)
+        else:
+            lib.main(parser)
     args = parser.parse_args()
 
     if args_chk(args, 'cui') and debug:

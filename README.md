@@ -83,3 +83,9 @@ The json file should contain one dictionary. The possible key names of this are 
 - type (dict)
     - The dictionary for extending file types. the keys are the new type name and the values are file extensions of additional type.
     - You can add any supported types by adding this dictionary and placing a file with the same name as the key in the pyviewerlib directory.
+- add_args (str)
+    - A string of the name of the file to add additional arguments.  
+    This function should contain `main(parser)` function, and `parser` is
+    the class of `argparse.ArgumentParser`.  
+    You can add new arguments by calling `parser.add_arguments()`.  
+    Also see `samples/add_args_sample.py`.
