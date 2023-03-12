@@ -514,7 +514,7 @@ def interactive_cui(tree, fname, show_func):
             contents = dirs+files
             if key in ['', 'KEY_UP', 'KEY_DOWN',
                        'KEY_LEFT', 'KEY_RIGHT',
-                       'KEY_SR', 'KEY_SUR', "\n", 'KEY_ENTER']:
+                       'KEY_SR', 'KEY_SUP', "\n", 'KEY_ENTER']:
                 # side bar window
                 win_side.clear()
                 for i in range(winy-win_h):
@@ -535,7 +535,8 @@ def interactive_cui(tree, fname, show_func):
                         win_side.addstr(i, len(cidx), cont, attr)
                 win_side.refresh()
 
-            if key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'j', 'k', 'h', 'l']:
+            if key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'KEY_SUP',
+                       'j', 'k', 'h', 'l']:
                 # main window
                 win_main.clear()
                 win_main.addstr(0, 0, sel_cont, curses.A_REVERSE)
@@ -560,7 +561,7 @@ def interactive_cui(tree, fname, show_func):
                     win_main.addstr(1, 0, main_err, curses.color_pair(3))
                 win_main.refresh()
 
-            if key in ['', "\n", 'KEY_ENTER', 'KEY_SR']:
+            if key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'KEY_SUP']:
                 # top, print-working-directory window
                 win_pwd.clear()
                 win_pwd.addstr(0, 3, 'file: {}'.format(fname), curses.A_BOLD)
