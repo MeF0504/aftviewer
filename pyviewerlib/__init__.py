@@ -554,7 +554,8 @@ def interactive_cui(tree, fname, show_func):
                         try:
                             win_main.addstr(i, 0, info)
                         except Exception as e:
-                            win_main.addstr(i, 0, "!! {}".format(e))
+                            win_main.addstr(i, 0, "!! {}".format(e),
+                                            curses.color_pair(3))
                 else:
                     win_main.addstr(1, 0, main_err, curses.color_pair(3))
                 win_main.refresh()
