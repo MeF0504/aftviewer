@@ -24,7 +24,7 @@ _pyviewer_cmp()
         # select file
         compopt -o filenames
         COMPREPLY=( $(compgen -f -- "$cur") )
-        COMPREPLY+=("update")
+        COMPREPLY+=( $(compgen -W "update" -- "$cur") )
     fi
 }
 
