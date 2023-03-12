@@ -439,6 +439,7 @@ def interactive_cui(tree, fname, show_func):
                         fpath = str(cpath/sel_cont)
                     main_info, main_err = show_func(fpath, True)
                     main_info = "\n".join(main_info).split("\n")
+                    main_info = [ln.replace("\t", "  ") for ln in main_info]
                     main_shift_ud = 0
                     main_shift_lr = 0
 
@@ -547,8 +548,13 @@ def interactive_cui(tree, fname, show_func):
                     for i in range(1, winy-win_h):
                         if i-1+main_shift_ud >= len(main_info):
                             break
-                        info = main_info[i-1+main_shift_ud][main_shift_lr:main_shift_lr+winx-win_w-1]
-                        win_main.addstr(i, 0, info)
+                        info = main_info[i-1+main_shift_ud][main_shift_lr:main_shift_lr+winx-win_w-2]
+                        if curses_debug:
+                            info = "{:d} ".format(i+main_shift_ud)+info
+                        try:
+                            win_main.addstr(i, 0, info)
+                        except Exception as e:
+                            win_main.addstr(i, 0, "!! {}".format(e))
                 else:
                     win_main.addstr(1, 0, main_err, curses.color_pair(3))
                 win_main.refresh()
