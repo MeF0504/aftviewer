@@ -41,7 +41,7 @@ def show_zip(zip_file, list_tree, pwd, args, cpath, cui=False):
 
     # file
     else:
-        if is_image(cpath):
+        if is_image(key_name):
             cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
             with tempfile.TemporaryDirectory() as tmpdir:
                 zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
@@ -52,7 +52,7 @@ def show_zip(zip_file, list_tree, pwd, args, cpath, cui=False):
 
         # text file?
         else:
-            for line in zip_file.open(cpath, 'r', pwd=pwd):
+            for line in zip_file.open(key_name, 'r', pwd=pwd):
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:

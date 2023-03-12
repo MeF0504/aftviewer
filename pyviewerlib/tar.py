@@ -29,7 +29,7 @@ def show_tar(tar_file, list_tree, args, cpath, cui=False):
     if tarinfo.isfile():
 
         # image file
-        if is_image(cpath):
+        if is_image(key_name):
             cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
@@ -40,7 +40,7 @@ def show_tar(tar_file, list_tree, args, cpath, cui=False):
 
         # text file?
         else:
-            for line in tar_file.extractfile(cpath):
+            for line in tar_file.extractfile(key_name):
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:
