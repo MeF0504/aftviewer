@@ -18,17 +18,22 @@ def update():
     # ~~~~~~~~~~~~~~~ fetch ~~~~~~~~~~~~~~~
     cmd = 'git fetch'.split()
     cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
-    stat = subprocess.run(cmd, capture_output=True)
+    stat = subprocess.run(cmd)
     if stat.returncode != 0:
         cprint(stat.stderr.decode(), fg='r')
         update_err(cmd)
         return
-    # fetchの情報はstderrに出る？
+    # ~~~~~~~~~~~~~~~ show log ~~~~~~~~~~~~~~~
+    cmd = ['git', 'log', 'HEAD..origin/main', '--pretty=format:%h (%ai); %s']
+    stat = subprocess.run(cmd, capture_output=True)
+    debug_print('log std out: \n{}'.format(stat.stdout.decode()))
+    debug_print('log std err: \n{}'.format(stat.stderr.decode()))
     if len(stat.stderr+stat.stdout) == 0:
         # no update
         cprint('already updated.', fg='y')
         return
     else:
+        cprint('update log;', fg='y')
         for out in [stat.stdout.decode(), stat.stderr.decode()]:
             if out:
                 if out.endswith('\n'):
@@ -36,10 +41,6 @@ def update():
                 else:
                     end = '\n'
                 print(out, end=end)
-    # ~~~~~~~~~~~~~~~ show log ~~~~~~~~~~~~~~~
-    cmd = ['git', 'log', 'HEAD..origin/main', '--pretty=format:%h (%ai); %s']
-    cprint('update log;', fg='y')
-    stat = subprocess.run(cmd)
     # ~~~~~~~~~~~~~~~ merge ~~~~~~~~~~~~~~~
     cmd = 'git merge'.split()
     cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
