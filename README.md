@@ -27,7 +27,7 @@ or in Windows OS,
 ```bash
 curl.exe https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py | python
 ```
-By default, this script installs pyviewer repository in `~/.pyviewer`.
+By default, this script installs pyviewer repository in `~/.config/pyviewer/src`.
 If you want to specify the install path,
 ```bash
 python -c "$(curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py)" path/to/install
