@@ -6,10 +6,16 @@ import subprocess
 if len(sys.argv) > 1:
     install_path = Path(sys.argv[1])
 else:
-    install_path = Path('~/.pyviewer').expanduser()
+    if 'XDG_CONFIG_HOME' in os.environ:
+        install_path = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'/'src'
+    else:
+        install_path = Path('~/.config/pyviewer/src').expanduser()
 if install_path.exists():
     print('{} already exists.'.format(install_path))
     exit()
+if not install_path.parent.exists():
+    print('creating directory {}\n'.format(install_path.parent))
+    os.mkdir(install_path.parent)
 
 subprocess.run(['git', 'clone', '--recursive',
                 'https://github.com/MeF0504/pyviewer.git', install_path])
