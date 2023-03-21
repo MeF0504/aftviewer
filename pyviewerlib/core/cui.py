@@ -31,10 +31,22 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
     scroll_h = 5
     scroll_w = 5
     scroll_side = 3
+    exp = 'q:quit ↑↓←→:select shift+↑:go back enter:open jkhl:scroll /:search'
+    assert winx > len(exp)+1
     win_pwd = curses.newwin(win_h, winx, 0, 0)
     win_side = curses.newwin(winy-win_h, win_w, win_h, 0)
     win_main = curses.newwin(winy-win_h, winx-win_w, win_h, win_w)
     win_search = curses.newwin(search_h, winx-win_w-2, win_h+2, win_w+1)
+    # |                        | ^
+    # |                        | | win_h
+    # |________________________| v
+    # |      |                 | ^
+    # |      |                 | |
+    # |      |                 | | winy-win_h
+    # |      |                 | |
+    # |      |                 | v
+    #  <----> <--------------->
+    #  win_w     winx-win_w
 
     # pwd background
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_GREEN)
@@ -261,10 +273,11 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
             win_main.clear()
             win_main.addstr(0, 0, sel_cont, curses.A_REVERSE)
             if len(sel_cont) != 0:
-                win_main.addstr(0, len(sel_cont)+2,
-                                '{}/{}'.format(main_shift_ud+1,
-                                               len(main_info)),
-                                curses.color_pair(4))
+                if winx-win_w > len(sel_cont)+2:
+                    win_main.addstr(0, len(sel_cont)+2,
+                                    '{}/{}'.format(main_shift_ud+1,
+                                                   len(main_info)),
+                                    curses.color_pair(4))
             if main_err is None:
                 for i in range(1, winy-win_h):
                     if i-1+main_shift_ud >= len(main_info):
@@ -286,7 +299,7 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
             win_pwd.clear()
             win_pwd.addstr(0, 3, 'file: {}'.format(fname), curses.A_BOLD)
             win_pwd.addstr(1, 5, 'current path: {}'.format(str(cpath)))
-            win_pwd.addstr(2, 1, 'q:quit ↑↓←→:select shift+↑:go back enter:open jkhl:scroll /:search')
+            win_pwd.addstr(2, 1, exp)
             win_pwd.refresh()
 
         if curses_debug:
