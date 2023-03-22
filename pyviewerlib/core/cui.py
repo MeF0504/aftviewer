@@ -32,7 +32,8 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
     scroll_w = 5
     scroll_side = 3
     exp = 'q:quit ↑↓←→:select shift+↑:go back enter:open jkhl:scroll /:search'
-    assert winx > len(exp)+1
+    if winx <= len(exp)+1:
+        raise AssertionError(winx, len(exp)+1)
     win_pwd = curses.newwin(win_h, winx, 0, 0)
     win_side = curses.newwin(winy-win_h, win_w, win_h, 0)
     win_main = curses.newwin(winy-win_h, winx-win_w, win_h, win_w)
@@ -326,4 +327,8 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
 def interactive_cui(tree, fname, show_func):
     cpath = PurePath('.')
     tv = tree_viewer(tree, '.')
-    curses.wrapper(partial(curses_main, tree, fname, show_func, cpath, tv))
+    try:
+        curses.wrapper(partial(curses_main, tree, fname, show_func, cpath, tv))
+    except AssertionError as e:
+        winx, lenexp = e.args
+        print('Window width should be larger than {:d} (current: {:d})'.format(lenexp, winx))
