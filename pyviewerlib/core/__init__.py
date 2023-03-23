@@ -13,7 +13,6 @@ json_opts = {}
 def set_param(args):
     global debug
     global json_opts
-    global curses_debug
     debug = args.debug
     json_opts = args.opts
 
