@@ -5,6 +5,26 @@ import tempfile
 from . import args_chk, cprint, debug_print, show_image_file
 
 
+def show_output(output, args):
+    if 'text' in output:
+        for text in output['text']:
+            print(text, end='')
+        print()
+    elif 'data' in output:
+        out_data = output['data']
+        for out_type in out_data:
+            if out_type == 'text/plain':
+                for text in out_data['text/plain']:
+                    print(text, end='')
+                print()
+            elif out_type == 'image/png':
+                img_code = out_data['image/png']
+                img_bin = base64.b64decode(img_code.encode())
+                with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
+                    tmp.write(img_bin)
+                    show_image_file(tmp.name, args)
+
+
 def main(fpath, args):
     with open(fpath, 'r') as f:
         data = json.load(f)
@@ -37,30 +57,12 @@ def main(fpath, args):
             if len(cell['outputs']) != 0:
                 cprint('Out [{}]'.format(cnt), fg='r')
             for output in cell['outputs']:
-                if 'text' in output:
-                    for text in output['text']:
-                        print(text, end='')
-                    print()
-                elif 'data' in output:
-                    out_data = output['data']
-                    for out_type in out_data:
-                        if out_type == 'text/plain':
-                            for text in out_data['text/plain']:
-                                print(text, end='')
-                            print()
-                        elif out_type == 'image/png':
-                            img_code = out_data['image/png']
-                            img_bin = base64.b64decode(img_code.encode())
-                            with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
-                                tmp.write(img_bin)
-                                show_image_file(tmp.name, args)
-
+                show_output(output, args)
         elif cell['cell_type'] == 'markdown':
             cprint('markdown', fg='g')
             for instr in cell['source']:
                 print(instr, end='')
             print()
-
         elif cell['cell_type'] == 'raw':
             cprint('raw', fg='g')
             for instr in cell['source']:
