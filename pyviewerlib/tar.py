@@ -6,10 +6,10 @@ from functools import partial
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui, show_image_file
-from pymeflib.tree import branch_str, tree_viewer, show_tree
+from pymeflib.tree2 import branch_str, TreeViewer, show_tree
 
 
-def show_tar(tar_file, list_tree, args, cpath, cui=False):
+def show_tar(tar_file, args, get_contents, cpath, cui=False):
     res = []
     img_viewer = get_image_viewer(args)
     # check cpath
@@ -49,9 +49,9 @@ def show_tar(tar_file, list_tree, args, cpath, cui=False):
 
     # directory
     elif tarinfo.isdir():
-        tree = tree_viewer(list_tree, tar_file.name)
+        tree = TreeViewer(tar_file.name, get_contents)
         res.append('{}/'.format(key_name))
-        files, dirs = tree.get_contents(key_name)
+        dirs, files = tree.get_contents('', key_name)
         for f in files:
             res.append('{}{}'.format(branch_str, f))
         for d in dirs:
@@ -62,49 +62,55 @@ def show_tar(tar_file, list_tree, args, cpath, cui=False):
     return res, None
 
 
+def get_contents(tar_file, root, path):
+    path = str(path)
+    if path == '.':
+        tarinfo = tar_file.getmembers()[0]
+        if tarinfo.isfile():
+            return [], [tarinfo.name]
+        elif tarinfo.isdir():
+            return [tarinfo.name], []
+        else:
+            return [], []
+    files = []
+    dirs = []
+    for t in tar_file.getmembers():
+        if t.name == path:
+            continue
+        if not t.name.startswith(path):
+            continue
+        tname = t.name[len(path)+1:]
+        if '/' in tname:
+            continue
+        if t.isfile():
+            files.append(tname)
+        elif t.isdir():
+            dirs.append(tname)
+    return dirs, files
+
+
 def main(fpath, args):
     if not tarfile.is_tarfile(fpath):
         print('{} is not a tar file.'.format(fpath))
         return
     tar_file = tarfile.open(fpath, 'r:*')
-    list_tree = [{}]
     fname = os.path.basename(fpath)
 
-    # make list_tree
-    for t in tar_file:
-        tmp_list = list_tree
-        depth = 1
-        tnames = t.name.split('/')
-        debug_print('cpath: {}'.format(t.name))
-        for p in tnames:
-            if p == '':
-                continue
-            if t.isfile() and depth == len(tnames):
-                # file
-                tmp_list.append(p)
-                debug_print('add {}'.format(p))
-            elif p in tmp_list[0]:
-                # existing directory
-                tmp_list = tmp_list[0][p]
-                depth += 1
-            else:
-                # new directory
-                tmp_list[0][p] = [{}]
-                tmp_list = tmp_list[0][p]
-                depth += 1
-
     if args_chk(args, 'interactive'):
-        interactive_view(list_tree, fname,
-                         partial(show_tar, tar_file, list_tree, args))
+        interactive_view(fname, partial(get_contents, tar_file),
+                         partial(show_tar, tar_file, args,
+                                 partial(get_contents, tar_file)))
     elif args_chk(args, 'cui'):
-        interactive_cui(list_tree, fpath,
-                        partial(show_tar, tar_file, list_tree, args))
+        interactive_cui(fpath, partial(get_contents, tar_file),
+                        partial(show_tar, tar_file, args,
+                                partial(get_contents, tar_file)))
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             tar_file.list(verbose=False)
         for k in args.key:
             print_key(k)
-            info, err = show_tar(tar_file, list_tree, args, k)
+            info, err = show_tar(tar_file, args,
+                                 partial(get_contents, tar_file), k)
             if err is None:
                 print("\n".join(info))
                 print()
@@ -113,6 +119,6 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         tar_file.list(verbose=True)
     else:
-        show_tree(list_tree, fname)
+        show_tree(fname, partial(get_contents, tar_file))
 
     tar_file.close()
