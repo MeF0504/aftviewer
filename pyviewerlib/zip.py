@@ -5,9 +5,9 @@ import platform
 from functools import partial
 from getpass import getpass
 
-from . import args_chk, is_image, print_key, json_opts, cprint, debug_print,\
+from . import args_chk, is_image, print_key, cprint, debug_print,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer
-from pymeflib.tree import tree_viewer, branch_str, show_tree
+from pymeflib.tree2 import TreeViewer, branch_str, show_tree
 
 
 def get_pwd():
@@ -15,7 +15,35 @@ def get_pwd():
     return pwd.encode()
 
 
-def show_zip(zip_file, list_tree, pwd, args, cpath, cui=False):
+def get_contents(zip_file, root, path):
+    path = str(path)
+    if path == '.':
+        zipinfo = zip_file.infolist()[0]
+        if zipinfo.is_dir():
+            return [zipinfo.filename[:-1]], []
+        else:
+            return [], zip_file.namelist()
+    files = []
+    dirs = []
+    for z in zip_file.infolist():
+        # dir name ends with /
+        if z.filename[:-1] == path:
+            continue
+        if not z.filename.startswith(path):
+            continue
+        zname = z.filename[len(path)+1:]
+        if zname.endswith('/'):
+            zname = zname[:-1]
+        if '/' in zname:
+            continue
+        if z.is_dir():
+            dirs.append(zname)
+        else:
+            files.append(zname)
+    return dirs, files
+
+
+def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
     res = []
     img_viewer = get_image_viewer(args)
     try:
@@ -31,7 +59,7 @@ def show_zip(zip_file, list_tree, pwd, args, cpath, cui=False):
 
     # directory
     if zipinfo.is_dir():
-        tree = tree_viewer(list_tree, zip_file.filename)
+        tree = TreeViewer(zip_file.filename, get_contents)
         res.append('{}/'.format(key_name))
         files, dirs = tree.get_contents(key_name)
         for f in files:
@@ -66,59 +94,21 @@ def main(fpath, args):
         print('{} is not a zip file.'.format(fpath))
         return
     zip_file = zipfile.ZipFile(fpath, 'r')
-    list_tree = [{}]
     fname = os.path.basename(fpath)
-
-    # make list_tree
-    if args_chk(args, 'encoding'):
-        debug_print('set encoding from args')
-        zip_codec = args.encoding
-    elif 'zip_encoding' in json_opts:
-        debug_print('set encoding from args')
-        zip_codec = json_opts['zip_encoding']
-    else:
-        zip_codec = 'cp437'  # test codec.
-    debug_print('encoding: {}'.format(zip_codec))
-    for z in zip_file.infolist():
-        tmp_list = list_tree
-        depth = 1
-        znames = z.filename.split('/')
-        debug_print('cpath: {}'.format(z.filename))
-        for p in znames:
-            try:
-                # try to decode
-                p = p.encode(zip_codec, 'replace').decode()
-            except Exception as e:
-                debug_print(e)
-            if p == '':
-                continue
-            if (not z.is_dir()) and depth == len(znames):
-                # file
-                tmp_list.append(p)
-                debug_print('add {}'.format(p))
-            elif p in tmp_list[0]:
-                # existing directory
-                tmp_list = tmp_list[0][p]
-                depth += 1
-            else:
-                tmp_list[0][p] = [{}]
-                tmp_list = tmp_list[0][p]
-                depth += 1
+    gc = partial(get_contents, zip_file)
 
     if args_chk(args, 'interactive'):
         if args.ask_password:
             pwd = get_pwd()
         else:
             pwd = None
-        interactive_view(list_tree, fname,
-                         partial(show_zip, zip_file, list_tree, pwd, args))
+        interactive_view(fname, gc, partial(show_zip, zip_file, pwd, args, gc))
     elif args_chk(args, 'cui'):
         if args.ask_password:
             pwd = get_pwd()
         else:
             pwd = None
-        interactive_cui(list_tree, fpath,
-                        partial(show_zip, zip_file, list_tree, pwd, args))
+        interactive_cui(fpath, gc, partial(show_zip, zip_file, pwd, args, gc))
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             for fy in zip_file.namelist():
@@ -130,7 +120,7 @@ def main(fpath, args):
             pwd = None
         for k in args.key:
             print_key(k)
-            info, err = show_zip(zip_file, list_tree, pwd, args, k)
+            info, err = show_zip(zip_file, pwd, args, gc, k)
             if err is None:
                 print("\n".join(info))
                 print()
@@ -139,6 +129,6 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         zip_file.printdir()
     else:
-        show_tree(list_tree, fname)
+        show_tree(fname, gc)
 
     zip_file.close()

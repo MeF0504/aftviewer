@@ -95,22 +95,18 @@ def main(fpath, args):
         return
     tar_file = tarfile.open(fpath, 'r:*')
     fname = os.path.basename(fpath)
+    gc = partial(get_contents, tar_file)
 
     if args_chk(args, 'interactive'):
-        interactive_view(fname, partial(get_contents, tar_file),
-                         partial(show_tar, tar_file, args,
-                                 partial(get_contents, tar_file)))
+        interactive_view(fname, gc, partial(show_tar, tar_file, args, gc))
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, partial(get_contents, tar_file),
-                        partial(show_tar, tar_file, args,
-                                partial(get_contents, tar_file)))
+        interactive_cui(fpath, gc, partial(show_tar, tar_file, args, gc))
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             tar_file.list(verbose=False)
         for k in args.key:
             print_key(k)
-            info, err = show_tar(tar_file, args,
-                                 partial(get_contents, tar_file), k)
+            info, err = show_tar(tar_file, args, gc, k)
             if err is None:
                 print("\n".join(info))
                 print()
@@ -119,6 +115,6 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         tar_file.list(verbose=True)
     else:
-        show_tree(fname, partial(get_contents, tar_file))
+        show_tree(fname, gc)
 
     tar_file.close()
