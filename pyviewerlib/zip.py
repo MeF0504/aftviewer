@@ -16,27 +16,32 @@ def get_pwd():
 
 
 def get_contents(zip_file, root, path):
-    path = str(path)
-    if path == '.':
+    if str(path) == '.':
+        cpath = ''
         lenpath = 0
     else:
-        lenpath = len(path)+1
+        cpath = str(path)
+        lenpath = len(cpath)+1
     files = []
     dirs = []
     for z in zip_file.infolist():
         # dir name ends with /
         if lenpath != 0:
-            if z.filename[:-1] == path:
+            if z.filename[:-1] == cpath:
                 continue
-            if not z.filename.startswith(path):
+            if not z.filename.startswith(cpath):
                 continue
         zname = z.filename[lenpath:]
         if zname.endswith('/'):
             zname = zname[:-1]
         if '/' in zname:
-            continue
-        if z.is_dir():
-            dirs.append(zname)
+            # in some case, directories are not listed?
+            tmp_dir = zname.split('/')[0]
+            if tmp_dir not in dirs:
+                dirs.append(tmp_dir)
+        elif z.is_dir():
+            if zname not in dirs:
+                dirs.append(zname)
         else:
             files.append(zname)
     return dirs, files
