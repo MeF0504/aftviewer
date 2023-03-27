@@ -65,21 +65,18 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False):
 def get_contents(tar_file, root, path):
     path = str(path)
     if path == '.':
-        tarinfo = tar_file.getmembers()[0]
-        if tarinfo.isfile():
-            return [], [tarinfo.name]
-        elif tarinfo.isdir():
-            return [tarinfo.name], []
-        else:
-            return [], []
+        lenpath = 0
+    else:
+        lenpath = len(path)+1
     files = []
     dirs = []
     for t in tar_file.getmembers():
-        if t.name == path:
-            continue
-        if not t.name.startswith(path):
-            continue
-        tname = t.name[len(path)+1:]
+        if lenpath != 0:
+            if t.name == path:
+                continue
+            if not t.name.startswith(path):
+                continue
+        tname = t.name[lenpath:]
         if '/' in tname:
             continue
         if t.isfile():

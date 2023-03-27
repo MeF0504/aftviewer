@@ -18,20 +18,19 @@ def get_pwd():
 def get_contents(zip_file, root, path):
     path = str(path)
     if path == '.':
-        zipinfo = zip_file.infolist()[0]
-        if zipinfo.is_dir():
-            return [zipinfo.filename[:-1]], []
-        else:
-            return [], zip_file.namelist()
+        lenpath = 0
+    else:
+        lenpath = len(path)+1
     files = []
     dirs = []
     for z in zip_file.infolist():
         # dir name ends with /
-        if z.filename[:-1] == path:
-            continue
-        if not z.filename.startswith(path):
-            continue
-        zname = z.filename[len(path)+1:]
+        if lenpath != 0:
+            if z.filename[:-1] == path:
+                continue
+            if not z.filename.startswith(path):
+                continue
+        zname = z.filename[lenpath:]
         if zname.endswith('/'):
             zname = zname[:-1]
         if '/' in zname:
