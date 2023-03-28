@@ -4,7 +4,7 @@ from functools import partial
 
 from . import args_chk, print_key, cprint, debug_print,\
     interactive_view, interactive_cui
-from pymeflib.tree import branch_str
+from pymeflib.tree2 import branch_str
 try:
     from tabulate import tabulate
 except ImportError:
@@ -73,34 +73,37 @@ def show_table(cursor, table_path, cui=False, verbose=True):
     return res, None
 
 
+def get_contents(cursor, tables, root, path):
+    # this is enough?
+    return [], tables
+    # if str(path) == '.':
+    #     return tables, []
+    # else:
+    #     files = []
+    #     cursor.execute("pragma table_info('{}')".format(path))
+    #     table_info = cursor.fetchall()
+    #     for tinfo in table_info:
+    #         name = tinfo[1]
+    #         files.append(name)
+    #     return [], files
+
+
 def main(fpath, args):
     database = sqlite3.connect(fpath)
     cursor = database.cursor()
     cursor.execute("select name from sqlite_master where type='table'")
-    tables = cursor.fetchall()
+    tables = [table[0] for table in cursor.fetchall()]
+    fname = os.path.basename(fpath)
+    gc = partial(get_contents, cursor, tables)
 
-    if args_chk(args, 'interactive') or args_chk(args, 'cui'):
-        # make list_tree
-        list_tree = [{}]
-        for table, in tables:
-            debug_print('{}'.format(table))
-            list_tree[0][table] = [{}]
-            cursor.execute("pragma table_info('{}')".format(table))
-            table_info = cursor.fetchall()
-            for tinfo in table_info:
-                debug_print('{}'.format(tinfo))
-                name = tinfo[1]
-                list_tree[0][table].append(name)
-        if args_chk(args, 'interactive'):
-            fname = os.path.basename(fpath)
-            interactive_view(list_tree, fname, partial(show_table, cursor))
-        elif args_chk(args, 'cui'):
-            interactive_cui(list_tree, fpath, partial(show_table, cursor))
-
+    if args_chk(args, 'interactive'):
+        interactive_view(fname, gc, partial(show_table, cursor))
+    elif args_chk(args, 'cui'):
+        interactive_cui(fname, gc, partial(show_table, cursor))
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             for t in tables:
-                print(t[0])
+                print(t)
         for k in args.key:
             print_key(k)
             info, err = show_table(cursor, k, verbose=True)
@@ -110,7 +113,7 @@ def main(fpath, args):
             else:
                 cprint(err, fg='r')
     else:
-        for table, in tables:
-            info, err = show_table(cursor, table, args.verbose)
+        for table in tables:
+            info, err = show_table(cursor, table, verbose=args.verbose)
             if err is None:
                 print("\n".join(info))
