@@ -7,7 +7,7 @@ from getpass import getpass
 
 from . import args_chk, is_image, print_key, cprint, debug_print,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer
-from pymeflib.tree2 import TreeViewer, branch_str, show_tree
+from pymeflib.tree2 import branch_str, show_tree
 
 
 def get_pwd():
@@ -63,9 +63,8 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
 
     # directory
     if zipinfo.is_dir():
-        tree = TreeViewer(zip_file.filename, get_contents)
         res.append('{}/'.format(key_name))
-        files, dirs = tree.get_contents(key_name)
+        files, dirs = get_contents(zip_file, '', key_name)
         for f in files:
             res.append('{}{}'.format(branch_str, f))
         for d in dirs:

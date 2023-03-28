@@ -6,7 +6,7 @@ from functools import partial
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui, show_image_file
-from pymeflib.tree2 import branch_str, TreeViewer, show_tree
+from pymeflib.tree2 import branch_str, show_tree
 
 
 def show_tar(tar_file, args, get_contents, cpath, cui=False):
@@ -49,9 +49,8 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False):
 
     # directory
     elif tarinfo.isdir():
-        tree = TreeViewer(tar_file.name, get_contents)
         res.append('{}/'.format(key_name))
-        dirs, files = tree.get_contents('', key_name)
+        dirs, files = get_contents(tar_file, '', key_name)
         for f in files:
             res.append('{}{}'.format(branch_str, f))
         for d in dirs:
