@@ -12,7 +12,7 @@ CUI view tool made by python.
 
 ### Optional Requirements
 
-- [numpy](https://numpy.org/) for hdf5, pickle
+- [numpy](https://numpy.org/) for hdf5
 - [tabulate](https://pypi.org/project/tabulate/) for sqlite3
 - [PIL (Pillow)](https://pillow.readthedocs.io/), [matplotlib](https://matplotlib.org/) or [OpenCV](https://pypi.org/project/opencv-python/) to show a image.
     - Shell commands (e.g. "open" in macOS) are also available.  
