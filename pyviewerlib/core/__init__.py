@@ -60,7 +60,7 @@ def interactive_view(fname, get_contents, show_func):
     inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
     tv = TreeViewer('.', get_contents)
     while(True):
-        dirs, files = tv.get_contents('', cpath)
+        dirs, files = tv.get_contents(cpath)
         cprint('current path:', ' {}/{}'.format(fname, cpath), bg='c')
         cprint('contents in this dict:', ' ', bg='g', end='')
         for d in dirs:

@@ -29,7 +29,7 @@ def show_func(data, cpath, cui):
     return '{}'.format(tmp_data).split('\n'), None
 
 
-def get_contents(data, root, path):
+def get_contents(data, path):
     tmp_data = data
     dirs = []
     files = []

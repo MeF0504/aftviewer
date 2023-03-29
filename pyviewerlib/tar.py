@@ -50,7 +50,7 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False):
     # directory
     elif tarinfo.isdir():
         res.append('{}/'.format(key_name))
-        dirs, files = get_contents(tar_file, '', key_name)
+        dirs, files = get_contents(tar_file, key_name)
         for f in files:
             res.append('{}{}'.format(branch_str, f))
         for d in dirs:
@@ -61,7 +61,7 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False):
     return res, None
 
 
-def get_contents(tar_file, root, path):
+def get_contents(tar_file, path):
     path = str(path)
     if path == '.':
         lenpath = 0

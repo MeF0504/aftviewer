@@ -73,7 +73,7 @@ def show_table(cursor, table_path, cui=False, verbose=True):
     return res, None
 
 
-def get_contents(cursor, tables, root, path):
+def get_contents(cursor, tables, path):
     # this is enough?
     return [], tables
     # if str(path) == '.':

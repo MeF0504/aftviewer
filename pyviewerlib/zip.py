@@ -15,7 +15,7 @@ def get_pwd():
     return pwd.encode()
 
 
-def get_contents(zip_file, root, path):
+def get_contents(zip_file, path):
     if str(path) == '.':
         cpath = ''
         lenpath = 0
@@ -64,7 +64,7 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
     # directory
     if zipinfo.is_dir():
         res.append('{}/'.format(key_name))
-        files, dirs = get_contents(zip_file, '', key_name)
+        files, dirs = get_contents(zip_file, key_name)
         for f in files:
             res.append('{}{}'.format(branch_str, f))
         for d in dirs:

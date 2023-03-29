@@ -85,7 +85,7 @@ def show_names(name, obj):
         print(name)
 
 
-def get_contents(h5_file, root, path):
+def get_contents(h5_file, path):
     dirs = []
     files = []
     data = h5_file[str(path)]

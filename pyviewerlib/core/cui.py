@@ -77,7 +77,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
     sel_idx = 0
     side_shift_ud = 0
     side_shift_lr = 0
-    dirs, files = tv.get_contents('', cpath)
+    dirs, files = tv.get_contents(cpath)
     contents = dirs+files
 
     main_info = []
@@ -134,7 +134,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
 
         elif key in ['KEY_SR', 'KEY_SUP']:
             if is_search:
-                dirs, files = tv.get_contents('', cpath)
+                dirs, files = tv.get_contents(cpath)
                 sel_idx = 0
                 side_shift_ud = 0
                 side_shift_lr = 0
@@ -147,7 +147,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 is_search = False
             elif str(cpath) != '.':
                 cpath = cpath.parent
-                dirs, files = tv.get_contents('', cpath)
+                dirs, files = tv.get_contents(cpath)
                 sel_idx = 0
                 side_shift_ud = 0
                 side_shift_lr = 0
@@ -165,7 +165,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                     cpath = PurePath(sel_cont)
                 else:
                     cpath = cpath/sel_cont
-                dirs, files = tv.get_contents('', cpath)
+                dirs, files = tv.get_contents(cpath)
                 main_info = []
                 main_shift_ud = 0
                 main_shift_lr = 0
