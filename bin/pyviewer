@@ -46,7 +46,6 @@ def get_filetype(fpath):
         "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
         "jupyter": "ipynb",
         "xpm": "xpm",
-        "stl": "stl",
         "text": "py txt",
     }
     if 'type' in json_opts:
@@ -94,7 +93,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    supported_type = 'hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm, stl'.split(', ')
+    supported_type = 'hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm,'.split(', ')
     if 'type' in json_opts:
         for typ in json_opts['type']:
             supported_type.append(typ)
