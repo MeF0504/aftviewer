@@ -8,7 +8,6 @@ CUI view tool made by python.
 - [numpy](https://numpy.org/) for numpy, xpm
 - [h5py](https://docs.h5py.org/) for hdf5
 - [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
-- [matplotlib](https://matplotlib.org/) for stl
 
 ### Optional Requirements
 
@@ -35,36 +34,40 @@ python -c "$(curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/instal
 
 ## Usage
 ```bash
-usage: pyviewer [-h] [-t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm,stl}]
-                [-iv IMAGE_VIEWER] [--encoding ENCODING] [-v | -k [KEY ...] | -i | -c]
+usage: pyviewer [-h] [-t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm}]
+                [-iv IMAGE_VIEWER] [--encoding ENCODING] [--ask_password]
+                [-v | -k [KEY ...] | -i | -c]
                 file
 
-show the constitution of a file. support file types ... hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm, stl
+show the constitution of a file. support file types ... hdf5, pickle, numpy,
+tar, zip, sqlite3, raw_image, jupyter, xpm
 
 positional arguments:
   file                  input file / "pyviewer update" will update this file
 
 options:
   -h, --help            show this help message and exit
-  -t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm,stl}, --type {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm,stl}
+  -t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm}
                         file type
   -iv IMAGE_VIEWER, --image_viewer IMAGE_VIEWER
                         set image viewer. supported args are 'matplotlib' (use
-                        matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV'
-                        (use cv2.imshow), and other string is treated as an external
-                        command (e.g. gosr, open).
+                        matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show),
+                        'OpenCV' (use cv2.imshow), and other string is treated
+                        as an external command (e.g. gosr, open).
   --encoding ENCODING   specify the encoding format in pickle and zip file.
+  --ask_password, -p    ask for the password for the file if needed.
   -v, --verbose         show details
   -k [KEY ...], --key [KEY ...]
-                        Dictionary key name in a pickle, path to a Group/Dataset in
-                        hdf5, a path to a file/dictionary in tar/zip, a
-                        table[/column[,column2...]] in sqlite3 or a key name in npz. If
-                        no key is specified, return the list of keys.
-  -i, --interactive     open a file with interactive mode. support pickle, hdf5, tar,
-                        zip, sqlite3.
+                        Dictionary key name in a pickle, path to a
+                        Group/Dataset in hdf5, a path to a file/dictionary in
+                        tar/zip, a table[/column[,column2...]] in sqlite3 or a
+                        key name in npz. If no key is specified, return the
+                        list of keys.
+  -i, --interactive     open a file with interactive mode. support pickle,
+                        hdf5, tar, zip, sqlite3.
   -c, --interactive_cui
-                        open a file with interactive CUI mode. support hdf5, tar, zip,
-                        sqlite3.
+                        open a file with interactive CUI mode. support hdf5,
+                        tar, zip, sqlite3.
 ```
 
 ## Customize
