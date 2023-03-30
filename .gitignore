@@ -4,3 +4,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+/pyviewerlib/*
+!/pyviewerlib/core/*
+!/pyviewerlib/__init__.py
+!/pyviewerlib/tar.py
+!/pyviewerlib/xpm.py
+!/pyviewerlib/zip.py
+!/pyviewerlib/hdf5.py
+!/pyviewerlib/numpy.py
+!/pyviewerlib/pickle.py
+!/pyviewerlib/sqlite3.py
+!/pyviewerlib/jupyter.py
+!/pyviewerlib/raw_image.py
