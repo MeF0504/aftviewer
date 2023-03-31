@@ -1,11 +1,17 @@
 import os
 from functools import partial
+from pathlib import PurePosixPath
 
 import h5py
 
 from . import args_chk, print_key, cprint, debug_print,\
     interactive_view, interactive_cui, FG, BG, END
 from pymeflib.tree2 import show_tree
+import pyviewerlib.core.cui
+import pyviewerlib.core
+pyviewerlib.core.cui.PurePath = PurePosixPath
+pyviewerlib.core.PurePath = PurePosixPath
+
 try:
     import numpy as np
 except ImportError:

@@ -1,12 +1,16 @@
 import os
 import tarfile
 import tempfile
-import platform
 from functools import partial
+from pathlib import PurePosixPath
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui, show_image_file
 from pymeflib.tree2 import branch_str, show_tree
+import pyviewerlib.core.cui
+import pyviewerlib.core
+pyviewerlib.core.cui.PurePath = PurePosixPath
+pyviewerlib.core.PurePath = PurePosixPath
 
 
 def show_tar(tar_file, args, get_contents, cpath, cui=False):
@@ -18,8 +22,6 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False):
             key_name = cpath[:-1]
         else:
             key_name = cpath
-        if platform.system() == "Windows":
-            key_name = key_name.replace('\\', '/')
         tarinfo = tar_file.getmember(key_name)
     except KeyError as e:
         debug_print(e)

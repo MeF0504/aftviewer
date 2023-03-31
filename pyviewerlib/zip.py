@@ -1,13 +1,17 @@
 import os
 import zipfile
 import tempfile
-import platform
 from functools import partial
 from getpass import getpass
+from pathlib import PurePosixPath
 
 from . import args_chk, is_image, print_key, cprint, debug_print,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer
 from pymeflib.tree2 import branch_str, show_tree
+import pyviewerlib.core.cui
+import pyviewerlib.core
+pyviewerlib.core.cui.PurePath = PurePosixPath
+pyviewerlib.core.PurePath = PurePosixPath
 
 
 def get_pwd():
@@ -54,8 +58,6 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
         key_name = cpath
         if key_name+'/' in zip_file.namelist():
             key_name += '/'
-        if platform.system() == "Windows":
-            key_name = key_name.replace('\\', '/')
         zipinfo = zip_file.getinfo(key_name)
     except KeyError as e:
         debug_print(e)
