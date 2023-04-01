@@ -25,7 +25,9 @@ def get_contents(zip_file, path):
         lenpath = 0
     else:
         cpath = str(path)
-        lenpath = len(cpath)+1
+        if not cpath.endswith('/'):
+            cpath += '/'
+        lenpath = len(cpath)
     files = []
     dirs = []
     for z in zip_file.infolist():
@@ -38,6 +40,8 @@ def get_contents(zip_file, path):
         zname = z.filename[lenpath:]
         if zname.endswith('/'):
             zname = zname[:-1]
+        if z.filename == str(cpath):
+            continue
         if '/' in zname:
             # in some case, directories are not listed?
             tmp_dir = zname.split('/')[0]
@@ -55,7 +59,7 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
     res = []
     img_viewer = get_image_viewer(args)
     try:
-        key_name = cpath
+        key_name = str(cpath)
         if key_name+'/' in zip_file.namelist():
             key_name += '/'
         zipinfo = zip_file.getinfo(key_name)
@@ -65,8 +69,8 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
 
     # directory
     if zipinfo.is_dir():
-        res.append('{}/'.format(key_name))
-        files, dirs = get_contents(zip_file, key_name)
+        res.append('{}'.format(key_name))
+        dirs, files = get_contents(key_name)
         for f in files:
             res.append('{}{}'.format(branch_str, f))
         for d in dirs:
