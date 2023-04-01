@@ -79,8 +79,11 @@ def get_contents(tar_file, path):
                 continue
         tname = t.name[lenpath:]
         if '/' in tname:
-            continue
-        if t.isfile():
+            # in some case, directories are not listed?
+            tmp_dir = tname.split('/')[0]
+            if tmp_dir not in dirs:
+                dirs.append(tmp_dir)
+        elif t.isfile():
             files.append(tname)
         elif t.isdir():
             dirs.append(tname)
