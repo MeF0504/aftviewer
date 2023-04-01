@@ -7,7 +7,7 @@ from pathlib import Path, PurePath
 
 from . import debug
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from pymeflib.tree import tree_viewer, get_list
+from pymeflib.tree2 import TreeViewer
 
 curses_debug = debug
 
@@ -21,7 +21,17 @@ def editer_cmd(key):
         return key
 
 
-def curses_main(tree, fname, show_func, cpath, tv, stdscr):
+def get_all_items(tree_view):
+    res_dirs = []
+    res_files = []
+    tv = TreeViewer('.', tree_view.get_contents)
+    for cpath, dirs, files in tv:
+        res_dirs += [str(cpath/d) for d in dirs]
+        res_files += [str(cpath/f) for f in files]
+    return res_dirs, res_files
+
+
+def curses_main(fname, show_func, cpath, tv, stdscr):
     # clear screen
     stdscr.clear()
     winy, winx = stdscr.getmaxyx()
@@ -67,7 +77,7 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
     sel_idx = 0
     side_shift_ud = 0
     side_shift_lr = 0
-    files, dirs = tv.get_contents(cpath)
+    dirs, files = tv.get_contents(cpath)
     contents = dirs+files
 
     main_info = []
@@ -124,7 +134,7 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
 
         elif key in ['KEY_SR', 'KEY_SUP']:
             if is_search:
-                files, dirs = tv.get_contents(cpath)
+                dirs, files = tv.get_contents(cpath)
                 sel_idx = 0
                 side_shift_ud = 0
                 side_shift_lr = 0
@@ -137,7 +147,7 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
                 is_search = False
             elif str(cpath) != '.':
                 cpath = cpath.parent
-                files, dirs = tv.get_contents(cpath)
+                dirs, files = tv.get_contents(cpath)
                 sel_idx = 0
                 side_shift_ud = 0
                 side_shift_lr = 0
@@ -155,7 +165,7 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
                     cpath = PurePath(sel_cont)
                 else:
                     cpath = cpath/sel_cont
-                files, dirs = tv.get_contents(cpath)
+                dirs, files = tv.get_contents(cpath)
                 main_info = []
                 main_shift_ud = 0
                 main_shift_lr = 0
@@ -219,7 +229,7 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
             else:
                 old_files = files.copy()
                 old_dirs = dirs.copy()
-                tmp_files, tmp_dirs = get_list(tree)
+                tmp_dirs, tmp_files = get_all_items(tv)
                 files = []
                 dirs = []
                 for i, f in enumerate(tmp_files):
@@ -324,11 +334,11 @@ def curses_main(tree, fname, show_func, cpath, tv, stdscr):
         key = stdscr.getkey()
 
 
-def interactive_cui(tree, fname, show_func):
+def interactive_cui(fname, get_contents, show_func):
     cpath = PurePath('.')
-    tv = tree_viewer(tree, '.')
+    tv = TreeViewer('.', get_contents)
     try:
-        curses.wrapper(partial(curses_main, tree, fname, show_func, cpath, tv))
+        curses.wrapper(partial(curses_main, fname, show_func, cpath, tv))
     except AssertionError as e:
         winx, lenexp = e.args
         print('Window width should be larger than {:d} (current: {:d})'.format(lenexp, winx))

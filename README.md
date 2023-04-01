@@ -11,7 +11,7 @@ CUI view tool made by python.
 
 ### Optional Requirements
 
-- [numpy](https://numpy.org/) for hdf5, pickle
+- [numpy](https://numpy.org/) for hdf5
 - [tabulate](https://pypi.org/project/tabulate/) for sqlite3
 - [PIL (Pillow)](https://pillow.readthedocs.io/), [matplotlib](https://matplotlib.org/) or [OpenCV](https://pypi.org/project/opencv-python/) to show a image.
     - Shell commands (e.g. "open" in macOS) are also available.  
@@ -79,8 +79,6 @@ The json file should contain one dictionary. The possible key names of this are 
     - The method to show images. The role of the argument is the same as the command-line argument (-iv). If image viewer is specified in both json file and command-line arguments, the latter one is applied.
 - exec_cmd (list)
     - The executed command used to show an image. '%c' and '%s' are replaced by the command and file name individually. Note that this option is effective when the image viewer is nor 'PIL', 'matplotlib', and 'OpenCV'.
-- zip_encoding (str)
-    - The character code used to encode the zip file.
 - pickle_encoding (str)
     - The character code used to encode the pickle file.
 - type (dict)

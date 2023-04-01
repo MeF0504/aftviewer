@@ -3,7 +3,7 @@ from pathlib import Path, PurePath
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from pymeflib.color import FG, BG, END
-from pymeflib.tree import tree_viewer
+from pymeflib.tree2 import TreeViewer
 
 
 debug = False
@@ -55,12 +55,12 @@ def cprint(str1, str2='', fg=None, bg=None, **kwargs):
     print(print_str, **kwargs)
 
 
-def interactive_view(tree, fname, show_func):
+def interactive_view(fname, get_contents, show_func):
     cpath = PurePath('.')
     inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
-    tv = tree_viewer(tree, '.')
+    tv = TreeViewer('.', get_contents)
     while(True):
-        files, dirs = tv.get_contents(cpath)
+        dirs, files = tv.get_contents(cpath)
         cprint('current path:', ' {}/{}'.format(fname, cpath), bg='c')
         cprint('contents in this dict:', ' ', bg='g', end='')
         for d in dirs:
