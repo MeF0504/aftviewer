@@ -24,7 +24,8 @@ def update():
         update_err(cmd)
         return
     # ~~~~~~~~~~~~~~~ show log ~~~~~~~~~~~~~~~
-    cmd = ['git', 'log', 'HEAD..origin/main', '--pretty=format:%h (%ai); %s']
+    cmd = ['git', 'log', 'HEAD..origin/main',
+           '--pretty=format:%h (%ai); %s', '--graph']
     stat = subprocess.run(cmd, capture_output=True)
     debug_print('log std out: \n{}'.format(stat.stdout.decode()))
     debug_print('log std err: \n{}'.format(stat.stderr.decode()))

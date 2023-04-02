@@ -34,22 +34,24 @@ if (conf_dir/'setting.json').is_file():
 else:
     json_opts = {}
 
+# set supported file types
+type_config = {
+    "hdf5": "hdf5",
+    "pickle": "pkl pickle",
+    "numpy": "npy npz",
+    "zip": "zip",
+    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
+    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
+    "jupyter": "ipynb",
+    "xpm": "xpm",
+    "text": "py txt",
+}
+if 'type' in json_opts:
+    type_config.update(json_opts['type'])
+
 
 def get_filetype(fpath):
     ext = fpath.suffix[1:]
-    type_config = {
-        "hdf5": "hdf5",
-        "pickle": "pkl pickle",
-        "numpy": "npy npz",
-        "zip": "zip",
-        "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
-        "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
-        "jupyter": "ipynb",
-        "xpm": "xpm",
-        "text": "py txt",
-    }
-    if 'type' in json_opts:
-        type_config.update(json_opts['type'])
     if tarfile.is_tarfile(fpath):
         return 'tar'
     else:
@@ -93,10 +95,8 @@ def main(args):
 
 
 if __name__ == "__main__":
-    supported_type = 'hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm,'.split(', ')
-    if 'type' in json_opts:
-        for typ in json_opts['type']:
-            supported_type.append(typ)
+    supported_type = list(type_config.keys()).copy()
+    supported_type.remove('text')
     parser = argparse.ArgumentParser(description="show the constitution of a file. support file types ... {}".format(', '.join(supported_type)))
     parser.add_argument('file', help='input file / "pyviewer update" will update this file')
     parser.add_argument('-t', '--type', dest='type',
