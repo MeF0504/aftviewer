@@ -5,11 +5,10 @@ from functools import partial
 from curses.textpad import Textbox, rectangle
 from pathlib import Path, PurePath
 
-from . import debug
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from pymeflib.tree2 import TreeViewer
 
-curses_debug = debug
+curses_debug = False
 
 
 def editer_cmd(key):
@@ -335,6 +334,10 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
 
 
 def interactive_cui(fname, get_contents, show_func):
+    # should be imported after set_param.
+    from . import debug
+    global curses_debug
+    curses_debug = debug
     cpath = PurePath('.')
     tv = TreeViewer('.', get_contents)
     try:

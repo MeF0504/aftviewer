@@ -15,7 +15,6 @@ from pyviewerlib.core.update import update
 
 # global variables
 debug = False
-curses_debug = False
 if 'XDG_CONFIG_HOME' in os.environ:
     conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
 else:
@@ -124,11 +123,7 @@ if __name__ == "__main__":
             lib.main(parser)
     args = parser.parse_args()
 
-    if args_chk(args, 'cui') and debug:
-        debug = False
-        curses_debug = True
     args.debug = debug
-    args.curses_debug = curses_debug
     if not args_chk(args, 'image_viewer'):
         if 'image_viewer' in json_opts:
             args.image_viewer = json_opts['image_viewer']
