@@ -157,7 +157,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 sel_cont = ''
                 search_word = ''
 
-        elif key in ["\n", 'KEY_ENTER']:
+        elif key in ["\n", 'KEY_ENTER', 'KEY_SRIGHT']:
             sel_cont = contents[sel_idx]
             if sel_cont in dirs:
                 if is_search:
@@ -175,11 +175,15 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 search_word = ''
                 is_search = False
             else:
+                if key == 'KEY_SRIGHT':
+                    system = True
+                else:
+                    system = False
                 if is_search:
                     fpath = sel_cont
                 else:
                     fpath = str(cpath/sel_cont)
-                main_info, main_err = show_func(fpath, True)
+                main_info, main_err = show_func(fpath, cui=True, system=system)
                 main_info = "\n".join(main_info).split("\n")
                 main_info = [ln.replace("\t", "  ") for ln in main_info]
                 main_shift_ud = 0
@@ -277,7 +281,8 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                     win_side.addstr(i, len(cidx), cont, attr)
             win_side.refresh()
 
-        if key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'KEY_SUP',
+        if key in ['', "\n", 'KEY_ENTER', 'KEY_SRIGHT',
+                   'KEY_SR', 'KEY_SUP',
                    'j', 'k', 'h', 'l']:
             # main window
             win_main.clear()

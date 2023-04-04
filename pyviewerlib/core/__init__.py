@@ -1,4 +1,6 @@
 import sys
+import platform
+import subprocess
 from pathlib import Path, PurePath
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -100,3 +102,30 @@ def interactive_view(fname, get_contents, show_func):
 def print_key(key_name):
     cprint('<<< {} >>>'.format(key_name), '', fg='k', bg='y')
 
+
+def run_system_cmd(fname):
+    if 'system_cmd' in json_opts:
+        res = []
+        for cmd in json_opts['system_cmd']['args']:
+            if cmd == '%s':
+                res.append(fname)
+            elif cmd == '%c':
+                res.append(json_opts['system_cmd']['cmd'])
+            else:
+                res.append(cmd)
+    else:
+        if platform.system() == 'Windows':
+            res = ['start', fname]
+        elif platform.uname()[0] == 'Darwin':
+            res = ['open', fname]
+        elif platform.uname()[0] == 'Linux':
+            res = ['xdg-open', fname]
+        else:
+            print('Unsupported platform')
+            return False
+
+    stat = subprocess.run(res)
+    if stat.returncode != 0:
+        return False
+    else:
+        return True

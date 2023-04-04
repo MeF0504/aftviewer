@@ -77,8 +77,8 @@ The json file should contain one dictionary. The possible key names of this are 
 
 - image_viewer (str)
     - The method to show images. The role of the argument is the same as the command-line argument (-iv). If image viewer is specified in both json file and command-line arguments, the latter one is applied.
-- exec_cmd (list)
-    - The executed command used to show an image. '%c' and '%s' are replaced by the command and file name individually. Note that this option is effective when the image viewer is nor 'PIL', 'matplotlib', and 'OpenCV'.
+- iv_exec_cmd (list)
+    - The executed command used to show an image. '%c' and '%s' are replaced by the command and file name respectively. Note that this option is effective when the image viewer is nor 'PIL', 'matplotlib', and 'OpenCV'.
 - pickle_encoding (str)
     - The character code used to encode the pickle file.
 - type (dict)
@@ -90,3 +90,6 @@ The json file should contain one dictionary. The possible key names of this are 
     the class of `argparse.ArgumentParser`.  
     You can add new arguments by calling `parser.add_arguments()`.  
     Also see `samples/add_args_sample.py`.
+- system_cmd (dict)
+    - The executed command and command arguments. This dictionary conteints two keys: "cmd" and "args".
+    The value of "cmd" is the string of executed command. The value of "args" is the list of strings, which is used in `subprocess.run()`. '%c' and '%s' are replaced by the command and file name respectively.
