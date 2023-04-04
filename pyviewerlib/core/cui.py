@@ -92,7 +92,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
     while key != 'q':
         # showed indices are side_shift_ud ~ side_shift_ud+(winy-win_h)
 
-        if key == 'KEY_DOWN':
+        if key in ['J', 'KEY_DOWN']:
             if len(contents) <= winy-win_h:
                 # all contents are shown
                 if sel_idx < len(contents)-1:
@@ -107,7 +107,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 if sel_idx < len(contents)-1:
                     sel_idx += 1
 
-        elif key == 'KEY_UP':
+        elif key in ['K', 'KEY_UP']:
             if len(contents) <= winy-win_h:
                 # all contents are shown
                 if sel_idx > 0:
@@ -122,10 +122,10 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 if sel_idx > 0:
                     sel_idx -= 1
 
-        elif key == 'KEY_RIGHT':
+        elif key in ['L', 'KEY_RIGHT']:
             side_shift_lr += scroll_side
 
-        elif key == 'KEY_LEFT':
+        elif key in ['H', 'KEY_LEFT']:
             if side_shift_lr < scroll_side:
                 side_shift_lr = 0
             else:
@@ -260,7 +260,8 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
         contents = dirs+files
         if key in ['', 'KEY_UP', 'KEY_DOWN',
                    'KEY_LEFT', 'KEY_RIGHT',
-                   'KEY_SR', 'KEY_SUP', "\n", 'KEY_ENTER']:
+                   'KEY_SR', 'KEY_SUP', "\n", 'KEY_ENTER',
+                   'H', 'J', 'K', 'L']:
             # side bar window
             win_side.clear()
             for i in range(winy-win_h):
