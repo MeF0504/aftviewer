@@ -9,6 +9,22 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from pymeflib.tree2 import TreeViewer
 
 curses_debug = False
+help_str = '''
+key   function
+(S- means shift+key.)
+q     quit
+?     show this help.
+↓↑    select items
+JK    select items
+←→    shift strings in the side bar.
+HL    shift strings in the side bar.
+<CR>  open the item in the main window.
+S-↑   go up the path or quit the search mode.
+jk    scroll the main window.
+hl    shift the main window.
+/     start the search mode.
+S-→   open the items in system command if supported.
+'''
 
 
 def editer_cmd(key):
@@ -40,7 +56,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
     scroll_h = 5
     scroll_w = 5
     scroll_side = 3
-    exp = 'q:quit ↑↓←→:select shift+↑:go back enter:open jkhl:scroll /:search'
+    exp = 'q:quit ↑↓←→:sel shift+↑:back enter:open jkhl:scroll /:search ?:help'
     if winx <= len(exp)+1:
         raise AssertionError(winx, len(exp)+1)
     win_pwd = curses.newwin(win_h, winx, 0, 0)
@@ -257,6 +273,13 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                     dirs = old_dirs
                 key = ''
 
+        elif key == '?':
+            # help mode
+            main_info = help_str.split('\n')
+            sel_cont = '<help>'
+            main_shift_ud = 0
+            main_shift_lr = 0
+
         contents = dirs+files
         if key in ['', 'KEY_UP', 'KEY_DOWN',
                    'KEY_LEFT', 'KEY_RIGHT',
@@ -284,7 +307,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
 
         if key in ['', "\n", 'KEY_ENTER', 'KEY_SRIGHT',
                    'KEY_SR', 'KEY_SUP',
-                   'j', 'k', 'h', 'l']:
+                   'j', 'k', 'h', 'l', '?']:
             # main window
             win_main.clear()
             win_main.addstr(0, 0, sel_cont, curses.A_REVERSE)
