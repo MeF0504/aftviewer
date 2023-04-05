@@ -1,14 +1,13 @@
-import sys
 import re
 import curses
 from functools import partial
 from curses.textpad import Textbox, rectangle
-from pathlib import Path, PurePath
+from pathlib import PurePath
 
-sys.path.append(str(Path(__file__).parent.parent.parent))
 from pymeflib.tree2 import TreeViewer
+from . import debug
+curses_debug = debug
 
-curses_debug = False
 help_str = '''
 key   function
 (S- means shift+key.)
@@ -363,10 +362,6 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
 
 
 def interactive_cui(fname, get_contents, show_func):
-    # should be imported after set_param.
-    from . import debug
-    global curses_debug
-    curses_debug = debug
     cpath = PurePath('.')
     tv = TreeViewer('.', get_contents)
     try:
