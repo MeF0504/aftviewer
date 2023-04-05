@@ -1,12 +1,14 @@
 import os
 import zipfile
 import tempfile
+import time
 from functools import partial
 from getpass import getpass
 from pathlib import PurePosixPath
 
 from . import args_chk, is_image, print_key, cprint, debug_print,\
-    interactive_view, interactive_cui, show_image_file, get_image_viewer
+    interactive_view, interactive_cui, show_image_file, get_image_viewer,\
+    run_system_cmd
 from pymeflib.tree2 import branch_str, show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -55,7 +57,8 @@ def get_contents(zip_file, path):
     return dirs, files
 
 
-def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
+def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
+             system=False):
     res = []
     img_viewer = get_image_viewer(args)
     try:
@@ -67,8 +70,8 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
         debug_print(e)
         return [], 'Error!! cannot open {}.'.format(cpath)
 
-    # directory
     if zipinfo.is_dir():
+        # directory
         res.append('{}'.format(key_name))
         dirs, files = get_contents(key_name)
         for f in files:
@@ -76,8 +79,18 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False):
         for d in dirs:
             res.append('{}{}/'.format(branch_str, d))
 
-    # file
     else:
+        # file
+        if system:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
+                tmpfile = os.path.join(tmpdir, cpath)
+                ret = run_system_cmd(tmpfile)
+                time.sleep(3)
+            if ret:
+                return ['open {}'.format(cpath)], None
+            else:
+                return [], 'Failed to open {}.'.format(cpath)
         if is_image(key_name):
             cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
             with tempfile.TemporaryDirectory() as tmpdir:

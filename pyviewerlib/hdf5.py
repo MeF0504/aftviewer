@@ -20,7 +20,7 @@ else:
     imp_np = True
 
 
-def show_hdf5(h5_file, cpath, cui=False):
+def show_hdf5(h5_file, cpath, cui=False, system=False):
     if cui:
         fg = ''
         bg = ''

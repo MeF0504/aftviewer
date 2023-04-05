@@ -1,4 +1,8 @@
+import os
 import sys
+import json
+import platform
+import subprocess
 from pathlib import Path, PurePath
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -6,15 +10,40 @@ from pymeflib.color import FG, BG, END
 from pymeflib.tree2 import TreeViewer
 
 
+# global variables
 debug = False
-json_opts = {}
+if 'XDG_CONFIG_HOME' in os.environ:
+    conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
+else:
+    conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
 
+# load config file.
+if not conf_dir.exists():
+    os.makedirs(conf_dir, mode=0o755)
+if (conf_dir/'setting.json').is_file():
+    with open(conf_dir/'setting.json') as f:
+        json_opts = json.load(f)
+    if 'debug' in json_opts:
+        debug = bool(json_opts['debug'])
+    if 'force_default' in json_opts and json_opts['force_default']:
+        json_opts = {}
+else:
+    json_opts = {}
 
-def set_param(args):
-    global debug
-    global json_opts
-    debug = args.debug
-    json_opts = args.opts
+# set supported file types
+type_config = {
+    "hdf5": "hdf5",
+    "pickle": "pkl pickle",
+    "numpy": "npy npz",
+    "zip": "zip",
+    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
+    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
+    "jupyter": "ipynb",
+    "xpm": "xpm",
+    "text": "py txt",
+}
+if 'type' in json_opts:
+    type_config.update(json_opts['type'])
 
 
 def debug_print(msg):
@@ -100,3 +129,30 @@ def interactive_view(fname, get_contents, show_func):
 def print_key(key_name):
     cprint('<<< {} >>>'.format(key_name), '', fg='k', bg='y')
 
+
+def run_system_cmd(fname):
+    if 'system_cmd' in json_opts:
+        res = []
+        for cmd in json_opts['system_cmd']['args']:
+            if cmd == '%s':
+                res.append(fname)
+            elif cmd == '%c':
+                res.append(json_opts['system_cmd']['cmd'])
+            else:
+                res.append(cmd)
+    else:
+        if platform.system() == 'Windows':
+            res = ['start', fname]
+        elif platform.uname()[0] == 'Darwin':
+            res = ['open', fname]
+        elif platform.uname()[0] == 'Linux':
+            res = ['xdg-open', fname]
+        else:
+            print('Unsupported platform')
+            return False
+
+    stat = subprocess.run(res)
+    if stat.returncode != 0:
+        return False
+    else:
+        return True

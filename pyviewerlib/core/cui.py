@@ -1,15 +1,29 @@
-import sys
 import re
 import curses
 from functools import partial
 from curses.textpad import Textbox, rectangle
-from pathlib import Path, PurePath
+from pathlib import PurePath
 
-from . import debug
-sys.path.append(str(Path(__file__).parent.parent.parent))
 from pymeflib.tree2 import TreeViewer
-
+from . import debug
 curses_debug = debug
+
+help_str = '''
+key   function
+(S- means shift+key.)
+q     quit
+?     show this help.
+↓↑    select items
+JK    select items
+←→    shift strings in the side bar.
+HL    shift strings in the side bar.
+<CR>  open the item in the main window.
+S-↑   go up the path or quit the search mode.
+jk    scroll the main window.
+hl    shift the main window.
+/     start the search mode.
+S-→   open the items in system command if supported.
+'''
 
 
 def editer_cmd(key):
@@ -41,7 +55,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
     scroll_h = 5
     scroll_w = 5
     scroll_side = 3
-    exp = 'q:quit ↑↓←→:select shift+↑:go back enter:open jkhl:scroll /:search'
+    exp = 'q:quit ↑↓←→:sel shift+↑:back enter:open jkhl:scroll /:search ?:help'
     if winx <= len(exp)+1:
         raise AssertionError(winx, len(exp)+1)
     win_pwd = curses.newwin(win_h, winx, 0, 0)
@@ -93,7 +107,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
     while key != 'q':
         # showed indices are side_shift_ud ~ side_shift_ud+(winy-win_h)
 
-        if key == 'KEY_DOWN':
+        if key in ['J', 'KEY_DOWN']:
             if len(contents) <= winy-win_h:
                 # all contents are shown
                 if sel_idx < len(contents)-1:
@@ -108,7 +122,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 if sel_idx < len(contents)-1:
                     sel_idx += 1
 
-        elif key == 'KEY_UP':
+        elif key in ['K', 'KEY_UP']:
             if len(contents) <= winy-win_h:
                 # all contents are shown
                 if sel_idx > 0:
@@ -123,10 +137,10 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 if sel_idx > 0:
                     sel_idx -= 1
 
-        elif key == 'KEY_RIGHT':
+        elif key in ['L', 'KEY_RIGHT']:
             side_shift_lr += scroll_side
 
-        elif key == 'KEY_LEFT':
+        elif key in ['H', 'KEY_LEFT']:
             if side_shift_lr < scroll_side:
                 side_shift_lr = 0
             else:
@@ -158,7 +172,7 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 sel_cont = ''
                 search_word = ''
 
-        elif key in ["\n", 'KEY_ENTER']:
+        elif key in ["\n", 'KEY_ENTER', 'KEY_SRIGHT']:
             sel_cont = contents[sel_idx]
             if sel_cont in dirs:
                 if is_search:
@@ -176,11 +190,15 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                 search_word = ''
                 is_search = False
             else:
+                if key == 'KEY_SRIGHT':
+                    system = True
+                else:
+                    system = False
                 if is_search:
                     fpath = sel_cont
                 else:
                     fpath = str(cpath/sel_cont)
-                main_info, main_err = show_func(fpath, True)
+                main_info, main_err = show_func(fpath, cui=True, system=system)
                 main_info = "\n".join(main_info).split("\n")
                 main_info = [ln.replace("\t", "  ") for ln in main_info]
                 main_shift_ud = 0
@@ -254,10 +272,18 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                     dirs = old_dirs
                 key = ''
 
+        elif key == '?':
+            # help mode
+            main_info = help_str.split('\n')
+            sel_cont = '<help>'
+            main_shift_ud = 0
+            main_shift_lr = 0
+
         contents = dirs+files
         if key in ['', 'KEY_UP', 'KEY_DOWN',
                    'KEY_LEFT', 'KEY_RIGHT',
-                   'KEY_SR', 'KEY_SUP', "\n", 'KEY_ENTER']:
+                   'KEY_SR', 'KEY_SUP', "\n", 'KEY_ENTER',
+                   'H', 'J', 'K', 'L']:
             # side bar window
             win_side.clear()
             for i in range(winy-win_h):
@@ -278,8 +304,9 @@ def curses_main(fname, show_func, cpath, tv, stdscr):
                     win_side.addstr(i, len(cidx), cont, attr)
             win_side.refresh()
 
-        if key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'KEY_SUP',
-                   'j', 'k', 'h', 'l']:
+        if key in ['', "\n", 'KEY_ENTER', 'KEY_SRIGHT',
+                   'KEY_SR', 'KEY_SUP',
+                   'j', 'k', 'h', 'l', '?']:
             # main window
             win_main.clear()
             win_main.addstr(0, 0, sel_cont, curses.A_REVERSE)

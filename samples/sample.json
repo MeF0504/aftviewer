@@ -3,8 +3,11 @@
         "png_sample": "png PNG jpeg jpg JPG"
     },
     "image_viewer": "open",
-    "exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
+    "iv_exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
+    "system_cmd": {
+        "cmd": "open",
+        "args": ["%c", "%s"]
+    },
     "pickle_encoding": "ASCII",
-    "numpy_allow_pickle": true,
     "add_args": "add_args"
 }

@@ -83,9 +83,9 @@ def clear_mpl_axes(axes):
 
 
 def get_exec_cmds(args, fname):
-    if 'exec_cmd' in json_opts:
+    if 'iv_exec_cmd' in json_opts:
         res = []
-        for cmd in json_opts['exec_cmd']:
+        for cmd in json_opts['iv_exec_cmd']:
             if cmd == '%s':
                 res.append(fname)
             elif cmd == '%c':
