@@ -1,24 +1,12 @@
 #! /usr/bin/env python3
 
-import os
-import json
+import sys
 from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+from pyviewerlib import type_config
 
-if 'XDG_CONFIG_HOME' in os.environ:
-    conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
-else:
-    conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
-
-if (conf_dir/'setting.json').is_file():
-    with open(conf_dir/'setting.json') as f:
-        json_opts = json.load(f)
-else:
-    json_opts = {}
-
-supported_type = 'hdf5, pickle, numpy, tar, zip, sqlite3, raw_image, jupyter, xpm, stl'.split(', ')
-if 'type' in json_opts:
-    for typ in json_opts['type']:
-        supported_type.append(typ)
+supported_type = list(type_config.keys()).copy()
+supported_type.remove('text')
 
 print(' '.join(supported_type))
 
