@@ -151,7 +151,11 @@ def run_system_cmd(fname):
             print('Unsupported platform')
             return False
 
-    stat = subprocess.run(res)
+    if platform.system() == 'Windows':
+        shell = True
+    else:
+        shell = False
+    stat = subprocess.run(res, shell=shell)
     if stat.returncode != 0:
         return False
     else:
