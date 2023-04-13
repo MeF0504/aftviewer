@@ -25,8 +25,8 @@ def show_func(data, cpath, cui, system=False):
         if k in tmp_data:
             tmp_data = tmp_data[k]
         else:
-            return [], 'Error! no key {}'.format(k)
-    return '{}'.format(tmp_data).split('\n'), None
+            return '', 'Error! no key {}'.format(k)
+    return '{}'.format(tmp_data), None
 
 
 def get_contents(data, path):
