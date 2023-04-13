@@ -2,7 +2,7 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
-from typing import Callable
+from typing import Callable, List
 
 from pymeflib.tree2 import TreeViewer
 from . import debug
@@ -210,7 +210,7 @@ class CursesCUI():
                 fpath = str(self.cpath/self.sel_cont)
             self.main_info, self.main_err = self.show_func(fpath, cui=True,
                                                            system=system)
-            self.main_info = "\n".join(self.main_info).split("\n")
+            self.main_info = self.main_info.split("\n")
             self.main_info = [ln.replace("\t", "  ") for ln in self.main_info]
             self.main_shift_ud = 0
             self.main_shift_lr = 0
@@ -376,7 +376,7 @@ class CursesCUI():
         self.win_pwd.refresh()
 
     def main(self, stdscr, fname: str,
-             show_func: Callable[[str, bool, bool], list],
+             show_func: Callable[[str, bool, bool], List[str]],
              cpath: PurePath, tv: TreeViewer) -> None:
         self.stdscr = stdscr
         self.fname = fname

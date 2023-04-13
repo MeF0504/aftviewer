@@ -27,7 +27,7 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
         tarinfo = tar_file.getmember(key_name)
     except KeyError as e:
         debug_print(e)
-        return [], 'Error!! Cannot open {}.'.format(cpath)
+        return '', 'Error!! Cannot open {}.'.format(cpath)
 
     # file
     if tarinfo.isfile():
@@ -39,9 +39,9 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
                 ret = run_system_cmd(tmpfile)
                 time.sleep(3)
             if ret:
-                return ['open {}'.format(cpath)], None
+                return 'open {}'.format(cpath), None
             else:
-                return [], 'Failed to open {}.'.format(cpath)
+                return '', 'Failed to open {}.'.format(cpath)
         elif is_image(key_name):
             # image file
             cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
@@ -50,7 +50,7 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
                 tmpfile = os.path.join(tmpdir, cpath)
                 ret = show_image_file(tmpfile, args, cond)
             if not ret:
-                return [], 'Failed to show image.'
+                return '', 'Failed to show image.'
 
         else:
             # text file?
@@ -58,7 +58,7 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:
-                    return [], 'Error!! {}'.format(e)
+                    return '', 'Error!! {}'.format(e)
         res.append('')
 
     # directory
@@ -72,7 +72,7 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
     else:
         res.append('sorry, I can\'t show information.\n')
 
-    return res, None
+    return '\n'.join(res), None
 
 
 def get_contents(tar_file, path):
@@ -122,7 +122,7 @@ def main(fpath, args):
             print_key(k)
             info, err = show_tar(tar_file, args, gc, k)
             if err is None:
-                print("\n".join(info))
+                print(info)
                 print()
             else:
                 cprint(err, fg='r')

@@ -68,7 +68,7 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
         zipinfo = zip_file.getinfo(key_name)
     except KeyError as e:
         debug_print(e)
-        return [], 'Error!! cannot open {}.'.format(cpath)
+        return '', 'Error!! cannot open {}.'.format(cpath)
 
     if zipinfo.is_dir():
         # directory
@@ -88,9 +88,9 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
                 ret = run_system_cmd(tmpfile)
                 time.sleep(3)
             if ret:
-                return ['open {}'.format(cpath)], None
+                return 'open {}'.format(cpath), None
             else:
-                return [], 'Failed to open {}.'.format(cpath)
+                return '', 'Failed to open {}.'.format(cpath)
         if is_image(key_name):
             cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -98,7 +98,7 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
                 tmpfile = os.path.join(tmpdir, cpath)
                 ret = show_image_file(tmpfile, args, cond)
             if not ret:
-                return [], 'Failed to show image.'
+                return '', 'Failed to show image.'
 
         # text file?
         else:
@@ -106,9 +106,9 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:
-                    return [], 'Error!! {}'.format(e)
+                    return '', 'Error!! {}'.format(e)
 
-    return res, None
+    return '\n'.join(res), None
 
 
 def main(fpath, args):
@@ -144,7 +144,7 @@ def main(fpath, args):
             print_key(k)
             info, err = show_zip(zip_file, pwd, args, gc, k)
             if err is None:
-                print("\n".join(info))
+                print(info)
                 print()
             else:
                 cprint(err, fg='r')

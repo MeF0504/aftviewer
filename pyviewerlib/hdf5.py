@@ -77,7 +77,7 @@ def show_hdf5(h5_file, cpath, cui=False, system=False):
                     res.append('nan rate: {:.1f}%'.format(nan_rate*100))
                 except Exception:
                     pass
-    return res, None
+    return '\n'.join(res), None
 
 
 def show_detail(h5_file, name, obj):
@@ -121,7 +121,7 @@ def main(fpath, args):
                 print_key(k)
                 info, err = show_hdf5(h5_file, k, False)
                 if err is None:
-                    print("\n".join(info))
+                    print(info)
                     print()
                 else:
                     cprint(err, fg='r')

@@ -70,7 +70,7 @@ def show_table(cursor, table_path, cui=False, system=False, verbose=True):
                 for itm in itms:
                     tmp_res += ' {} |'.format(itm)
                 res.append(tmp_res)
-    return res, None
+    return '\n'.join(res), None
 
 
 def get_contents(cursor, tables, path):
@@ -108,7 +108,7 @@ def main(fpath, args):
             print_key(k)
             info, err = show_table(cursor, k, verbose=True)
             if err is None:
-                print("\n".join(info))
+                print(info)
                 print()
             else:
                 cprint(err, fg='r')
@@ -116,4 +116,4 @@ def main(fpath, args):
         for table in tables:
             info, err = show_table(cursor, table, verbose=args.verbose)
             if err is None:
-                print("\n".join(info))
+                print(info)

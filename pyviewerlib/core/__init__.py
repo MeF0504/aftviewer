@@ -116,7 +116,7 @@ def interactive_view(fname, get_contents, show_func):
                 cprint('output::', '\n', bg='r')
                 info, err = show_func(str(cpath/key_name), False)
                 if err is None:
-                    print("\n".join(info))
+                    print(info)
                 else:
                     cprint(err, fg='r')
             elif key_name in dirs:
