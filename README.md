@@ -91,5 +91,5 @@ The json file should contain one dictionary. The possible key names of this are 
     You can add new arguments by calling `parser.add_arguments()`.  
     Also see `samples/add_args_sample.py`.
 - system_cmd (dict)
-    - The executed command and command arguments. This dictionary conteints two keys: "cmd" and "args".
+    - The executed command and command arguments. This dictionary contains two keys: "cmd" and "args".
     The value of "cmd" is the string of executed command. The value of "args" is the list of strings, which is used in `subprocess.run()`. '%c' and '%s' are replaced by the command and file name respectively.
