@@ -14,7 +14,7 @@ from pyviewerlib.core.update import update
 
 
 def get_filetype(fpath):
-    ext = fpath.suffix[1:]
+    ext = fpath.suffix[1:].lower()
     if tarfile.is_tarfile(fpath):
         return 'tar'
     else:
