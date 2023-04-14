@@ -93,10 +93,12 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
                 return '', 'Failed to open {}.'.format(cpath)
         if is_image(key_name):
             cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
+            if cond:
+                return '', 'Failed to show image.'
             with tempfile.TemporaryDirectory() as tmpdir:
                 zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
                 tmpfile = os.path.join(tmpdir, cpath)
-                ret = show_image_file(tmpfile, args, cond)
+                ret = show_image_file(tmpfile, args)
             if not ret:
                 return '', 'Failed to show image.'
 

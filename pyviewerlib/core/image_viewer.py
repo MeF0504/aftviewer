@@ -98,12 +98,10 @@ def get_exec_cmds(args, fname):
     return res
 
 
-def show_image_file(img_file, args, disable_cond=False):
+def show_image_file(img_file, args):
     name = os.path.basename(img_file)
     img_viewer = get_image_viewer(args)
     debug_print('  use {}'.format(img_viewer))
-    if disable_cond:
-        return False
     if not os.path.isfile(img_file):
         debug_print('image file {} in not found'.format(img_file))
         return False
@@ -134,11 +132,9 @@ def show_image_file(img_file, args, disable_cond=False):
     return True
 
 
-def show_image_ndarray(data, name, args, disable_cond=False):
+def show_image_ndarray(data, name, args):
     img_viewer = get_image_viewer(args)
     debug_print('{}\n  use {}'.format(data.shape, img_viewer))
-    if disable_cond:
-        return False
     if img_viewer is None:
         print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
         return False

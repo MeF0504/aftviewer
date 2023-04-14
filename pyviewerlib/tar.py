@@ -45,10 +45,12 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
         elif is_image(key_name):
             # image file
             cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
+            if cond:
+                return '', 'Failed to show image.'
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
                 tmpfile = os.path.join(tmpdir, cpath)
-                ret = show_image_file(tmpfile, args, cond)
+                ret = show_image_file(tmpfile, args)
             if not ret:
                 return '', 'Failed to show image.'
 
