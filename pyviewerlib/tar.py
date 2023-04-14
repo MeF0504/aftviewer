@@ -15,7 +15,7 @@ pyviewerlib.core.cui.PurePath = PurePosixPath
 pyviewerlib.core.PurePath = PurePosixPath
 
 
-def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
+def show_tar(tar_file, args, get_contents, cpath, **kwargs):
     res = []
     img_viewer = get_image_viewer(args)
     # check cpath
@@ -32,7 +32,7 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
     # file
     if tarinfo.isfile():
 
-        if system:
+        if 'system' in kwargs and kwargs['system']:
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
                 tmpfile = os.path.join(tmpdir, cpath)
@@ -43,10 +43,10 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
             else:
                 return '', 'Failed to open {}.'.format(cpath)
         elif is_image(key_name):
-            # image file
-            cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
-            if cond:
-                return '', 'Failed to show image.'
+            if 'cui' in kwargs and kwargs['cui']:
+                ava_iv = ['PIL', 'matplotlib', 'OpenCV']
+                if img_viewer not in ava_iv:
+                    return '', 'Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer)
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
                 tmpfile = os.path.join(tmpdir, cpath)

@@ -57,8 +57,7 @@ def get_contents(zip_file, path):
     return dirs, files
 
 
-def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
-             system=False):
+def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
     res = []
     img_viewer = get_image_viewer(args)
     try:
@@ -81,7 +80,7 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
 
     else:
         # file
-        if system:
+        if 'system' in kwargs and kwargs['system']:
             with tempfile.TemporaryDirectory() as tmpdir:
                 zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
                 tmpfile = os.path.join(tmpdir, cpath)
@@ -91,10 +90,11 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, cui=False,
                 return 'open {}'.format(cpath), None
             else:
                 return '', 'Failed to open {}.'.format(cpath)
-        if is_image(key_name):
-            cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
-            if cond:
-                return '', 'Failed to show image.'
+        elif is_image(key_name):
+            if 'cui' in kwargs and kwargs['cui']:
+                ava_iv = ['PIL', 'matplotlib', 'OpenCV']
+                if img_viewer not in ava_iv:
+                    return '', 'Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer)
             with tempfile.TemporaryDirectory() as tmpdir:
                 zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
                 tmpfile = os.path.join(tmpdir, cpath)
