@@ -1,7 +1,6 @@
 import os
 import zipfile
 import tempfile
-import time
 from functools import partial
 from getpass import getpass
 from pathlib import PurePosixPath
@@ -81,11 +80,12 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
     else:
         # file
         if 'system' in kwargs and kwargs['system']:
+            stdscr = kwargs['stdscr']
             with tempfile.TemporaryDirectory() as tmpdir:
                 zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
                 tmpfile = os.path.join(tmpdir, cpath)
                 ret = run_system_cmd(tmpfile)
-                time.sleep(3)
+                stdscr.getkey()
             if ret:
                 return 'open {}'.format(cpath), None
             else:

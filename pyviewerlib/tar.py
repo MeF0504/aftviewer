@@ -1,7 +1,6 @@
 import os
 import tarfile
 import tempfile
-import time
 from functools import partial
 from pathlib import PurePosixPath
 
@@ -29,15 +28,15 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
         debug_print(e)
         return '', 'Error!! Cannot open {}.'.format(cpath)
 
-    # file
     if tarinfo.isfile():
-
+        # file
         if 'system' in kwargs and kwargs['system']:
+            stdscr = kwargs['stdscr']
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
                 tmpfile = os.path.join(tmpdir, cpath)
                 ret = run_system_cmd(tmpfile)
-                time.sleep(3)
+                stdscr.getkey()
             if ret:
                 return 'open {}'.format(cpath), None
             else:

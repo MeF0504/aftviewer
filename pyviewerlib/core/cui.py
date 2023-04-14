@@ -209,7 +209,8 @@ class CursesCUI():
             else:
                 fpath = str(self.cpath/self.sel_cont)
             self.info, self.err = self.show_func(fpath, cui=True,
-                                                 system=system)
+                                                 system=system,
+                                                 stdscr=self.stdscr)
             self.info = self.info.split("\n")
             self.info = [ln.replace("\t", "  ") for ln in self.info]
             self.main_shift_ud = 0
