@@ -35,8 +35,8 @@ class CursesCUI():
         self.side_shift_lr = 0
         self.sel_cont = ''
         # main window val
-        self.main_info = []
-        self.main_err = None
+        self.info = []
+        self.err = None
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         # mode val
@@ -162,8 +162,8 @@ class CursesCUI():
             self.sel_idx = 0
             self.side_shift_ud = 0
             self.side_shift_lr = 0
-            self.main_info = []
-            self.main_err = None
+            self.info = []
+            self.err = None
             self.main_shift_ud = 0
             self.main_shift_lr = 0
             self.sel_cont = ''
@@ -175,8 +175,8 @@ class CursesCUI():
             self.sel_idx = 0
             self.side_shift_ud = 0
             self.side_shift_lr = 0
-            self.main_info = []
-            self.main_err = None
+            self.info = []
+            self.err = None
             self.main_shift_ud = 0
             self.main_shift_lr = 0
             self.sel_cont = ''
@@ -190,7 +190,7 @@ class CursesCUI():
             else:
                 self.cpath = self.cpath/self.sel_cont
             self.dirs, self.files = self.tv.get_contents(self.cpath)
-            self.main_info = []
+            self.info = []
             self.main_shift_ud = 0
             self.main_shift_lr = 0
             self.sel_idx = 0
@@ -208,24 +208,24 @@ class CursesCUI():
                 fpath = self.sel_cont
             else:
                 fpath = str(self.cpath/self.sel_cont)
-            self.main_info, self.main_err = self.show_func(fpath, cui=True,
-                                                           system=system)
-            self.main_info = self.main_info.split("\n")
-            self.main_info = [ln.replace("\t", "  ") for ln in self.main_info]
+            self.info, self.err = self.show_func(fpath, cui=True,
+                                                 system=system)
+            self.info = self.info.split("\n")
+            self.info = [ln.replace("\t", "  ") for ln in self.info]
             self.main_shift_ud = 0
             self.main_shift_lr = 0
 
     def down_main(self):
         main_h = self.winy-self.win_h
-        if len(self.main_info) < main_h-1:
+        if len(self.info) < main_h-1:
             # all contents are shown
             pass
-        elif self.main_shift_ud < len(self.main_info)-self.scroll_h-1:
+        elif self.main_shift_ud < len(self.info)-self.scroll_h-1:
             self.main_shift_ud += self.scroll_h
 
     def up_main(self):
         main_h = self.winy-self.win_h
-        if len(self.main_info) < main_h-1:
+        if len(self.info) < main_h-1:
             # all contents are shown
             pass
         elif self.main_shift_ud < self.scroll_h:
@@ -275,8 +275,8 @@ class CursesCUI():
                 self.sel_idx = 0
                 self.side_shift_ud = 0
                 self.side_shift_lr = 0
-                self.main_info = []
-                self.main_err = None
+                self.info = []
+                self.err = None
                 self.main_shift_ud = 0
                 self.main_shift_lr = 0
                 self.sel_cont = ''
@@ -287,7 +287,7 @@ class CursesCUI():
             self.key = ''
 
     def show_help_message(self):
-        self.main_info = help_str.split('\n')
+        self.info = help_str.split('\n')
         self.sel_cont = '<help>'
         self.main_shift_ud = 0
         self.main_shift_lr = 0
@@ -324,15 +324,15 @@ class CursesCUI():
             if main_w > len(self.sel_cont)+2:
                 self.win_main.addstr(0, len(self.sel_cont)+2,
                                      '{}/{}'.format(self.main_shift_ud+1,
-                                                    len(self.main_info)),
+                                                    len(self.info)),
                                      curses.color_pair(4))
-        if self.main_err is None:
+        if self.err is None:
             # show contents
             for i in range(1, main_h):
-                if i-1+self.main_shift_ud >= len(self.main_info):
+                if i-1+self.main_shift_ud >= len(self.info):
                     break
                 idx = i+self.main_shift_ud
-                info = self.main_info[idx-1]
+                info = self.info[idx-1]
                 info = info[self.main_shift_lr:self.main_shift_lr+main_w-2]
                 if curses_debug:
                     info = "{:d} ".format(i+self.main_shift_ud)+info
@@ -343,7 +343,7 @@ class CursesCUI():
                                          curses.color_pair(3))
         else:
             # show error
-            self.win_main.addstr(1, 0, self.main_err, curses.color_pair(3))
+            self.win_main.addstr(1, 0, self.err, curses.color_pair(3))
         self.win_main.refresh()
 
     def update_pwd_window(self):
@@ -367,7 +367,7 @@ class CursesCUI():
                             's:{}-{}-{}-{} m:{}-{}-{}'.format(
                             len(self.contents),
                             self.side_shift_ud, self.side_shift_lr,
-                            self.sel_idx, len(self.main_info),
+                            self.sel_idx, len(self.info),
                            self.main_shift_ud, self.main_shift_lr))
         self.win_pwd.addstr(2, int(self.winx*2/3), ' '*(int(self.winx/3)-1))
         sw = self.search_word.replace("\n", '')[:int(self.winx/3)-1-6]
