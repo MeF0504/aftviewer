@@ -1,7 +1,6 @@
 import os
 import tarfile
 import tempfile
-import time
 from functools import partial
 from pathlib import PurePosixPath
 
@@ -15,7 +14,7 @@ pyviewerlib.core.cui.PurePath = PurePosixPath
 pyviewerlib.core.PurePath = PurePosixPath
 
 
-def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
+def show_tar(tar_file, args, get_contents, cpath, **kwargs):
     res = []
     img_viewer = get_image_viewer(args)
     # check cpath
@@ -29,26 +28,28 @@ def show_tar(tar_file, args, get_contents, cpath, cui=False, system=False):
         debug_print(e)
         return '', 'Error!! Cannot open {}.'.format(cpath)
 
-    # file
     if tarinfo.isfile():
-
-        if system:
+        # file
+        if 'system' in kwargs and kwargs['system']:
+            stdscr = kwargs['stdscr']
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
                 tmpfile = os.path.join(tmpdir, cpath)
                 ret = run_system_cmd(tmpfile)
-                time.sleep(3)
+                stdscr.getkey()
             if ret:
                 return 'open {}'.format(cpath), None
             else:
                 return '', 'Failed to open {}.'.format(cpath)
         elif is_image(key_name):
-            # image file
-            cond = cui and (img_viewer not in ['PIL', 'matplotlib', 'OpenCV'])
+            if 'cui' in kwargs and kwargs['cui']:
+                ava_iv = ['PIL', 'matplotlib', 'OpenCV']
+                if img_viewer not in ava_iv:
+                    return '', 'Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer)
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
                 tmpfile = os.path.join(tmpdir, cpath)
-                ret = show_image_file(tmpfile, args, cond)
+                ret = show_image_file(tmpfile, args)
             if not ret:
                 return '', 'Failed to show image.'
 

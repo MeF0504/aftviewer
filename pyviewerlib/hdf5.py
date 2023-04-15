@@ -20,8 +20,8 @@ else:
     imp_np = True
 
 
-def show_hdf5(h5_file, cpath, cui=False, system=False):
-    if cui:
+def show_hdf5(h5_file, cpath, **kwargs):
+    if 'cui' in kwargs and kwargs['cui']:
         fg = ''
         bg = ''
         end = ''
@@ -119,7 +119,7 @@ def main(fpath, args):
         if args.key:
             for k in args.key:
                 print_key(k)
-                info, err = show_hdf5(h5_file, k, False)
+                info, err = show_hdf5(h5_file, k, cui=False)
                 if err is None:
                     print(info)
                     print()

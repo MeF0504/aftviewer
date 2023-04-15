@@ -14,7 +14,7 @@ else:
     is_tabulate = True
 
 
-def show_table(cursor, table_path, cui=False, system=False, verbose=True):
+def show_table(cursor, table_path, verbose=True, **kwargs):
     shift = '  '
     res = []
     if '/' in table_path:

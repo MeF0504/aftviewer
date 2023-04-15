@@ -19,7 +19,7 @@ def show_keys(data, key):
             print(k)
 
 
-def show_func(data, cpath, cui, system=False):
+def show_func(data, cpath, **kwargs):
     tmp_data = data
     for k in PurePath(cpath).parts:
         if k in tmp_data:

@@ -114,7 +114,7 @@ def interactive_view(fname, get_contents, show_func):
                 key_name = key_name[:-1]
             if key_name in files:
                 cprint('output::', '\n', bg='r')
-                info, err = show_func(str(cpath/key_name), False)
+                info, err = show_func(str(cpath/key_name), cui=False)
                 if err is None:
                     print(info)
                 else:
