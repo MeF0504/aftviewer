@@ -13,8 +13,12 @@ key   function
 (S- means shift+key.)
 q     quit
 ?     show this help.
-↓↑    select items
-JK    select items
+↓J    select items (1 down)
+↑K    select items (1 up)
+D     select item ({} down)
+U     select item ({} up)
+g     select item (goto top)
+G     select item (goto bottom)
 ←→    shift strings in the side bar.
 HL    shift strings in the side bar.
 <CR>  open the item in the main window.
@@ -115,37 +119,47 @@ class CursesCUI():
             res_files += [str(cpath/f) for f in files]
         return res_dirs, res_files
 
-    def down_sidebar(self):
+    def down_sidebar(self, num):
         side_h = self.winy-self.win_h
         if len(self.contents) <= side_h:
             # all contents are shown
             if self.sel_idx < len(self.contents)-1:
-                self.sel_idx += 1
+                self.sel_idx += num
         elif self.side_shift_ud+side_h < len(self.contents):
             # not bottom
-            self.sel_idx += 1
+            self.sel_idx += num
             if self.sel_idx >= self.side_shift_ud+side_h:
-                self.side_shift_ud += 1
+                self.side_shift_ud += num
         else:
             # bottom
             if self.sel_idx < len(self.contents)-1:
-                self.sel_idx += 1
+                self.sel_idx += num
 
-    def up_sidebar(self):
+        if self.sel_idx >= len(self.contents):
+            self.sel_idx = len(self.contents)-1
+        if self.side_shift_ud >= len(self.contents):
+            self.side_shift_ud = len(self.contents)-1
+
+    def up_sidebar(self, num):
         side_h = self.winy-self.win_h
         if len(self.contents) <= side_h:
             # all contents are shown
             if self.sel_idx > 0:
-                self.sel_idx -= 1
+                self.sel_idx -= num
         elif self.side_shift_ud > 0:
             # not top
-            self.sel_idx -= 1
+            self.sel_idx -= num
             if self.sel_idx <= self.side_shift_ud:
-                self.side_shift_ud -= 1
+                self.side_shift_ud -= num
         else:
             # top
             if self.sel_idx > 0:
-                self.sel_idx -= 1
+                self.sel_idx -= num
+
+        if self.sel_idx < 0:
+            self.sel_idx = 0
+        if self.side_shift_ud < 0:
+            self.side_shift_ud = 0
 
     def shift_left_sidebar(self):
         self.side_shift_lr += self.scroll_side
@@ -288,7 +302,8 @@ class CursesCUI():
             self.key = ''
 
     def show_help_message(self):
-        self.info = help_str.split('\n')
+        self.info = help_str.format(self.scroll_h,
+                                    self.scroll_h).split('\n')
         self.sel_cont = '<help>'
         self.main_shift_ud = 0
         self.main_shift_lr = 0
@@ -396,9 +411,17 @@ class CursesCUI():
         while self.key != 'q':
             # showed indices are side_shift_ud ~ side_shift_ud+(winy-win_h)
             if self.key in ['J', 'KEY_DOWN']:
-                self.down_sidebar()
+                self.down_sidebar(1)
             elif self.key in ['K', 'KEY_UP']:
-                self.up_sidebar()
+                self.up_sidebar(1)
+            elif self.key == 'D':
+                self.down_sidebar(self.scroll_h)
+            elif self.key == 'U':
+                self.up_sidebar(self.scroll_h)
+            elif self.key == 'g':
+                self.up_sidebar(self.sel_idx)
+            elif self.key == 'G':
+                self.down_sidebar(len(self.contents)-self.sel_idx-1)
             elif self.key in ['L', 'KEY_RIGHT']:
                 self.shift_right_sidebar()
             elif self.key in ['H', 'KEY_LEFT']:
@@ -425,7 +448,9 @@ class CursesCUI():
             if self.key in ['', 'KEY_UP', 'KEY_DOWN',
                             'KEY_LEFT', 'KEY_RIGHT',
                             'KEY_SR', 'KEY_SUP', "\n", 'KEY_ENTER',
-                            'H', 'J', 'K', 'L']:
+                            'H', 'J', 'K', 'L',
+                            'D', 'U', 'g', 'G',
+                            ]:
                 self.update_side_bar()
             if self.key in ['', "\n", 'KEY_ENTER', 'KEY_SRIGHT',
                             'KEY_SR', 'KEY_SUP',
