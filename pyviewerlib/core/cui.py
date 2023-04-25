@@ -37,6 +37,7 @@ class CursesCUI():
         self.sel_idx = 0
         self.side_shift_ud = 0
         self.side_shift_lr = 0
+        self.contents = []
         self.sel_cont = ''
         # main window val
         self.info = []
@@ -162,13 +163,20 @@ class CursesCUI():
             self.side_shift_ud = 0
 
     def shift_left_sidebar(self):
-        self.side_shift_lr += self.scroll_side
-
-    def shift_right_sidebar(self):
         if self.side_shift_lr < self.scroll_side:
             self.side_shift_lr = 0
         else:
             self.side_shift_lr -= self.scroll_side
+
+    def shift_right_sidebar(self):
+        len_content = len(self.contents[self.sel_idx])
+        if self.sel_idx >= 100:
+            len_content += 4
+        else:
+            len_content += 3
+        len_content += 1  # margin
+        if self.side_shift_lr < len_content-self.win_w:
+            self.side_shift_lr += self.scroll_side
 
     def go_up_sidebar(self):
         if self.is_search:
