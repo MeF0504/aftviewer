@@ -22,13 +22,11 @@ Image = None
 plt = None
 cv2 = None
 img_viewer = None
-run_giv = False
 
 
 def get_image_viewer(args):
     global img_viewer
-    global run_giv
-    if run_giv:
+    if img_viewer is not None:
         return img_viewer
     global Image
     global plt
@@ -52,23 +50,28 @@ def get_image_viewer(args):
             from PIL import Image
             debug_print(' => image_viewer: PIL')
         except ImportError:
+            pass
+        else:
+            img_viewer = 'PIL'
+
+        if img_viewer is None:
             try:
                 import matplotlib.pyplot as plt
                 debug_print(' => image_viewer: matplotlib')
             except ImportError:
-                try:
-                    import cv2
-                    debug_print(' => image_viewer: OpenCV')
-                except ImportError:
-                    debug_print("can't find image_viewer")
-                    img_viewer = None
-                else:
-                    img_viewer = 'OpenCV'
+                pass
             else:
                 img_viewer = 'matplotlib'
-        else:
-            img_viewer = 'PIL'
-    run_giv = True
+
+        if img_viewer is None:
+            try:
+                import cv2
+                debug_print(' => image_viewer: OpenCV')
+            except ImportError:
+                debug_print("can't find image_viewer")
+                img_viewer = None
+            else:
+                img_viewer = 'OpenCV'
     return img_viewer
 
 
