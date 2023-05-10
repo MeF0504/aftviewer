@@ -9,5 +9,6 @@
         "args": ["%c", "%s"]
     },
     "pickle_encoding": "ASCII",
-    "add_args": "add_args"
+    "add_args": "add_args",
+    "numpy_format": {"edgeitems": 10, "threshold": 100}
 }

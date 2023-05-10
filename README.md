@@ -1,6 +1,6 @@
 # PyViewer
 
-CUI view tool made by python.
+CUI view tool made by Python.
 
 ## Requirements
 
@@ -93,3 +93,6 @@ The json file should contain one dictionary. The possible key names of this are 
 - system_cmd (dict)
     - The executed command and command arguments. This dictionary contains two keys: "cmd" and "args".
     The value of "cmd" is the string of executed command. The value of "args" is the list of strings, which is used in `subprocess.run()`. '%c' and '%s' are replaced by the command and file name respectively.
+- numpy_format (dict)
+    - The keyword arguments to set the printing method of Python items.
+    This dictionary is passed to the [numpy.set_printoptions](https://numpy.org/doc/stable/reference/generated/numpy.set_printoptions.html) as a var-keyword.

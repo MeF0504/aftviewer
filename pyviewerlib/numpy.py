@@ -1,7 +1,8 @@
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key, json_opts
+from . import args_chk, print_key, json_opts, set_numpy_format
+set_numpy_format(np)
 
 
 def show_numpy(data):

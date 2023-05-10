@@ -5,7 +5,7 @@ from pathlib import PurePosixPath
 import h5py
 
 from . import args_chk, print_key, cprint, debug_print,\
-    interactive_view, interactive_cui, FG, BG, END
+    interactive_view, interactive_cui, FG, BG, END, set_numpy_format
 from pymeflib.tree2 import show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -18,6 +18,7 @@ except ImportError:
     imp_np = False
 else:
     imp_np = True
+    set_numpy_format(np)
 
 
 def show_hdf5(h5_file, cpath, **kwargs):
