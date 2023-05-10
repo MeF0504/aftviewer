@@ -160,3 +160,9 @@ def run_system_cmd(fname):
         return False
     else:
         return True
+
+
+def set_numpy_format(numpy):
+    if 'numpy_format' in json_opts:
+        opts = json_opts['numpy_format']
+        numpy.set_printoptions(**opts)
