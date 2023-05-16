@@ -26,6 +26,9 @@ S-↑   go up the path or quit the search mode.
 jk    scroll the main window.
 hl    shift the main window.
 /     start the search mode.
+n     jump to next searching word.
+N     jump to previous searching word.
+f     search file names.
 S-→   open the items in system command if supported.
 '''
 
@@ -46,7 +49,8 @@ class CursesCUI():
         self.main_shift_lr = 0
         # mode val
         self.key = ''
-        self.search_word = ''
+        self.search_word = ''  # file name search
+        self.search_word2 = ''  # word search in current file
         self.is_search = False
 
     def init_win(self):
@@ -73,8 +77,10 @@ class CursesCUI():
                                       self.winx-self.win_w,
                                       self.win_h, self.win_w)
         self.win_search = curses.newwin(self.search_h,
-                                        self.winx-self.win_w-2,
-                                        self.win_h+2, self.win_w+1)
+                                        self.winx-self.win_w-3,
+                                        self.winy-self.search_h-1,
+                                        self.win_w+1)
+        # __________________________
         # |                        | ^
         # |          pwd           | | win_h
         # |________________________| v
@@ -101,6 +107,17 @@ class CursesCUI():
         curses.init_pair(6, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
         self.win_pwd.bkgd(' ', curses.color_pair(1))
         self.win_side.bkgd(' ', curses.color_pair(2))
+
+    def init_var(self):
+        self.sel_idx = 0
+        self.side_shift_ud = 0
+        self.side_shift_lr = 0
+        self.info = []
+        self.err = None
+        self.main_shift_ud = 0
+        self.main_shift_lr = 0
+        self.sel_cont = ''
+        self.search_word = ''
 
     @staticmethod
     def editer_cmd(key):
@@ -181,28 +198,12 @@ class CursesCUI():
     def go_up_sidebar(self):
         if self.is_search:
             self.dirs, self.files = self.tv.get_contents(self.cpath)
-            self.sel_idx = 0
-            self.side_shift_ud = 0
-            self.side_shift_lr = 0
-            self.info = []
-            self.err = None
-            self.main_shift_ud = 0
-            self.main_shift_lr = 0
-            self.sel_cont = ''
-            self.search_word = ''
+            self.init_var()
             self.is_search = False
         elif str(self.cpath) != '.':
             self.cpath = self.cpath.parent
             self.dirs, self.files = self.tv.get_contents(self.cpath)
-            self.sel_idx = 0
-            self.side_shift_ud = 0
-            self.side_shift_lr = 0
-            self.info = []
-            self.err = None
-            self.main_shift_ud = 0
-            self.main_shift_lr = 0
-            self.sel_cont = ''
-            self.search_word = ''
+            self.init_var()
 
     def select_item(self):
         self.sel_cont = self.contents[self.sel_idx]
@@ -212,15 +213,8 @@ class CursesCUI():
             else:
                 self.cpath = self.cpath/self.sel_cont
             self.dirs, self.files = self.tv.get_contents(self.cpath)
-            self.info = []
-            self.main_shift_ud = 0
-            self.main_shift_lr = 0
-            self.sel_idx = 0
-            self.side_shift_ud = 0
-            self.side_shift_lr = 0
-            self.sel_cont = ''
-            self.search_word = ''
             self.is_search = False
+            self.init_var()
         else:
             if self.key == 'KEY_SRIGHT':
                 system = True
@@ -248,10 +242,7 @@ class CursesCUI():
 
     def up_main(self):
         main_h = self.winy-self.win_h
-        if len(self.info) < main_h-1:
-            # all contents are shown
-            pass
-        elif self.main_shift_ud < self.scroll_h:
+        if self.main_shift_ud < self.scroll_h:
             self.main_shift_ud = 0
         else:
             self.main_shift_ud -= self.scroll_h
@@ -265,12 +256,15 @@ class CursesCUI():
     def shift_right_main(self):
         self.main_shift_lr += self.scroll_w
 
-    def into_search_box(self):
-        # search mode
+    def file_search(self):
+        # file name search mode
+        uly = self.winy-self.win_h-self.search_h-2
+        ulx = 0
         self.win_main.clear()
-        self.win_main.addstr(0, 0, 'search word: (empty cancel)',
+        self.win_main.addstr(uly-1, ulx, 'search file name: (empty cancel)',
                              curses.A_REVERSE)
-        rectangle(self.win_main, 1, 0, self.search_h+2, self.winx-self.win_w-1)
+        rectangle(self.win_main, uly, ulx,
+                  self.search_h+uly+1, self.winx-self.win_w-2)
         self.win_main.refresh()
         self.win_search.clear()
         box = Textbox(self.win_search)
@@ -295,19 +289,41 @@ class CursesCUI():
             if len(self.files)+len(self.dirs) != 0:
                 # find something
                 self.is_search = True
-                self.sel_idx = 0
-                self.side_shift_ud = 0
-                self.side_shift_lr = 0
-                self.info = []
-                self.err = None
-                self.main_shift_ud = 0
-                self.main_shift_lr = 0
-                self.sel_cont = ''
-                self.search_word = ''
+                self.init_var()
             else:
                 self.files = old_files
                 self.dirs = old_dirs
+                self.search_word = ''
             self.key = ''
+
+    def into_search_mode(self):
+        # search mode in current file.
+        uly = self.winy-self.win_h-self.search_h-2
+        ulx = 0
+        self.win_main.addstr(uly-1, ulx, 'search word: (empty cancel)',
+                             curses.A_REVERSE)
+        rectangle(self.win_main, uly, ulx,
+                  self.search_h+uly+1, self.winx-self.win_w-2)
+        self.win_main.refresh()
+        self.win_search.clear()
+        box = Textbox(self.win_search)
+        box.edit(self.editer_cmd)
+        search_word = box.gather()
+        self.search_word2 = search_word.replace("\n", '')[:-1]
+        self.jump_search_word(self.main_shift_ud, False)
+
+    def jump_search_word(self, start_line, reverse=False):
+        if not self.search_word2:
+            return
+        if reverse:
+            lines = range(start_line, -1, -1)
+        else:
+            lines = range(start_line, len(self.info))
+        for i in lines:
+            line = self.info[i]
+            if self.search_word2 in line:
+                self.main_shift_ud = i
+                break
 
     def show_help_message(self):
         self.info = help_str.format(self.scroll_h,
@@ -394,7 +410,11 @@ class CursesCUI():
                             self.sel_idx, len(self.info),
                            self.main_shift_ud, self.main_shift_lr))
         self.win_pwd.addstr(2, int(self.winx*2/3), ' '*(int(self.winx/3)-1))
-        sw = self.search_word.replace("\n", '')[:int(self.winx/3)-1-6]
+        if self.search_word:
+            sw = self.search_word
+        else:
+            sw = self.search_word2
+        sw = sw[:int(self.winx/3)-1-6]
         self.win_pwd.addstr(2, int(self.winx*2/3),
                             'srch: {}'.format(sw))
         self.win_pwd.refresh()
@@ -446,8 +466,14 @@ class CursesCUI():
                 self.shift_right_main()
             elif self.key == 'h':
                 self.shift_left_main()
+            elif self.key == 'f':
+                self.file_search()
             elif self.key == '/':
-                self.into_search_box()
+                self.into_search_mode()
+            elif self.key == 'n':
+                self.jump_search_word(self.main_shift_ud+1, False)
+            elif self.key == 'N':
+                self.jump_search_word(self.main_shift_ud-1, True)
             elif self.key == '?':
                 self.show_help_message()
 
@@ -462,7 +488,9 @@ class CursesCUI():
                 self.update_side_bar()
             if self.key in ['', "\n", 'KEY_ENTER', 'KEY_SRIGHT',
                             'KEY_SR', 'KEY_SUP',
-                            'j', 'k', 'h', 'l', '?']:
+                            'j', 'k', 'h', 'l', '?',
+                            '/', 'n', 'N',
+                            ]:
                 self.update_main_window()
             if self.key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'KEY_SUP']:
                 self.update_pwd_window()
