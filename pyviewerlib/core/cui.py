@@ -17,19 +17,21 @@ q     quit
 ↑K    select items (1 up)
 D     select item ({} down)
 U     select item ({} up)
-g     select item (goto top)
-G     select item (goto bottom)
+S-←   select item (goto top)
+S-→   select item (goto bottom)
 ←→    shift strings in the side bar.
 HL    shift strings in the side bar.
 <CR>  open the item in the main window.
 S-↑   go up the path or quit the search mode.
 jk    scroll the main window.
 hl    shift the main window.
+g     goto the top of main view.
+G     goto the bottom if main view.
 /     start the search mode.
 n     jump to next searching word.
 N     jump to previous searching word.
 f     search file names.
-S-→   open the items in system command if supported.
+S-↓   open the items in system command if supported.
 '''
 
 
@@ -205,7 +207,7 @@ class CursesCUI():
             self.dirs, self.files = self.tv.get_contents(self.cpath)
             self.init_var()
 
-    def select_item(self):
+    def select_item(self, system):
         self.sel_cont = self.contents[self.sel_idx]
         if self.sel_cont in self.dirs:
             if self.is_search:
@@ -216,10 +218,6 @@ class CursesCUI():
             self.is_search = False
             self.init_var()
         else:
-            if self.key == 'KEY_SRIGHT':
-                system = True
-            else:
-                system = False
             if self.is_search:
                 fpath = self.sel_cont
             else:
@@ -232,20 +230,19 @@ class CursesCUI():
             self.main_shift_ud = 0
             self.main_shift_lr = 0
 
-    def down_main(self):
+    def down_main(self, num):
         main_h = self.winy-self.win_h
         if len(self.info) < main_h-1:
             # all contents are shown
             pass
-        elif self.main_shift_ud < len(self.info)-self.scroll_h-1:
-            self.main_shift_ud += self.scroll_h
+        elif self.main_shift_ud < len(self.info)-num-1:
+            self.main_shift_ud += num
 
-    def up_main(self):
-        main_h = self.winy-self.win_h
-        if self.main_shift_ud < self.scroll_h:
+    def up_main(self, num):
+        if self.main_shift_ud < num:
             self.main_shift_ud = 0
         else:
-            self.main_shift_ud -= self.scroll_h
+            self.main_shift_ud -= num
 
     def shift_left_main(self):
         if self.main_shift_lr < self.scroll_w:
@@ -446,9 +443,9 @@ class CursesCUI():
                 self.down_sidebar(self.scroll_h)
             elif self.key == 'U':
                 self.up_sidebar(self.scroll_h)
-            elif self.key == 'g':
+            elif self.key == 'KEY_SLEFT':
                 self.up_sidebar(self.sel_idx)
-            elif self.key == 'G':
+            elif self.key == 'KEY_SRIGHT':
                 self.down_sidebar(len(self.contents)-self.sel_idx-1)
             elif self.key in ['L', 'KEY_RIGHT']:
                 self.shift_right_sidebar()
@@ -456,16 +453,22 @@ class CursesCUI():
                 self.shift_left_sidebar()
             elif self.key in ['KEY_SR', 'KEY_SUP']:
                 self.go_up_sidebar()
-            elif self.key in ["\n", 'KEY_ENTER', 'KEY_SRIGHT']:
-                self.select_item()
+            elif self.key in ["\n", 'KEY_ENTER']:
+                self.select_item(system=False)
+            elif self.key in ['KEY_SDOWN', 'KEY_SF']:
+                self.select_item(system=True)
             elif self.key == 'j':
-                self.down_main()
+                self.down_main(self.scroll_h)
             elif self.key == 'k':
-                self.up_main()
+                self.up_main(self.scroll_h)
             elif self.key == 'l':
                 self.shift_right_main()
             elif self.key == 'h':
                 self.shift_left_main()
+            elif self.key == 'g':
+                self.up_main(self.main_shift_ud)
+            elif self.key == 'G':
+                self.down_main(len(self.info)-self.main_shift_ud-2)
             elif self.key == 'f':
                 self.file_search()
             elif self.key == '/':
@@ -481,15 +484,17 @@ class CursesCUI():
 
             if self.key in ['', 'KEY_UP', 'KEY_DOWN',
                             'KEY_LEFT', 'KEY_RIGHT',
+                            'KEY_SRIGHT', 'KEY_SLEFT',
                             'KEY_SR', 'KEY_SUP', "\n", 'KEY_ENTER',
                             'H', 'J', 'K', 'L',
-                            'D', 'U', 'g', 'G',
+                            'D', 'U',
                             ]:
                 self.update_side_bar()
-            if self.key in ['', "\n", 'KEY_ENTER', 'KEY_SRIGHT',
+            if self.key in ['', "\n", 'KEY_ENTER',
+                            'KEY_SF', 'KEY_SDOWN',
                             'KEY_SR', 'KEY_SUP',
-                            'j', 'k', 'h', 'l', '?',
-                            '/', 'n', 'N',
+                            'j', 'k', 'h', 'l', 'g', 'G',
+                            '?', '/', 'n', 'N',
                             ]:
                 self.update_main_window()
             if self.key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'KEY_SUP']:
