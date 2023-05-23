@@ -10,26 +10,32 @@ curses_debug = debug
 
 help_str = '''
 key   function
-(S- means shift+key.)
+(S- means shift+key)
 q     quit
-?     show this help.
-↓J    select items (1 down)
-↑K    select items (1 up)
+?     show this help
+↓     select items (1 down)
+J     select items (1 down)
+↑     select items (1 up)
+K     select items (1 up)
 D     select item ({} down)
 U     select item ({} up)
 g     select item (goto top)
 G     select item (goto bottom)
-←→    shift strings in the side bar.
-HL    shift strings in the side bar.
-<CR>  open the item in the main window.
-S-↑   go up the path or quit the search mode.
-jk    scroll the main window.
-hl    shift the main window.
-/     start the search mode.
-n     jump to next searching word.
-N     jump to previous searching word.
-f     search file names.
-S-→   open the items in system command if supported.
+←     shift strings in the side bar left
+→     shift strings in the side bar right
+H     shift strings in the side bar left
+L     shift strings in the side bar right
+<CR>  open the item in the main window
+S-↑   go up the path or quit the search mode
+j     scroll down the main window
+k     scroll up the main window
+h     shift the main window left
+l     shift the main window right
+/     start the search mode
+n     jump to next searching word
+N     jump to previous searching word
+f     search file names
+S-→   open the items in system command if supported
 '''
 
 
@@ -373,9 +379,9 @@ class CursesCUI():
                     break
                 idx = i+self.main_shift_ud
                 info = self.info[idx-1]
-                info = info[self.main_shift_lr:self.main_shift_lr+main_w-2]
                 if curses_debug:
                     info = "{:d} ".format(i+self.main_shift_ud)+info
+                info = info[self.main_shift_lr:self.main_shift_lr+main_w-2]
                 try:
                     self.win_main.addstr(i, 0, info)
                 except Exception as e:
