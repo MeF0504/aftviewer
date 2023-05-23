@@ -379,9 +379,9 @@ class CursesCUI():
                     break
                 idx = i+self.main_shift_ud
                 info = self.info[idx-1]
-                info = info[self.main_shift_lr:self.main_shift_lr+main_w-2]
                 if curses_debug:
                     info = "{:d} ".format(i+self.main_shift_ud)+info
+                info = info[self.main_shift_lr:self.main_shift_lr+main_w-2]
                 try:
                     self.win_main.addstr(i, 0, info)
                 except Exception as e:
