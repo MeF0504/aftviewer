@@ -40,18 +40,30 @@ def main(args):
     if not args_chk(args, 'type'):
         args.type = get_filetype(fpath)
 
-    if args.type == 'text':
+    if args.type is None:
+        print('This file type is not supported')
+        return
+    elif args.type == 'text':
         if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
             print('vimでも使ってろ！')
         else:
             print("Why Don't you use vim???")
         return
 
+    # python import style
+    lib_path = "pyviewerlib.{}".format(args.type)
+    # file path
+    lib_path2 = Path(__file__).parent.parent/"pyviewerlib"
+    lib_path2 /= "{}.py".format(args.type)
+    if not lib_path2.is_file():
+        print('Library file {} is not found.'.format(lib_path2))
+        return
     try:
-        lib = import_module("pyviewerlib.{}".format(args.type))
+        lib = import_module(lib_path)
     except ImportError as e:
-        debug_print(e)
-        print("{} is not a supported file type".format(args.type))
+        print("Failed to load library")
+        print('lib: {}'.format(lib_path2))
+        print('error: {}'.format(e))
         return
     lib.main(fpath, args)
     return
