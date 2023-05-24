@@ -1,11 +1,11 @@
 import re
 import curses
 from curses.textpad import Textbox, rectangle
-from pathlib import PurePath
+from pathlib import PurePath, Path
 from typing import Callable, List
 
 from pymeflib.tree2 import TreeViewer
-from . import debug
+from . import debug, conf_dir
 curses_debug = debug
 
 help_str = '''
@@ -119,7 +119,6 @@ class CursesCUI():
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         self.sel_cont = ''
-        self.search_word = ''
 
     @staticmethod
     def editer_cmd(key):
@@ -268,6 +267,7 @@ class CursesCUI():
         box.edit(self.editer_cmd)
         search_word = box.gather()
         self.search_word = search_word.replace("\n", '').replace(" ", '')
+        self.search_word2 = ''
         if len(self.search_word) == 0:
             self.win_main.clear()
             self.win_main.refresh()
@@ -275,6 +275,9 @@ class CursesCUI():
             old_files = self.files.copy()
             old_dirs = self.dirs.copy()
             dirs, files = self.get_all_items()
+            debug_log('search files')
+            debug_log('{}'.format(files))
+            debug_log('{}'.format(dirs))
             self.files = []
             self.dirs = []
             for i, f in enumerate(files):
@@ -290,7 +293,6 @@ class CursesCUI():
             else:
                 self.files = old_files
                 self.dirs = old_dirs
-                self.search_word = ''
             self.key = ''
 
     def into_search_mode(self):
@@ -307,6 +309,7 @@ class CursesCUI():
         box.edit(self.editer_cmd)
         search_word = box.gather()
         self.search_word2 = search_word.replace("\n", '')[:-1]
+        self.search_word = ''
         self.jump_search_word(self.main_shift_ud, False)
 
     def jump_search_word(self, start_line, reverse=False):
@@ -502,6 +505,21 @@ class CursesCUI():
             if curses_debug:
                 self.debug_info()
             self.key = self.stdscr.getkey()
+
+
+log_init = False
+def debug_log(msg):
+    if not curses_debug:
+        return
+    log_file = Path(conf_dir)/"curses_debug.log"
+    global log_init
+    if not log_init:
+        with open(log_file, 'w') as f:
+            # clear file
+            pass
+        log_init = True
+    with open(log_file, 'a') as f:
+        f.write(msg+"\n")
 
 
 def interactive_cui(fname, get_contents, show_func):

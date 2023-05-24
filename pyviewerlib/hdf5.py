@@ -9,8 +9,10 @@ from . import args_chk, print_key, cprint, debug_print,\
 from pymeflib.tree2 import show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
+import pymeflib.tree2
 pyviewerlib.core.cui.PurePath = PurePosixPath
 pyviewerlib.core.PurePath = PurePosixPath
+pymeflib.tree2.PurePath = PurePosixPath
 
 try:
     import numpy as np
