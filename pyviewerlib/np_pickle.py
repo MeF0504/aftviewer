@@ -5,7 +5,7 @@ from functools import partial
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key, set_numpy_format,\
+from . import args_chk, print_key, set_numpy_format, debug_print, json_opts,\
     interactive_view, interactive_cui
 from .numpy import show_numpy
 from .pickle import show_func as show_pickle, get_contents as get_pickle
@@ -55,7 +55,17 @@ def show_data(data, key):
 
 
 def main(fpath, args):
-    data = np.load(fpath, allow_pickle=True)
+    if args_chk(args, 'encoding'):
+        debug_print('set encoding from args')
+        encoding = args.encoding
+    elif 'pickle_encoding' in json_opts:
+        debug_print('set encoding from json')
+        encoding = json_opts['pickle_encoding']
+    else:
+        encoding = 'ASCII'
+    debug_print('encoding: {}'.format(encoding))
+
+    data = np.load(fpath, allow_pickle=True, encoding=encoding)
     if type(data) != NpzFile:
         print('please use --type numpy')
         return
