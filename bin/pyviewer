@@ -86,9 +86,9 @@ if __name__ == "__main__":
                           action='store_true', help='show details')
     ex_group.add_argument('-k', '--key', dest='key', help='Dictionary key name in a pickle, path to a Group/Dataset in hdf5, a path to a file/dictionary in tar/zip, a table[/column[,column2...]] in sqlite3 or a key name in npz. If no key is specified, return the list of keys.', nargs='*')
     ex_group.add_argument('-i', '--interactive', dest='interactive',
-                          help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3.', action='store_true')
+                          help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3, np_pickle.', action='store_true')
     ex_group.add_argument('-c', '--interactive_cui', dest='cui',
-                          help='open a file with interactive CUI mode. support hdf5, tar, zip, sqlite3.', action='store_true')
+                          help='open a file with interactive CUI mode. support pickle, hdf5, tar, zip, sqlite3, np_pickle.', action='store_true')
     if 'add_args' in json_opts:
         try:
             # additional arguments

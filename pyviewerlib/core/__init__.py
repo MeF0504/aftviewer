@@ -35,6 +35,8 @@ type_config = {
     "hdf5": "hdf5",
     "pickle": "pkl pickle",
     "numpy": "npy npz",
+    "np_pickle": "",
+    "tar": "",  # tar is identified by tarfile module.
     "zip": "zip",
     "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
     "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
