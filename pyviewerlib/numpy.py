@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key, json_opts, set_numpy_format
+from . import args_chk, print_key, set_numpy_format
 set_numpy_format(np)
 
 
@@ -62,11 +62,7 @@ min      : {}'''.format(d_mean, d_max, d_min)
 
 
 def main(fpath, args):
-    if 'numpy_allow_pickle' in json_opts:
-        allow_pickle = json_opts['numpy_allow_pickle']
-    else:
-        allow_pickle = False
-    data = np.load(fpath, allow_pickle=allow_pickle)
+    data = np.load(fpath, allow_pickle=False)
     if args_chk(args, 'verbose'):
         if type(data) == NpzFile:
             for k in data:

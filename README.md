@@ -5,7 +5,7 @@ CUI view tool made by Python.
 ## Requirements
 
 - [Python](https://www.python.org/) > 3.7?
-- [numpy](https://numpy.org/) for numpy, xpm
+- [numpy](https://numpy.org/) for numpy, xpm, np_pickle
 - [h5py](https://docs.h5py.org/) for hdf5
 - [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
 
@@ -34,20 +34,21 @@ python -c "$(curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/instal
 
 ## Usage
 ```bash
-usage: pyviewer [-h] [-t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm}]
+usage: pyviewer [-h]
+                [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}]
                 [-iv IMAGE_VIEWER] [--encoding ENCODING] [--ask_password]
                 [-v | -k [KEY ...] | -i | -c]
                 file
 
 show the constitution of a file. support file types ... hdf5, pickle, numpy,
-tar, zip, sqlite3, raw_image, jupyter, xpm
+np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm
 
 positional arguments:
   file                  input file / "pyviewer update" will update this file
 
 options:
   -h, --help            show this help message and exit
-  -t {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,tar,zip,sqlite3,raw_image,jupyter,xpm}
+  -t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}
                         file type
   -iv IMAGE_VIEWER, --image_viewer IMAGE_VIEWER
                         set image viewer. supported args are 'matplotlib' (use
@@ -64,10 +65,10 @@ options:
                         key name in npz. If no key is specified, return the
                         list of keys.
   -i, --interactive     open a file with interactive mode. support pickle,
-                        hdf5, tar, zip, sqlite3.
+                        hdf5, tar, zip, sqlite3, np_pickle.
   -c, --interactive_cui
-                        open a file with interactive CUI mode. support hdf5,
-                        tar, zip, sqlite3.
+                        open a file with interactive CUI mode. support pickle,
+                        hdf5, tar, zip, sqlite3, np_pickle.
 ```
 
 ## Customize

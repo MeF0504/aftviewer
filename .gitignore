@@ -11,6 +11,7 @@ __pycache__/
 !/pyviewerlib/hdf5.py
 !/pyviewerlib/jupyter.py
 !/pyviewerlib/numpy.py
+!/pyviewerlib/np_pickle.py
 !/pyviewerlib/pickle.py
 !/pyviewerlib/raw_image.py
 !/pyviewerlib/sqlite3.py
