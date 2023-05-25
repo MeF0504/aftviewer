@@ -4,14 +4,14 @@ _pyviewer_cmp()
 {
     _arguments \
         '(- *)'{-h,--help}'[show help]' \
-        '(-t --type)'{-t,--type}'[type]:type:_pyviewr_types' \
-        '(-iv --image_viewer)'{-iv,--image_viewer}'[image viewer]:image viewer:_pyviewer_iv' \
-        '(-p --ask_password)'{-p,--ask_password}'[ask pass]:pass' \
-        '(-v --verbose)'{-v,--verbose}'[verbose]:verbose' \
-        '(-k --key)'{-k,--key}'[keys]:keys' \
-        '(-i --interactive)'{-i,--interactive}'[interactive mode]:interactive' \
-        '(-c --interactive_cui)'{-c,--interactive_cui}'[interactive cui mode]:interactive cui' \
-        --encoding'[encoding]:encoding' \
+        '(-t --type)'{-t,--type}'[set type]:type:_pyviewr_types' \
+        '(-iv --image_viewer)'{-iv,--image_viewer}'[set image viewer]:image viewer:_pyviewer_iv' \
+        '(-p --ask_password)'{-p,--ask_password}'[password is asked when opening a file]:pass' \
+        '(-v --verbose)'{-v,--verbose}'[view file with verbose mode]:verbose' \
+        '(-k --key)'{-k,--key}'[set viewing keys]:keys' \
+        '(-i --interactive)'{-i,--interactive}'[view file with interactive mode]:interactive' \
+        '(-c --interactive_cui)'{-c,--interactive_cui}'[view file with interactive cui mode]:interactive cui' \
+        --encoding'[set encoding]:encoding' \
         '*:target file:_pyviewer_targets'
 }
 
