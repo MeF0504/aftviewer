@@ -125,6 +125,10 @@ class CursesCUI():
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         self.sel_cont = ''
+        if hasattr(self, 'dirs'):
+            self.dirs.sort()
+        if hasattr(self, 'files'):
+            self.files.sort()
 
     @staticmethod
     def editer_cmd(key):

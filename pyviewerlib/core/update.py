@@ -20,13 +20,30 @@ def update():
     cprint('running "{}"...'.format(' '.join(cmd)), fg='y')
     stat = subprocess.run(cmd)
     if stat.returncode != 0:
-        cprint(stat.stderr.decode(), fg='r')
         update_err(cmd)
         return
+    # ~~~~~~~~~~~~~~~ get branch ~~~~~~~~~~~~~~~
+    cmd = 'git branch'.split()
+    stat = subprocess.run(cmd, capture_output=True)
+    if stat.returncode != 0:
+        update_err(cmd)
+        return
+    branches = stat.stdout.decode().split()
+    cur_branch = branches[branches.index('*')+1]
+    if cur_branch != 'main':
+        cprint('checkout to main...', fg='y')
+        cmd = 'git checkout main'.split()
+        stat = subprocess.run(cmd)
+        if stat.returncode != 0:
+            update_err(cmd)
+            return
     # ~~~~~~~~~~~~~~~ show log ~~~~~~~~~~~~~~~
     cmd = ['git', 'log', 'HEAD..origin/main',
            '--pretty=format:%h (%ai); %s', '--graph']
     stat = subprocess.run(cmd, capture_output=True)
+    if stat.returncode != 0:
+        update_err(cmd)
+        return
     debug_print('log std out: \n{}'.format(stat.stdout.decode()))
     debug_print('log std err: \n{}'.format(stat.stderr.decode()))
     if len(stat.stderr+stat.stdout) == 0:
