@@ -92,6 +92,8 @@ def interactive_view(fname, get_contents, show_func):
     tv = TreeViewer('.', get_contents)
     while(True):
         dirs, files = tv.get_contents(cpath)
+        dirs.sort()
+        files.sort()
         cprint('current path:', ' {}/{}'.format(fname, cpath), bg='c')
         cprint('contents in this dict:', ' ', bg='g', end='')
         for d in dirs:
