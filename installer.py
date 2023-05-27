@@ -22,11 +22,14 @@ subprocess.run(['git', 'clone', '--recursive',
 
 if 'PATH' in os.environ \
    and str(install_path/'bin') not in os.environ['PATH'].split(os.pathsep):
-    print('\nplease add {} to your PATH.'.format(install_path/'bin'))
+    print('\n{}please add {} to your PATH.{}'.format(
+        '\033[31m', install_path/'bin', '\033[0m'))
 if 'SHELL' in os.environ:
     if 'zsh' in os.environ['SHELL']:
         zsh_cmp = install_path/'shell/completion.zsh'
-        print('\nplease add \'[[ -f "{}" ]] && source "{}"\' in your .zshrc.'.format(zsh_cmp, zsh_cmp))
+        print('\n{}please add \'[[ -f "{}" ]] && source "{}"\' in your .zshrc.{}'.format('\033[33m', zsh_cmp,
+                                                                                         zsh_cmp, '\033[0m'))
     if 'bash' in os.environ['SHELL']:
         bash_cmp = install_path/'shell/completion.bash'
-        print('\nplease add \'[[ -f "{}" ]] && source "{}"\' in your .bashrc.'.format(bash_cmp, bash_cmp))
+        print('\n{}please add \'[[ -f "{}" ]] && source "{}"\' in your .bashrc.{}'.format('\033[33m', bash_cmp,
+                                                                                          bash_cmp, '\033[0m'))
