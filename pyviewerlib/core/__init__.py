@@ -1,11 +1,9 @@
 import os
-import sys
 import json
 import platform
 import subprocess
 from pathlib import Path, PurePath
 
-sys.path.append(str(Path(__file__).parent.parent.parent))
 from pymeflib.color import FG, BG, END
 from pymeflib.tree2 import TreeViewer
 
@@ -16,10 +14,10 @@ if 'XDG_CONFIG_HOME' in os.environ:
     conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
 else:
     conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
-
-# load config file.
 if not conf_dir.exists():
     os.makedirs(conf_dir, mode=0o755)
+
+# load config file.
 if (conf_dir/'setting.json').is_file():
     with open(conf_dir/'setting.json') as f:
         json_opts = json.load(f)
