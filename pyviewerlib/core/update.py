@@ -2,8 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))
-from pyviewerlib import debug_print, cprint
+from . import debug_print, cprint
 
 
 def update_err(cmd):
