@@ -18,15 +18,19 @@ if not conf_dir.exists():
     os.makedirs(conf_dir, mode=0o755)
 
 # load config file.
+with (Path(__file__).parent/'default.json').open('r') as f:
+    json_opts = json.load(f)
 if (conf_dir/'setting.json').is_file():
     with open(conf_dir/'setting.json') as f:
-        json_opts = json.load(f)
-    if 'debug' in json_opts:
-        debug = bool(json_opts['debug'])
-    if 'force_default' in json_opts and json_opts['force_default']:
-        json_opts = {}
-else:
-    json_opts = {}
+        load_opts = json.load(f)
+        if 'force_default' in load_opts and load_opts['force_default']:
+            load_opts = {}
+        for key in json_opts:
+            if key in load_opts:
+                json_opts[key] = load_opts[key]
+    if 'debug' in load_opts:
+        debug = bool(load_opts['debug'])
+    del load_opts
 
 # set supported file types
 type_config = {
@@ -42,8 +46,7 @@ type_config = {
     "xpm": "xpm",
     "text": "py txt",
 }
-if 'type' in json_opts:
-    type_config.update(json_opts['type'])
+type_config.update(json_opts['type'])
 
 
 def debug_print(msg):
@@ -133,7 +136,7 @@ def print_key(key_name):
 
 
 def run_system_cmd(fname):
-    if 'system_cmd' in json_opts:
+    if json_opts['system_cmd'] is not None:
         res = []
         for cmd in json_opts['system_cmd']['args']:
             if cmd == '%s':
@@ -165,6 +168,5 @@ def run_system_cmd(fname):
 
 
 def set_numpy_format(numpy):
-    if 'numpy_format' in json_opts:
-        opts = json_opts['numpy_format']
-        numpy.set_printoptions(**opts)
+    opts = json_opts['numpy_format']
+    numpy.set_printoptions(**opts)

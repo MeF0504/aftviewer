@@ -58,11 +58,8 @@ def main(fpath, args):
     if args_chk(args, 'encoding'):
         debug_print('set encoding from args')
         encoding = args.encoding
-    elif 'pickle_encoding' in json_opts:
-        debug_print('set encoding from json')
-        encoding = json_opts['pickle_encoding']
     else:
-        encoding = 'ASCII'
+        encoding = json_opts['pickle_encoding']
     debug_print('encoding: {}'.format(encoding))
 
     data = np.load(fpath, allow_pickle=True, encoding=encoding)

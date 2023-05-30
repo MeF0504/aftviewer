@@ -86,17 +86,14 @@ def clear_mpl_axes(axes):
 
 
 def get_exec_cmds(args, fname):
-    if 'iv_exec_cmd' in json_opts:
-        res = []
-        for cmd in json_opts['iv_exec_cmd']:
-            if cmd == '%s':
-                res.append(fname)
-            elif cmd == '%c':
-                res.append(args.image_viewer)
-            else:
-                res.append(cmd)
-    else:
-        res = [args.image_viewer, fname]
+    res = []
+    for cmd in json_opts['iv_exec_cmd']:
+        if cmd == '%s':
+            res.append(fname)
+        elif cmd == '%c':
+            res.append(args.image_viewer)
+        else:
+            res.append(cmd)
     debug_print('executed command: {}'.format(res))
     return res
 
