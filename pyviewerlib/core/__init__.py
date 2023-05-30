@@ -75,6 +75,17 @@ def args_chk(args, attr):
         return False
 
 
+def show_opts():
+    for key, val in json_opts.items():
+        if type(val) == dict:
+            print_key(key)
+            for k2, v2 in val.items():
+                print(f'  {k2}: {v2}')
+        else:
+            print_key(key)
+            print(val)
+
+
 def cprint(str1, str2='', fg=None, bg=None, **kwargs):
     print_str = str1
     if fg is not None:

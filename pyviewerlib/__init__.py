@@ -1,7 +1,9 @@
 from pymeflib.color import FG, BG, END
+# values
 from .core import debug, json_opts, type_config
+# functions
 from .core import debug_print, args_chk, cprint, print_key, \
-    set_numpy_format, interactive_view, run_system_cmd
+    set_numpy_format, interactive_view, run_system_cmd, show_opts
 from .core.image_viewer import get_image_viewer, clear_mpl_axes, \
     get_exec_cmds, show_image_file, show_image_ndarray, is_image
 try:

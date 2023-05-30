@@ -9,7 +9,8 @@ from pathlib import Path
 from importlib import import_module
 
 sys.path.append(str(Path(__file__).parent.parent))
-from pyviewerlib import debug, json_opts, type_config, args_chk, debug_print
+from pyviewerlib import debug, json_opts, type_config, args_chk, debug_print,\
+    show_opts
 from pyviewerlib.core.update import update
 
 
@@ -27,6 +28,10 @@ def get_filetype(fpath):
 def main(args):
     if args.file == 'update':
         update()
+        return
+
+    if args.file == 'show_opts':
+        show_opts()
         return
 
     fpath = Path(args.file).expanduser()
