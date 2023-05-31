@@ -182,25 +182,25 @@ def print_key(key_name):
 
 
 def run_system_cmd(fname):
-    if json_opts['system_cmd'] is not None:
-        res = []
-        for cmd in json_opts['system_cmd']['args']:
-            if cmd == '%s':
-                res.append(fname)
-            elif cmd == '%c':
-                res.append(json_opts['system_cmd']['cmd'])
-            else:
-                res.append(cmd)
-    else:
+    cmd = json_opts['system_cmd']['cmd']
+    if cmd is None:
         if platform.system() == 'Windows':
-            res = ['start', fname]
+            cmd = 'start'
         elif platform.uname()[0] == 'Darwin':
-            res = ['open', fname]
+            cmd = 'open'
         elif platform.uname()[0] == 'Linux':
-            res = ['xdg-open', fname]
+            cmd = 'xdg-open'
         else:
             print('Unsupported platform')
             return False
+    res = []
+    for arg in json_opts['system_cmd']['args']:
+        if arg == '%s':
+            res.append(fname)
+        elif arg == '%c':
+            res.append(cmd)
+        else:
+            res.append(arg)
 
     if platform.system() == 'Windows':
         shell = True

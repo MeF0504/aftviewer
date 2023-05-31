@@ -2,7 +2,10 @@
     "type": {},
     "image_viewer": null,
     "iv_exec_cmd": ["%c", "%s"],
-    "system_cmd": null,
+    "system_cmd": {
+        "cmd": null,
+        "args": ["%c", "%s"]
+    },
     "pickle_encoding": "ASCII",
     "add_args": null,
     "numpy_format": {},
