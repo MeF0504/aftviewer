@@ -4,7 +4,7 @@ import platform
 import subprocess
 from pathlib import Path, PurePath
 
-from pymeflib.color import FG, BG, END
+from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer
 
 
@@ -87,14 +87,29 @@ def show_opts():
 
 
 def cprint(str1, str2='', fg=None, bg=None, **kwargs):
-    print_str = str1
-    if fg is not None:
-        print_str = FG[fg]+print_str
-    if bg is not None:
-        print_str = BG[bg]+print_str
-    if (fg is not None) or (bg is not None):
-        print_str += END
-    print_str += str2
+    if fg in FG:
+        fg_str = FG[fg]
+    elif type(fg) == int and 0 <= fg <= 255:
+        fg_str = FG256(fg)
+    elif fg is None:
+        fg_str = ''
+    else:
+        debug_print(f'incorrect type for fg: {fg}')
+        fg_str = ''
+    if bg in BG:
+        bg_str = BG[bg]
+    elif type(bg) == int and 0 <= bg <= 255:
+        bg_str = BG256(bg)
+    elif bg is None:
+        bg_str = ''
+    else:
+        debug_print(f'incorrect type for bg: {bg}')
+        bg_str = ''
+    if len(fg_str+bg_str) != 0:
+        end_str = END
+    else:
+        end_str = ''
+    print_str = f'{fg_str}{bg_str}{str1}{end_str}{str2}'
     print(print_str, **kwargs)
 
 
