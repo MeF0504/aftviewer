@@ -22,6 +22,12 @@
         "hdf5_type": ["k", "w"]
     },
     "cui_color_config": {
+        "top": ["w", "g"],
+        "left": ["w", "b"],
+        "error": ["r", "k"],
+        "file_info": ["y", "k"],
+        "dir_index": ["g", "w"],
+        "file_index": ["m", "w"]
     }
 }
 

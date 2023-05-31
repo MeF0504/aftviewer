@@ -5,7 +5,7 @@ from pathlib import PurePath, Path
 from typing import Callable, List
 
 from pymeflib.tree2 import TreeViewer
-from . import debug, conf_dir
+from . import debug, conf_dir, json_opts
 curses_debug = debug
 
 help_str = '''
@@ -40,6 +40,16 @@ f     search file names
 S-↓   open the items in system command if supported
 '''
 
+default_color_set = {
+        'k': curses.COLOR_BLACK,
+        'r': curses.COLOR_RED,
+        'g': curses.COLOR_GREEN,
+        'y': curses.COLOR_YELLOW,
+        'b': curses.COLOR_BLUE,
+        'm': curses.COLOR_MAGENTA,
+        'c': curses.COLOR_CYAN,
+        'w': curses.COLOR_WHITE,
+        }
 
 class CursesCUI():
 
@@ -100,19 +110,45 @@ class CursesCUI():
         #  <----> <--------------->
         #  win_w     winx-win_w
 
+    def create_color_set(self, num, name):
+        assert num < curses.COLOR_PAIRS
+        col_conf = json_opts['cui_color_config']
+        fg, bg = col_conf[name]
+        if fg in default_color_set:
+            fg = default_color_set[fg]
+        if bg in default_color_set:
+            bg = default_color_set[bg]
+
+        if not (type(fg) == int and fg < curses.COLORS):
+            debug_log(f'incorrect fg: {fg}')
+            fg = curses.COLOR_WHITE
+        if not (type(bg) == int and bg < curses.COLORS):
+            debug_log(f'incorrect bg: {bg}')
+            bg = curses.COLOR_BLACK
+        curses.init_pair(num, fg, bg)
+
     def set_color(self):
+        debug_log('default color;')
+        debug_log(f'black: {curses.COLOR_BLACK}')
+        debug_log(f'red: {curses.COLOR_RED}')
+        debug_log(f'green: {curses.COLOR_GREEN}')
+        debug_log(f'yellow: {curses.COLOR_YELLOW}')
+        debug_log(f'blue: {curses.COLOR_BLUE}')
+        debug_log(f'magenta: {curses.COLOR_MAGENTA}')
+        debug_log(f'cyan: {curses.COLOR_CYAN}')
+        debug_log(f'white: {curses.COLOR_WHITE}')
         # pwd background
-        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_GREEN)
+        self.create_color_set(1, 'top')
         # bar background
-        curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE)
+        self.create_color_set(2, 'left')
         # error
-        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
+        self.create_color_set(3, 'error')
         # file info
-        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        self.create_color_set(4, 'file_info')
         # dir index
-        curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_WHITE)
+        self.create_color_set(5, 'dir_index')
         # file index
-        curses.init_pair(6, curses.COLOR_MAGENTA, curses.COLOR_WHITE)
+        self.create_color_set(6, 'file_index')
         self.win_pwd.bkgd(' ', curses.color_pair(1))
         self.win_side.bkgd(' ', curses.color_pair(2))
 
