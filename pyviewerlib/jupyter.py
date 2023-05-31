@@ -2,7 +2,7 @@ import json
 import base64
 import tempfile
 
-from . import args_chk, cprint, debug_print, show_image_file
+from . import args_chk, cprint, debug_print, show_image_file, get_col
 
 
 def show_output(output, args):
@@ -29,6 +29,9 @@ def main(fpath, args):
     with open(fpath, 'r') as f:
         data = json.load(f)
     debug_print('keys: {}'.format(data.keys()))
+    fgi, bgi = get_col('jupyter_input')
+    fgo, bgo = get_col('jupyter_output')
+    fgt, bgt = get_col('jupyter_type')
 
     if args_chk(args, 'verbose'):
         meta = data['metadata']
@@ -49,22 +52,22 @@ def main(fpath, args):
             if cnt is None:
                 cnt = ' '
             # Input
-            cprint('In [{}]'.format(cnt), fg='c')
+            cprint('In [{}]'.format(cnt), fg=fgi, bg=bgi)
             for instr in cell['source']:
                 print(instr, end='')
             print()
             # Output
             if len(cell['outputs']) != 0:
-                cprint('Out [{}]'.format(cnt), fg='r')
+                cprint('Out [{}]'.format(cnt), fg=fgo, bg=bgo)
             for output in cell['outputs']:
                 show_output(output, args)
         elif cell['cell_type'] == 'markdown':
-            cprint('markdown', fg='g')
+            cprint('markdown', fg=fgt, bg=bgt)
             for instr in cell['source']:
                 print(instr, end='')
             print()
         elif cell['cell_type'] == 'raw':
-            cprint('raw', fg='g')
+            cprint('raw', fg=fgt, bg=bgt)
             for instr in cell['source']:
                 print(instr, end='')
             print()

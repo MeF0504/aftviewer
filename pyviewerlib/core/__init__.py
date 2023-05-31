@@ -25,8 +25,12 @@ if (conf_dir/'setting.json').is_file():
         load_opts = json.load(f)
         if 'force_default' in load_opts and load_opts['force_default']:
             load_opts = {}
-        for key in json_opts:
-            if key in load_opts:
+        for key, val in json_opts.items():
+            if type(val) is dict:
+                for k2, v2 in val.items():
+                    if k2 in load_opts[key]:
+                        json_opts[key][k2] = load_opts[key][k2]
+            elif key in load_opts:
                 json_opts[key] = load_opts[key]
     if 'debug' in load_opts:
         debug = bool(load_opts['debug'])
@@ -113,16 +117,29 @@ def cprint(str1, str2='', fg=None, bg=None, **kwargs):
     print(print_str, **kwargs)
 
 
+def get_col(name):
+    col_conf = json_opts['color_config']
+    if name in col_conf:
+        return col_conf[name]
+    else:
+        debug_print(f'incorrect color set name: {name}')
+        return None, None
+
+
 def interactive_view(fname, get_contents, show_func):
     cpath = PurePath('.')
     inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
+    fg1, bg1 = get_col('interactive_path')
+    fg2, bg2 = get_col('interactive_contents')
+    fg3, bg3 = get_col('interactive_output')
+    fge, bge = get_col('error')
     tv = TreeViewer('.', get_contents)
     while(True):
         dirs, files = tv.get_contents(cpath)
         dirs.sort()
         files.sort()
-        cprint('current path:', ' {}/{}'.format(fname, cpath), bg='c')
-        cprint('contents in this dict:', ' ', bg='g', end='')
+        cprint('current path:', ' {}/{}'.format(fname, cpath), fg=fg1, bg=bg1)
+        cprint('contents in this dict:', ' ', fg=fg2, bg=bg2, end='')
         for d in dirs:
             print('{}/, '.format(d), end='')
         for f in files:
@@ -144,21 +161,22 @@ def interactive_view(fname, get_contents, show_func):
             if key_name.endswith('/'):
                 key_name = key_name[:-1]
             if key_name in files:
-                cprint('output::', '\n', bg='r')
+                cprint('output::', '\n', fg=fg3, bg=bg3)
                 info, err = show_func(str(cpath/key_name), cui=False)
                 if err is None:
                     print(info)
                 else:
-                    cprint(err, fg='r')
+                    cprint(err, fg=fge, bg=bge)
             elif key_name in dirs:
                 cpath /= key_name
             else:
                 cprint('"{}" is not a correct name'.format(key_name),
-                       '', fg='r')
+                       '', fg=fge, bg=bge)
 
 
 def print_key(key_name):
-    cprint('<<< {} >>>'.format(key_name), '', fg='k', bg='y')
+    fg, bg = get_col('key_name')
+    cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg)
 
 
 def run_system_cmd(fname):

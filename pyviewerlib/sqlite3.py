@@ -2,7 +2,7 @@ import os
 import sqlite3
 from functools import partial
 
-from . import args_chk, print_key, cprint, debug_print,\
+from . import args_chk, print_key, cprint, debug_print, get_col,\
     interactive_view, interactive_cui
 from pymeflib.tree2 import branch_str
 try:
@@ -106,12 +106,13 @@ def main(fpath, args):
                 print(t)
         for k in args.key:
             print_key(k)
+            fg, bg = get_col('error')
             info, err = show_table(cursor, k, verbose=True)
             if err is None:
                 print(info)
                 print()
             else:
-                cprint(err, fg='r')
+                cprint(err, fg=fg, bg=bg)
     else:
         for table in tables:
             info, err = show_table(cursor, table, verbose=args.verbose)
