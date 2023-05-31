@@ -26,12 +26,14 @@ if (conf_dir/'setting.json').is_file():
         if 'force_default' in load_opts and load_opts['force_default']:
             load_opts = {}
         for key, val in json_opts.items():
-            if type(val) is dict:
-                for k2, v2 in val.items():
-                    if k2 in load_opts[key]:
-                        json_opts[key][k2] = load_opts[key][k2]
-            elif key in load_opts:
-                json_opts[key] = load_opts[key]
+            if key in load_opts:
+                # update
+                if type(val) is dict:
+                    for k2, v2 in val.items():
+                        if k2 in load_opts[key]:
+                            json_opts[key][k2] = load_opts[key][k2]
+                else:
+                    json_opts[key] = load_opts[key]
     if 'debug' in load_opts:
         debug = bool(load_opts['debug'])
     del load_opts
