@@ -29,9 +29,7 @@ if (conf_dir/'setting.json').is_file():
             if key in load_opts:
                 # update
                 if type(val) is dict:
-                    for k2, v2 in val.items():
-                        if k2 in load_opts[key]:
-                            json_opts[key][k2] = load_opts[key][k2]
+                    val.update(load_opts[key])
                 else:
                     json_opts[key] = load_opts[key]
     if 'debug' in load_opts:
