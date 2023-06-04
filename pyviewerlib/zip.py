@@ -5,7 +5,7 @@ from functools import partial
 from getpass import getpass
 from pathlib import PurePosixPath
 
-from . import args_chk, is_image, print_key, cprint, debug_print,\
+from . import args_chk, is_image, print_key, cprint, debug_print, get_col,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer,\
     run_system_cmd
 from pymeflib.tree2 import branch_str, show_tree
@@ -144,6 +144,7 @@ def main(fpath, args):
             pwd = get_pwd()
         else:
             pwd = None
+        fg, bg = get_col('error')
         for k in args.key:
             print_key(k)
             info, err = show_zip(zip_file, pwd, args, gc, k)
@@ -151,7 +152,7 @@ def main(fpath, args):
                 print(info)
                 print()
             else:
-                cprint(err, fg='r')
+                cprint(err, fg=fg, bg=bg)
     elif args_chk(args, 'verbose'):
         zip_file.printdir()
     else:

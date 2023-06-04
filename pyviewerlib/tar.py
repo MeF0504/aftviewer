@@ -6,7 +6,7 @@ from pathlib import PurePosixPath
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui,\
-    show_image_file, run_system_cmd
+    show_image_file, run_system_cmd, get_col
 from pymeflib.tree2 import branch_str, show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -119,6 +119,7 @@ def main(fpath, args):
     elif args_chk(args, 'cui'):
         interactive_cui(fpath, gc, sf)
     elif args_chk(args, 'key'):
+        fg, bg = get_col('error')
         if len(args.key) == 0:
             tar_file.list(verbose=False)
         for k in args.key:
@@ -128,7 +129,7 @@ def main(fpath, args):
                 print(info)
                 print()
             else:
-                cprint(err, fg='r')
+                cprint(err, fg=fg, bg=bg)
     elif args_chk(args, 'verbose'):
         tar_file.list(verbose=True)
     else:

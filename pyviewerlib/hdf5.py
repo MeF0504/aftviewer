@@ -4,8 +4,9 @@ from pathlib import PurePosixPath
 
 import h5py
 
-from . import args_chk, print_key, cprint, debug_print,\
-    interactive_view, interactive_cui, FG, BG, END, set_numpy_format
+from . import args_chk, print_key, cprint, debug_print, get_col,\
+    FG, BG, FG256, BG256, END, set_numpy_format,\
+    interactive_view, interactive_cui
 from pymeflib.tree2 import show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -29,8 +30,21 @@ def show_hdf5(h5_file, cpath, **kwargs):
         bg = ''
         end = ''
     else:
-        fg = FG['k']
-        bg = BG['w']
+        fgkey, bgkey = get_col('hdf5_type')
+        if fgkey in FG:
+            fg = FG[fgkey]
+        elif type(fgkey) == int:
+            fg = FG256(fgkey)
+        else:
+            debug_print(f'incorrect fg color: {fgkey}')
+            fg = ''
+        if bgkey in BG:
+            bg = BG[bgkey]
+        elif type(bgkey) == int:
+            bg = BG256(bgkey)
+        else:
+            debug_print(f'incorrect bg color: {bgkey}')
+            bg = ''
         end = END
     data = h5_file[cpath]
     res = []
@@ -119,6 +133,7 @@ def main(fpath, args):
     elif args_chk(args, 'cui'):
         interactive_cui(fpath, gc, partial(show_hdf5, h5_file))
     elif args_chk(args, 'key'):
+        fg, bg = get_col('error')
         if args.key:
             for k in args.key:
                 print_key(k)
@@ -127,7 +142,7 @@ def main(fpath, args):
                     print(info)
                     print()
                 else:
-                    cprint(err, fg='r')
+                    cprint(err, fg=fg, bg=bg)
         else:
             h5_file.visititems(show_names)
     elif args_chk(args, 'verbose'):

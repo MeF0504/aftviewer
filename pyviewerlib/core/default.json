@@ -1,0 +1,33 @@
+{
+    "type": {},
+    "image_viewer": null,
+    "iv_exec_cmd": ["%c", "%s"],
+    "system_cmd": {
+        "cmd": null,
+        "args": ["%c", "%s"]
+    },
+    "pickle_encoding": "ASCII",
+    "add_args": null,
+    "numpy_format": {},
+    "color_config": {
+        "error": ["r", null],
+        "update_message": ["y", null],
+        "interactive_path": [null, "c"],
+        "interactive_contents": [null, "g"],
+        "interactive_output": [null, "r"],
+        "key_name": ["k", "y"],
+        "jupyter_input": ["c", null],
+        "jupyter_output": ["r", null],
+        "jupyter_type": ["g", null],
+        "hdf5_type": ["k", "w"]
+    },
+    "cui_color_config": {
+        "top": ["w", "g"],
+        "left": ["w", "b"],
+        "error": ["r", "k"],
+        "file_info": ["y", "k"],
+        "dir_index": ["g", "w"],
+        "file_index": ["m", "w"]
+    }
+}
+

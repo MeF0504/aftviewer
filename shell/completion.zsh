@@ -19,13 +19,13 @@ _pyviewer_targets()
 {
     _alternative \
         'files:target files:_files' \
-        'update:update:_pyviewer_update'
+        'alters:alters:_pyviewer_alters'
 }
 
-_pyviewer_update()
+_pyviewer_alters()
 {
-    _values 'update' \
-        'update'
+    _values 'alters' \
+        'update' 'show_opts'
 }
 
 _pyviewr_types()

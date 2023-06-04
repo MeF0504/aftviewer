@@ -9,7 +9,8 @@ from pathlib import Path
 from importlib import import_module
 
 sys.path.append(str(Path(__file__).parent.parent))
-from pyviewerlib import debug, json_opts, type_config, args_chk, debug_print
+from pyviewerlib import debug, json_opts, type_config, args_chk, debug_print,\
+    show_opts
 from pyviewerlib.core.update import update
 
 
@@ -27,6 +28,10 @@ def get_filetype(fpath):
 def main(args):
     if args.file == 'update':
         update()
+        return
+
+    if args.file == 'show_opts':
+        show_opts()
         return
 
     fpath = Path(args.file).expanduser()
@@ -89,7 +94,7 @@ if __name__ == "__main__":
                           help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3, np_pickle.', action='store_true')
     ex_group.add_argument('-c', '--interactive_cui', dest='cui',
                           help='open a file with interactive CUI mode. support pickle, hdf5, tar, zip, sqlite3, np_pickle.', action='store_true')
-    if 'add_args' in json_opts:
+    if json_opts['add_args'] is not None:
         try:
             # additional arguments
             lib = import_module("pyviewerlib.{}".format(json_opts['add_args']))
@@ -101,9 +106,9 @@ if __name__ == "__main__":
 
     args.debug = debug
     if not args_chk(args, 'image_viewer'):
-        if 'image_viewer' in json_opts:
+        if json_opts['image_viewer'] is not None:
             args.image_viewer = json_opts['image_viewer']
-    args.opts = json_opts
+    # args.opts = json_opts
     main(args)
 
 # vim: set filetype=python:
