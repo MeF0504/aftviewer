@@ -30,7 +30,7 @@ def main(args):
         update()
         return
 
-    if args.file == 'show_opts':
+    if args.file == 'config_list':
         show_opts()
         return
 

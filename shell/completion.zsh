@@ -25,7 +25,7 @@ _pyviewer_targets()
 _pyviewer_alters()
 {
     _values 'alters' \
-        'update' 'show_opts'
+        'update' 'config_list'
 }
 
 _pyviewr_types()
