@@ -26,6 +26,7 @@ _pyviewer_cmp()
         COMPREPLY=( $(compgen -f -- "$cur") )
         COMPREPLY+=( $(compgen -W "update" -- "$cur") )
         COMPREPLY+=( $(compgen -W "config_list" -- "$cur") )
+        COMPREPLY+=( $(compgen -W "help" -- "$cur") )
     fi
 }
 
