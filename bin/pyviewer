@@ -13,6 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from pyviewerlib import debug, json_opts, type_config, args_chk, debug_print,\
     show_opts
 from pyviewerlib.core.update import update
+from pyviewerlib.core import helpmsg
 
 
 def get_filetype(fpath):
@@ -60,8 +61,8 @@ def main(args):
             return
         lib = load_lib(args)
         if lib is not None:
-            if hasattr(lib, 'help') and type(lib.help) is FunctionType:
-                lib.help()
+            if hasattr(lib, 'show_help') and type(lib.show_help) is FunctionType:
+                lib.show_help()
             else:
                 print("this type does not support showing help.")
         return
@@ -97,26 +98,18 @@ if __name__ == "__main__":
     supported_type = list(type_config.keys()).copy()
     supported_type.remove('text')
     parser = argparse.ArgumentParser(description="show the constitution of a file. support file types ... {}".format(', '.join(supported_type)))
-    parser.add_argument('file', help='[input file] | update [update pyviewer] | config_list [show the current optional configuration] | help [show the detailed help of each types]')
+    parser.add_argument('file', help='[input file] | update [update pyviewer] | config_list [show the current optional configuration] | help [show the detailed help of each type]')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type. "pyviewer help -t TYPE" will show the detailed help.',
                         choices=supported_type)
-    parser.add_argument('-iv', '--image_viewer', help="set image viewer. supported args are 'matplotlib' (use matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV' (use cv2.imshow), and other string is treated as an external command (e.g. gosr, open).")
-    parser.add_argument('--encoding', dest='encoding',
-                        help='specify the encoding format in pickle and zip file.', type=str)
-    parser.add_argument('--ask_password', '-p', action='store_true',
-                        help='ask for the password for the file if needed.')
+    parser.add_argument('-iv', '--image_viewer', **helpmsg.iv_help)
+    parser.add_argument('--encoding', **helpmsg.encoding_help)
+    parser.add_argument('--ask_password', '-p', **helpmsg.pass_help)
     ex_group = parser.add_mutually_exclusive_group()
-    ex_group.add_argument('-v', '--verbose', dest='verbose',
-                          action='store_true', help='show details')
-    ex_group.add_argument('-k', '--key', dest='key',
-                          help='specify the key name to show. If no key is specified, return the list of keys.', nargs='*')
-    ex_group.add_argument('-i', '--interactive', dest='interactive',
-                          help='open a file with interactive mode.',
-                          action='store_true')
-    ex_group.add_argument('-c', '--interactive_cui', dest='cui',
-                          help='open a file with interactive CUI mode.',
-                          action='store_true')
+    ex_group.add_argument('-v', '--verbose', **helpmsg.verbose_help)
+    ex_group.add_argument('-k', '--key', **helpmsg.key_help)
+    ex_group.add_argument('-i', '--interactive', **helpmsg.interactive_help)
+    ex_group.add_argument('-c', '--interactive_cui', **helpmsg.cui_help)
     if json_opts['add_args'] is not None:
         try:
             # additional arguments
