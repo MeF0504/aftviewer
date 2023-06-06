@@ -3,7 +3,7 @@ import sqlite3
 from functools import partial
 
 from . import args_chk, print_key, cprint, debug_print, get_col,\
-    interactive_view, interactive_cui
+    interactive_view, interactive_cui, help_template
 from pymeflib.tree2 import branch_str
 try:
     from tabulate import tabulate
@@ -86,6 +86,14 @@ def get_contents(cursor, tables, path):
     #         name = tinfo[1]
     #         files.append(name)
     #     return [], files
+
+
+def show_help():
+    helpmsg = help_template('sqlite3', 'show the contents of the database. ' +
+                            'In this type, you can specify multiple columns' +
+                            ' by "-k table/col,col2".',
+                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+    print(helpmsg)
 
 
 def main(fpath, args):

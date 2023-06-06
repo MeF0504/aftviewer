@@ -4,7 +4,7 @@ from pathlib import PurePath
 from functools import partial
 
 from . import args_chk, print_key, debug_print, json_opts, \
-    interactive_view, interactive_cui
+    interactive_view, interactive_cui, help_template
 
 from pymeflib.tree2 import show_tree
 
@@ -42,6 +42,13 @@ def get_contents(data, path):
             else:
                 files.append(k)
     return dirs, files
+
+
+def show_help():
+    helpmsg = help_template('pickle', 'show the contents of the pickled file.',
+                            sup_encoding=True,
+                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+    print(helpmsg)
 
 
 def main(fpath, args):

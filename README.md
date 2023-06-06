@@ -44,31 +44,29 @@ show the constitution of a file. support file types ... hdf5, pickle, numpy,
 np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm
 
 positional arguments:
-  file                  input file / "pyviewer update" will update this file
+  file                  [input file] | update [update pyviewer] | config_list
+                        [show the current optional configuration] | help [show
+                        the detailed help of each type]
 
 options:
   -h, --help            show this help message and exit
   -t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}
-                        file type
+                        specify the file type. "pyviewer help -t TYPE" will
+                        show the detailed help.
   -iv IMAGE_VIEWER, --image_viewer IMAGE_VIEWER
-                        set image viewer. supported args are 'matplotlib' (use
+                        set image viewer. Supported args are 'matplotlib' (use
                         matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show),
                         'OpenCV' (use cv2.imshow), and other string is treated
                         as an external command (e.g. gosr, open).
-  --encoding ENCODING   specify the encoding format in pickle and zip file.
+  --encoding ENCODING   specify the encoding format.
   --ask_password, -p    ask for the password for the file if needed.
   -v, --verbose         show details
   -k [KEY ...], --key [KEY ...]
-                        Dictionary key name in a pickle, path to a
-                        Group/Dataset in hdf5, a path to a file/dictionary in
-                        tar/zip, a table[/column[,column2...]] in sqlite3 or a
-                        key name in npz. If no key is specified, return the
-                        list of keys.
-  -i, --interactive     open a file with interactive mode. support pickle,
-                        hdf5, tar, zip, sqlite3, np_pickle.
+                        specify the key name to show. If no key is specified,
+                        return the list of keys.
+  -i, --interactive     open a file with interactive mode.
   -c, --interactive_cui
-                        open a file with interactive CUI mode. support pickle,
-                        hdf5, tar, zip, sqlite3, np_pickle.
+                        open a file with interactive CUI mode.
 ```
 
 ## Customize

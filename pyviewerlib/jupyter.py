@@ -2,7 +2,8 @@ import json
 import base64
 import tempfile
 
-from . import args_chk, cprint, debug_print, show_image_file, get_col
+from . import args_chk, cprint, debug_print, show_image_file,\
+    get_col, help_template
 
 
 def show_output(output, args):
@@ -23,6 +24,12 @@ def show_output(output, args):
                 with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
                     tmp.write(img_bin)
                     show_image_file(tmp.name, args)
+
+
+def show_help():
+    helpmsg = help_template('jupyter', 'show the saved jupyter notebook.',
+                             sup_iv=True, sup_v=True)
+    print(helpmsg)
 
 
 def main(fpath, args):

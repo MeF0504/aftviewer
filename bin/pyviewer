@@ -7,11 +7,13 @@ import argparse
 import tarfile
 from pathlib import Path
 from importlib import import_module
+from types import FunctionType
 
 sys.path.append(str(Path(__file__).parent.parent))
 from pyviewerlib import debug, json_opts, type_config, args_chk, debug_print,\
     show_opts
 from pyviewerlib.core.update import update
+from pyviewerlib.core import helpmsg
 
 
 def get_filetype(fpath):
@@ -25,13 +27,44 @@ def get_filetype(fpath):
     return None
 
 
+def load_lib(args):
+    # python import style
+    lib_path = "pyviewerlib.{}".format(args.type)
+    # file path
+    lib_path2 = Path(__file__).parent.parent/"pyviewerlib"
+    lib_path2 /= "{}.py".format(args.type)
+    if not lib_path2.is_file():
+        print('Library file {} is not found.'.format(lib_path2))
+        return None
+    try:
+        lib = import_module(lib_path)
+    except ImportError as e:
+        print("Failed to load library")
+        print('lib: {}'.format(lib_path2))
+        print('error: {}'.format(e))
+        return None
+    return lib
+
+
 def main(args):
     if args.file == 'update':
         update()
         return
 
-    if args.file == 'show_opts':
+    if args.file == 'config_list':
         show_opts()
+        return
+
+    if args.file == 'help':
+        if not args_chk(args, 'type'):
+            print('please set --type to see the details.')
+            return
+        lib = load_lib(args)
+        if lib is not None:
+            if hasattr(lib, 'show_help') and type(lib.show_help) is FunctionType:
+                lib.show_help()
+            else:
+                print("this type does not support showing help.")
         return
 
     fpath = Path(args.file).expanduser()
@@ -55,22 +88,9 @@ def main(args):
             print("Why Don't you use vim???")
         return
 
-    # python import style
-    lib_path = "pyviewerlib.{}".format(args.type)
-    # file path
-    lib_path2 = Path(__file__).parent.parent/"pyviewerlib"
-    lib_path2 /= "{}.py".format(args.type)
-    if not lib_path2.is_file():
-        print('Library file {} is not found.'.format(lib_path2))
-        return
-    try:
-        lib = import_module(lib_path)
-    except ImportError as e:
-        print("Failed to load library")
-        print('lib: {}'.format(lib_path2))
-        print('error: {}'.format(e))
-        return
-    lib.main(fpath, args)
+    lib = load_lib(args)
+    if lib is not None:
+        lib.main(fpath, args)
     return
 
 
@@ -78,22 +98,18 @@ if __name__ == "__main__":
     supported_type = list(type_config.keys()).copy()
     supported_type.remove('text')
     parser = argparse.ArgumentParser(description="show the constitution of a file. support file types ... {}".format(', '.join(supported_type)))
-    parser.add_argument('file', help='input file / "pyviewer update" will update this file')
+    parser.add_argument('file', help='[input file] | update [update pyviewer] | config_list [show the current optional configuration] | help [show the detailed help of each type]')
     parser.add_argument('-t', '--type', dest='type',
-                        help='file type', choices=supported_type)
-    parser.add_argument('-iv', '--image_viewer', help="set image viewer. supported args are 'matplotlib' (use matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show), 'OpenCV' (use cv2.imshow), and other string is treated as an external command (e.g. gosr, open).")
-    parser.add_argument('--encoding', dest='encoding',
-                        help='specify the encoding format in pickle and zip file.', type=str)
-    parser.add_argument('--ask_password', '-p', action='store_true',
-                        help='ask for the password for the file if needed.')
+                        help='specify the file type. "pyviewer help -t TYPE" will show the detailed help.',
+                        choices=supported_type)
+    parser.add_argument('-iv', '--image_viewer', **helpmsg.iv_help)
+    parser.add_argument('--encoding', **helpmsg.encoding_help)
+    parser.add_argument('--ask_password', '-p', **helpmsg.pass_help)
     ex_group = parser.add_mutually_exclusive_group()
-    ex_group.add_argument('-v', '--verbose', dest='verbose',
-                          action='store_true', help='show details')
-    ex_group.add_argument('-k', '--key', dest='key', help='Dictionary key name in a pickle, path to a Group/Dataset in hdf5, a path to a file/dictionary in tar/zip, a table[/column[,column2...]] in sqlite3 or a key name in npz. If no key is specified, return the list of keys.', nargs='*')
-    ex_group.add_argument('-i', '--interactive', dest='interactive',
-                          help='open a file with interactive mode. support pickle, hdf5, tar, zip, sqlite3, np_pickle.', action='store_true')
-    ex_group.add_argument('-c', '--interactive_cui', dest='cui',
-                          help='open a file with interactive CUI mode. support pickle, hdf5, tar, zip, sqlite3, np_pickle.', action='store_true')
+    ex_group.add_argument('-v', '--verbose', **helpmsg.verbose_help)
+    ex_group.add_argument('-k', '--key', **helpmsg.key_help)
+    ex_group.add_argument('-i', '--interactive', **helpmsg.interactive_help)
+    ex_group.add_argument('-c', '--interactive_cui', **helpmsg.cui_help)
     if json_opts['add_args'] is not None:
         try:
             # additional arguments

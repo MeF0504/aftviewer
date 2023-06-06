@@ -1,9 +1,10 @@
-from . import show_image_file
+from . import show_image_file, help_template
+
+
+def show_help():
+    helpmsg = help_template('png_sample', 'show a png image.')
+    print(helpmsg)
 
 
 def main(fpath, args):
     show_image_file(str(fpath), args)
-
-
-if __name__ == '__main__':
-    print('hello')

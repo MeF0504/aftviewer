@@ -6,7 +6,7 @@ import h5py
 
 from . import args_chk, print_key, cprint, debug_print, get_col,\
     FG, BG, FG256, BG256, END, set_numpy_format,\
-    interactive_view, interactive_cui
+    interactive_view, interactive_cui, help_template
 from pymeflib.tree2 import show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -120,6 +120,12 @@ def get_contents(h5_file, path):
             elif isinstance(h5_file[contents], h5py.Dataset):
                 files.append(k)
     return dirs, files
+
+
+def show_help():
+    helpmsg = help_template('hdf5', 'show an contents in the hdf5 file.',
+                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+    print(helpmsg)
 
 
 def main(fpath, args):
