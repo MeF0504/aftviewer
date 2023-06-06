@@ -6,7 +6,7 @@ from pathlib import PurePosixPath
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui,\
-    show_image_file, run_system_cmd, get_col
+    show_image_file, run_system_cmd, get_col, help_template
 from pymeflib.tree2 import branch_str, show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -103,6 +103,15 @@ def get_contents(tar_file, path):
         elif t.isdir():
             dirs.append(tname)
     return dirs, files
+
+
+def show_help():
+    helpmsg = help_template('tar', 'show the contents of a tar file.' +
+                            ' The tar file type is identified by the'
+                            ' "tarfile" module, not the extension of a file.',
+                            sup_iv=True,
+                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+    print(helpmsg)
 
 
 def main(fpath, args):

@@ -1,7 +1,12 @@
 import os
 
-from . import show_image_ndarray
+from . import show_image_ndarray, help_template
 from pymeflib.xpm_loader import XPMLoader
+
+
+def show_help():
+    helpmsg = help_template('xpm', 'show an xpm file as an image.')
+    print(helpmsg)
 
 
 def main(fpath, args):

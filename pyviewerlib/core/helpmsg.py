@@ -37,15 +37,15 @@ cui_help = dict(help='open a file with interactive CUI mode.',
 
 
 def help_template(filetype, description,
-                  sup_v=False, sup_k=False, sup_i=False, sup_c=False,
                   sup_iv=False, sup_encoding=False, sup_password=False,
+                  sup_v=False, sup_k=False, sup_i=False, sup_c=False,
                   add_args=None,
                   ):
     if filetype not in type_config:
         return ''
     ex = type_config[filetype].split()
     if ex:
-        description += ' The corresponding extensions are {}.'.format(', '.join(ex))
+        description += ' The corresponding extensions are [{}].'.format(', '.join(ex))
     parser = argparse.ArgumentParser(description=description,
                                      prog=f'pyviewer FILE -t {filetype}',
                                      add_help=False)

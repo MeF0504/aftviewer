@@ -7,7 +7,7 @@ from pathlib import PurePosixPath
 
 from . import args_chk, is_image, print_key, cprint, debug_print, get_col,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer,\
-    run_system_cmd
+    run_system_cmd, help_template
 from pymeflib.tree2 import branch_str, show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -113,6 +113,13 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
                     return '', 'Error!! {}'.format(e)
 
     return '\n'.join(res), None
+
+
+def show_help():
+    helpmsg = help_template('zip', 'show the contents of a zip file.',
+                            sup_iv=True, sup_encoding=True, sup_password=True,
+                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+    print(helpmsg)
 
 
 def main(fpath, args):

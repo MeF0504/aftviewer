@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key, set_numpy_format
+from . import args_chk, print_key, set_numpy_format, help_template
 set_numpy_format(np)
 
 
@@ -59,6 +59,13 @@ min      : {}'''.format(d_mean, d_max, d_min)
         # string list or something
         prt_str = 'not a array of number'
     print(prt_str)
+
+
+def show_help():
+    helpmsg = help_template('numpy', 'show the contents of a NumPy-compressed file.' +
+                            ' If the file is "npz", you can specify the key name.',
+                            sup_v=True, sup_k=True)
+    print(helpmsg)
 
 
 def main(fpath, args):

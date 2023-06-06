@@ -1,11 +1,13 @@
 import os
-import sys
-from pathlib import Path
 
 import rawpy
 
-sys.path.append(str(Path(__file__).parent.parent))
-from . import show_image_ndarray
+from . import show_image_ndarray, help_template
+
+
+def show_help():
+    helpmsg = help_template('raw_image', 'show a raw image using "rawpy".')
+    print(helpmsg)
 
 
 def main(fpath, args):
