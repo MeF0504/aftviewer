@@ -46,7 +46,7 @@ np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm
 positional arguments:
   file                  [input file] | update [update pyviewer] | config_list
                         [show the current optional configuration] | help [show
-                        the detailed help of each types]
+                        the detailed help of each type]
 
 options:
   -h, --help            show this help message and exit
@@ -54,11 +54,11 @@ options:
                         specify the file type. "pyviewer help -t TYPE" will
                         show the detailed help.
   -iv IMAGE_VIEWER, --image_viewer IMAGE_VIEWER
-                        set image viewer. supported args are 'matplotlib' (use
+                        set image viewer. Supported args are 'matplotlib' (use
                         matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show),
                         'OpenCV' (use cv2.imshow), and other string is treated
                         as an external command (e.g. gosr, open).
-  --encoding ENCODING   specify the encoding format in pickle and zip file.
+  --encoding ENCODING   specify the encoding format.
   --ask_password, -p    ask for the password for the file if needed.
   -v, --verbose         show details
   -k [KEY ...], --key [KEY ...]
