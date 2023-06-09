@@ -2,10 +2,10 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath, Path
-from typing import Callable, List
+from typing import Callable, List, Tuple, Any
 
 from pymeflib.tree2 import TreeViewer
-from . import debug, conf_dir, json_opts
+from . import debug, conf_dir, json_opts, ReturnMessage
 curses_debug = debug
 
 help_str = '''
@@ -568,7 +568,37 @@ def debug_log(msg):
         f.write(msg+"\n")
 
 
-def interactive_cui(fname, get_contents, show_func):
+def interactive_cui(fname: str,
+                    get_contents: Callable[[str],
+                                           Tuple[List[str], List[str]]],
+                    show_func: Callable[[str, Any], ReturnMessage]) -> None:
+    """
+    provide the CUI (TUI) to show the contents.
+
+    Parameters
+    ----------
+    fname: str
+        An opened file name.
+    get_contents: Callable[[str], Tuple[List[str], List[str]]]
+        A function to get lists of directories and files.
+        The argument is the path to an item.
+        The first return value is a list of directory names,
+        and the second return value is a list of file names.
+        In this context, a directory means something that includes
+        files and directories, and a file means something that includes data.
+    show_func: Callable[[str, **kwargs], ReturnMessage]
+        A function to show the contents.
+        The first argument is the path to a file.
+        Other arguments are treated as keyword arguments.
+        Please see the wiki for possible keywords.
+        The return value is the ReturnMessage. It is treated as
+        an error message if ReturnMessage.error is True. Otherwise, it is
+        treated as a standard message.
+
+    Returns
+    -------
+    None
+    """
     cpath = PurePath('.')
     tv = TreeViewer('.', get_contents)
     curses_cui = CursesCUI()
