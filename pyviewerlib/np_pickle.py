@@ -7,24 +7,23 @@ from numpy.lib.npyio import NpzFile
 
 from . import args_chk, print_key, set_numpy_format, debug_print, json_opts,\
     interactive_view, interactive_cui, help_template
+from . import ReturnMessage as RM
 from .numpy import show_numpy
 from .pickle import show_func as show_pickle, get_contents as get_pickle
 set_numpy_format(np)
 
 
 def show_func(data, path, **kwargs):
-    res = ''
-    err = None
     parts = PurePath(path).parts
     if len(parts) < 1:
-        return '', ' something wrong, path is too short.'
+        return RM(' something wrong, path is too short.', True)
     if len(parts) == 1:
-        res = '{}'.format(data[parts[0]])
+        res = RM('{}'.format(data[parts[0]]), False)
     else:
         pdata = data[parts[0]]
         assert pdata.dtype == np.dtype('O')
-        res, err = show_pickle(pdata.item(), os.sep.join(parts[1:]))
-    return res, err
+        res = show_pickle(pdata.item(), os.sep.join(parts[1:]))
+    return res
 
 
 def get_contents(data, path):

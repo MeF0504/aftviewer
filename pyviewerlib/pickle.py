@@ -5,6 +5,7 @@ from functools import partial
 
 from . import args_chk, print_key, debug_print, json_opts, \
     interactive_view, interactive_cui, help_template
+from . import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
 
@@ -25,8 +26,8 @@ def show_func(data, cpath, **kwargs):
         if k in tmp_data:
             tmp_data = tmp_data[k]
         else:
-            return '', 'Error! no key {}'.format(k)
-    return '{}'.format(tmp_data), None
+            return RM('Error! no key {}'.format(k), True)
+    return RM('{}'.format(tmp_data), False)
 
 
 def get_contents(data, path):

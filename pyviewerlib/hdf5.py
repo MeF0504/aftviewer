@@ -7,6 +7,7 @@ import h5py
 from . import args_chk, print_key, cprint, debug_print, get_col,\
     FG, BG, FG256, BG256, END, set_numpy_format,\
     interactive_view, interactive_cui, help_template
+from . import ReturnMessage as RM
 from pymeflib.tree2 import show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -94,7 +95,7 @@ def show_hdf5(h5_file, cpath, **kwargs):
                     res.append('nan rate: {:.1f}%'.format(nan_rate*100))
                 except Exception:
                     pass
-    return '\n'.join(res), None
+    return RM('\n'.join(res), False)
 
 
 def show_detail(h5_file, name, obj):
@@ -143,12 +144,12 @@ def main(fpath, args):
         if args.key:
             for k in args.key:
                 print_key(k)
-                info, err = show_hdf5(h5_file, k, cui=False)
-                if err is None:
-                    print(info)
+                info = show_hdf5(h5_file, k, cui=False)
+                if not info.error:
+                    print(info.message)
                     print()
                 else:
-                    cprint(err, fg=fg, bg=bg)
+                    cprint(info.message, fg=fg, bg=bg)
         else:
             h5_file.visititems(show_names)
     elif args_chk(args, 'verbose'):

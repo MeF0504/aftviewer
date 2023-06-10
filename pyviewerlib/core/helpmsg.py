@@ -1,5 +1,6 @@
 import argparse
 from importlib import import_module
+from typing import Optional
 
 from . import type_config, debug_print
 
@@ -36,11 +37,46 @@ cui_help = dict(help='open a file with interactive CUI mode.',
                 )
 
 
-def help_template(filetype, description,
-                  sup_iv=False, sup_encoding=False, sup_password=False,
-                  sup_v=False, sup_k=False, sup_i=False, sup_c=False,
-                  add_args=None,
-                  ):
+def help_template(filetype: str, description: str,
+                  sup_iv: bool = False, sup_encoding: bool = False,
+                  sup_password: bool = False,
+                  sup_v: bool = False, sup_k: bool = False,
+                  sup_i: bool = False, sup_c: bool = False,
+                  add_args: Optional[str] = None,
+                  ) -> str:
+    """
+    offer a template for help messages.
+
+    Parameters
+    ----------
+    filetype: str
+        The file type of help message. This file type is required to be
+        supported by the `pyviewer` command.
+    description: str
+        the description of the file type.
+    sup_iv: bool
+        set True if this file type supports --image_viewer option.
+    sup_encoding: bool
+        set True if this file type supports --encoding option.
+    sup_password: bool
+        set True if this file type supports --ask_password option.
+    sup_v: bool
+        set True if this file type supports --verbose option.
+    sup_k: bool
+        set True if this file type supports --key option.
+    sup_i: bool
+        set True if this file type supports --interactive option.
+    sup_c: bool
+        set True if this file type supports --interactive_cui option.
+    add_args: Optional[str]
+        The name of the file adding optional arguments.
+        Please see the wiki for more details.
+
+    Returns
+    -------
+    str
+        the help message.
+    """
     if filetype not in type_config:
         return ''
     ex = type_config[filetype].split()

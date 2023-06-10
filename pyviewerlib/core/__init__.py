@@ -3,6 +3,9 @@ import json
 import platform
 import subprocess
 from pathlib import Path, PurePath
+from argparse import ArgumentParser
+from typing import Callable, Union, List, Tuple, Any
+from dataclasses import dataclass
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer
@@ -53,12 +56,40 @@ type_config = {
 type_config.update(json_opts['type'])
 
 
-def debug_print(msg):
+def debug_print(msg: str) -> None:
+    """
+    print a message if PyViewer works in debug mode.
+
+    Parameters
+    ----------
+    msg: str
+        a message printed if in debug mode.
+
+    Returns
+    -------
+    None
+    """
     if debug:
         print(msg)
 
 
-def args_chk(args, attr):
+def args_chk(args: ArgumentParser, attr: str) -> bool:
+    """
+    return True if a given attribute is set in args.
+    NOTE: This function supports only default attributes.
+
+    Parameters
+    ----------
+    args: argparse.ArgumentParser
+        The arguments given by the command line.
+    attr: str
+        The attribute to check that is set from the command line.
+
+    Returns
+    -------
+    bool
+        Return True if the attribute is set correctly.
+    """
     if not hasattr(args, attr):
         return False
     if attr == 'type':
@@ -79,7 +110,18 @@ def args_chk(args, attr):
         return False
 
 
-def show_opts():
+def show_opts() -> None:
+    """
+    show the current configuration options.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
+    """
     for key, val in json_opts.items():
         if type(val) == dict:
             print_key(key)
@@ -90,7 +132,33 @@ def show_opts():
             print(val)
 
 
-def cprint(str1, str2='', fg=None, bg=None, **kwargs):
+def cprint(str1: str, str2: str = '',
+           fg: Union[str, int, None] = None,
+           bg: Union[str, int, None] = None,
+           **kwargs) -> None:
+    """
+    print message in color.
+
+    Parameters
+    ----------
+    str1: str
+        The message to be printed in color.
+    str2: str
+        The message to be printed after str1 without color.
+    fg: Union[str, int, None]
+        The key of the foreground color. Possible values are
+            'k': black, 'r': red, 'g': green, 'y': yellow,
+            'b': blue, 'c': cyan, 'm': magenta, 'w': white,
+            0-255: The color id corresponding to the 256 terminal colors.
+    bg: Union[str, int, None]
+        The key of the background color. Possible values are the same as fg.
+    **kwargs:
+        Keyword arguments passed to the print function.
+
+    Returns
+    -------
+    None
+    """
     if fg in FG:
         fg_str = FG[fg]
     elif type(fg) == int and 0 <= fg <= 255:
@@ -117,7 +185,24 @@ def cprint(str1, str2='', fg=None, bg=None, **kwargs):
     print(print_str, **kwargs)
 
 
-def get_col(name):
+def get_col(name: str) -> Tuple[Union[str, int, None],
+                                Union[str, int, None]]:
+    """
+    get the color id of a given name.
+
+    Parameters
+    ----------
+    name: str
+        A name of the option. This name should be included in
+        "color_config" in configuration options.
+
+    Returns
+    -------
+    Union[str, int, None]
+        foreground color id. If the name is incorrect, return None.
+    Union[str, int, None]
+        foreground color id. If the name is incorrect, return None.
+    """
     col_conf = json_opts['color_config']
     if name in col_conf:
         return col_conf[name]
@@ -126,7 +211,51 @@ def get_col(name):
         return None, None
 
 
-def interactive_view(fname, get_contents, show_func):
+@dataclass
+class ReturnMessage:
+    """
+    class for returned message.
+
+    self.message: str
+        returned message.
+    self.error: bool
+        True if this message is an error.
+    """
+    message: str
+    error: bool
+
+
+def interactive_view(fname: str,
+                     get_contents: Callable[[str],
+                                            Tuple[List[str], List[str]]],
+                     show_func: Callable[[str, Any], ReturnMessage]) -> None:
+    """
+    provide the interactive UI to show the contents.
+
+    Parameters
+    ----------
+    fname: str
+        An opened file name.
+    get_contents: Callable[[str], Tuple[List[str], List[str]]]
+        A function to get lists of directories and files.
+        The argument is the path to an item.
+        The first return value is a list of directory names,
+        and the second return value is a list of file names.
+        In this context, a directory means something that includes
+        files and directories, and a file means something that includes data.
+    show_func: Callable[[str, **kwargs], ReturnMessage]
+        A function to show the contents.
+        The first argument is the path to a file.
+        Other arguments are treated as keyword arguments.
+        Please see the wiki for possible keywords.
+        The return value is the ReturnMessage. It is treated as
+        an error message if ReturnMessage.error is True. Otherwise, it is
+        treated as a standard message.
+
+    Returns
+    -------
+    None
+    """
     cpath = PurePath('.')
     inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
     fg1, bg1 = get_col('interactive_path')
@@ -162,11 +291,11 @@ def interactive_view(fname, get_contents, show_func):
                 key_name = key_name[:-1]
             if key_name in files:
                 cprint('output::', '\n', fg=fg3, bg=bg3)
-                info, err = show_func(str(cpath/key_name), cui=False)
-                if err is None:
-                    print(info)
+                info = show_func(str(cpath/key_name), cui=False)
+                if not info.error:
+                    print(info.message)
                 else:
-                    cprint(err, fg=fge, bg=bge)
+                    cprint(info.message, fg=fge, bg=bge)
             elif key_name in dirs:
                 cpath /= key_name
             else:
@@ -174,12 +303,37 @@ def interactive_view(fname, get_contents, show_func):
                        '', fg=fge, bg=bge)
 
 
-def print_key(key_name):
+def print_key(key_name: str) -> None:
+    """
+    print the key name with emphasis.
+
+    Parameters
+    ----------
+    key_name: str
+        the key name.
+
+    Returns
+    -------
+    None
+    """
     fg, bg = get_col('key_name')
     cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg)
 
 
-def run_system_cmd(fname):
+def run_system_cmd(fname: str) -> bool:
+    """
+    open the file using the system command.
+
+    Parameters
+    ----------
+    fname: str
+        a file name to be opened.
+
+    Returns
+    -------
+    bool
+        Return True if the command succeeded, otherwise False.
+    """
     cmd = json_opts['system_cmd']['cmd']
     if cmd is None:
         if platform.system() == 'Windows':
@@ -211,6 +365,19 @@ def run_system_cmd(fname):
         return True
 
 
-def set_numpy_format(numpy):
+def set_numpy_format(numpy: Any) -> None:
+    """
+    set NumPy format following the given configuration option.
+
+    Parameters
+    ----------
+    numpy: module
+        NumPy module. (This file is designed not to call anything other than
+        standard modules, so the NumPy module is used as an argument.)
+
+    Returns
+    -------
+    None
+    """
     opts = json_opts['numpy_format']
     numpy.set_printoptions(**opts)

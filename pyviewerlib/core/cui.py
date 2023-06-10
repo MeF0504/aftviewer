@@ -2,10 +2,10 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath, Path
-from typing import Callable, List
+from typing import Callable, List, Tuple, Any
 
 from pymeflib.tree2 import TreeViewer
-from . import debug, conf_dir, json_opts
+from . import debug, conf_dir, json_opts, ReturnMessage
 curses_debug = debug
 
 help_str = '''
@@ -61,8 +61,8 @@ class CursesCUI():
         self.contents = []
         self.sel_cont = ''
         # main window val
-        self.info = []
-        self.err = None
+        self.info = ReturnMessage('', False)
+        self.message = []
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         # mode val
@@ -156,8 +156,8 @@ class CursesCUI():
         self.sel_idx = 0
         self.side_shift_ud = 0
         self.side_shift_lr = 0
-        self.info = []
-        self.err = None
+        self.info = ReturnMessage('', False)
+        self.message = []
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         self.sel_cont = ''
@@ -267,20 +267,20 @@ class CursesCUI():
                 fpath = self.sel_cont
             else:
                 fpath = str(self.cpath/self.sel_cont)
-            self.info, self.err = self.show_func(fpath, cui=True,
+            self.info = self.show_func(fpath, cui=True,
                                                  system=system,
                                                  stdscr=self.stdscr)
-            self.info = self.info.split("\n")
-            self.info = [ln.replace("\t", "  ") for ln in self.info]
+            self.message = self.info.message.split("\n")
+            self.message = [ln.replace("\t", "  ") for ln in self.message]
             self.main_shift_ud = 0
             self.main_shift_lr = 0
 
     def down_main(self, num):
         main_h = self.winy-self.win_h
-        if len(self.info) < main_h-1:
+        if len(self.message) < main_h-1:
             # all contents are shown
             pass
-        elif self.main_shift_ud < len(self.info)-num-1:
+        elif self.main_shift_ud < len(self.message)-num-1:
             self.main_shift_ud += num
 
     def up_main(self, num):
@@ -364,15 +364,15 @@ class CursesCUI():
         if reverse:
             lines = range(start_line, -1, -1)
         else:
-            lines = range(start_line, len(self.info))
+            lines = range(start_line, len(self.message))
         for i in lines:
-            line = self.info[i]
+            line = self.message[i]
             if self.search_word2 in line:
                 self.main_shift_ud = i
                 break
 
     def show_help_message(self):
-        self.info = help_str.format(self.scroll_h,
+        self.message = help_str.format(self.scroll_h,
                                     self.scroll_h).split('\n')
         self.sel_cont = '<help>'
         self.main_shift_ud = 0
@@ -410,26 +410,26 @@ class CursesCUI():
             if main_w > len(self.sel_cont)+2:
                 self.win_main.addstr(0, len(self.sel_cont)+2,
                                      '{}/{}'.format(self.main_shift_ud+1,
-                                                    len(self.info)),
+                                                    len(self.message)),
                                      curses.color_pair(4))
-        if self.err is None:
+        if not self.info.error:
             # show contents
             for i in range(1, main_h):
-                if i-1+self.main_shift_ud >= len(self.info):
+                if i-1+self.main_shift_ud >= len(self.message):
                     break
                 idx = i+self.main_shift_ud
-                info = self.info[idx-1]
+                message = self.message[idx-1]
                 if curses_debug:
-                    info = "{:d} ".format(i+self.main_shift_ud)+info
-                info = info[self.main_shift_lr:self.main_shift_lr+main_w-2]
+                    message = "{:d} ".format(i+self.main_shift_ud)+message
+                message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
                 try:
-                    self.win_main.addstr(i, 0, info)
+                    self.win_main.addstr(i, 0, message)
                 except Exception as e:
                     self.win_main.addstr(i, 0, "!! {}".format(e),
                                          curses.color_pair(3))
         else:
             # show error
-            self.win_main.addstr(1, 0, self.err, curses.color_pair(3))
+            self.win_main.addstr(1, 0, self.info.message, curses.color_pair(3))
         self.win_main.refresh()
 
     def update_pwd_window(self):
@@ -453,7 +453,7 @@ class CursesCUI():
                             's:{}-{}-{}-{} m:{}-{}-{}'.format(
                             len(self.contents),
                             self.side_shift_ud, self.side_shift_lr,
-                            self.sel_idx, len(self.info),
+                            self.sel_idx, len(self.message),
                            self.main_shift_ud, self.main_shift_lr))
         self.win_pwd.addstr(2, int(self.winx*2/3), ' '*(int(self.winx/3)-1))
         if self.search_word:
@@ -466,7 +466,7 @@ class CursesCUI():
         self.win_pwd.refresh()
 
     def main(self, stdscr, fname: str,
-             show_func: Callable[[str, bool, bool], List[str]],
+             show_func: Callable[[str, Any], ReturnMessage],
              cpath: PurePath, tv: TreeViewer) -> None:
         self.stdscr = stdscr
         self.fname = fname
@@ -517,7 +517,7 @@ class CursesCUI():
             elif self.key == 'g':
                 self.up_main(self.main_shift_ud)
             elif self.key == 'G':
-                self.down_main(len(self.info)-self.main_shift_ud-2)
+                self.down_main(len(self.message)-self.main_shift_ud-2)
             elif self.key == 'f':
                 self.file_search()
             elif self.key == '/':
@@ -568,7 +568,37 @@ def debug_log(msg):
         f.write(msg+"\n")
 
 
-def interactive_cui(fname, get_contents, show_func):
+def interactive_cui(fname: str,
+                    get_contents: Callable[[str],
+                                           Tuple[List[str], List[str]]],
+                    show_func: Callable[[str, Any], ReturnMessage]) -> None:
+    """
+    provide the CUI (TUI) to show the contents.
+
+    Parameters
+    ----------
+    fname: str
+        An opened file name.
+    get_contents: Callable[[str], Tuple[List[str], List[str]]]
+        A function to get lists of directories and files.
+        The argument is the path to an item.
+        The first return value is a list of directory names,
+        and the second return value is a list of file names.
+        In this context, a directory means something that includes
+        files and directories, and a file means something that includes data.
+    show_func: Callable[[str, **kwargs], ReturnMessage]
+        A function to show the contents.
+        The first argument is the path to a file.
+        Other arguments are treated as keyword arguments.
+        Please see the wiki for possible keywords.
+        The return value is the ReturnMessage. It is treated as
+        an error message if ReturnMessage.error is True. Otherwise, it is
+        treated as a standard message.
+
+    Returns
+    -------
+    None
+    """
     cpath = PurePath('.')
     tv = TreeViewer('.', get_contents)
     curses_cui = CursesCUI()

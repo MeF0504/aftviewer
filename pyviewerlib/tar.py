@@ -7,6 +7,7 @@ from pathlib import PurePosixPath
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui,\
     show_image_file, run_system_cmd, get_col, help_template
+from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -28,7 +29,7 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
         tarinfo = tar_file.getmember(key_name)
     except KeyError as e:
         debug_print(e)
-        return '', 'Error!! Cannot open {}.'.format(cpath)
+        return RM('Error!! Cannot open {}.'.format(cpath), True)
 
     if tarinfo.isfile():
         # file
@@ -40,20 +41,20 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
                 ret = run_system_cmd(tmpfile)
                 stdscr.getkey()
             if ret:
-                return 'open {}'.format(cpath), None
+                return RM('open {}'.format(cpath), False)
             else:
-                return '', 'Failed to open {}.'.format(cpath)
+                return RM('Failed to open {}.'.format(cpath), True)
         elif is_image(key_name):
             if 'cui' in kwargs and kwargs['cui']:
                 ava_iv = ['PIL', 'matplotlib', 'OpenCV']
                 if img_viewer not in ava_iv:
-                    return '', 'Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer)
+                    return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
             with tempfile.TemporaryDirectory() as tmpdir:
                 tar_file.extractall(path=tmpdir, members=[tarinfo])
                 tmpfile = os.path.join(tmpdir, cpath)
                 ret = show_image_file(tmpfile, args)
             if not ret:
-                return '', 'Failed to show image.'
+                return RM('Failed to show image.', True)
 
         else:
             # text file?
@@ -61,7 +62,7 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:
-                    return '', 'Error!! {}'.format(e)
+                    return RM('Error!! {}'.format(e), True)
         res.append('')
 
     # directory
@@ -75,7 +76,7 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
     else:
         res.append('sorry, I can\'t show information.\n')
 
-    return '\n'.join(res), None
+    return RM('\n'.join(res), False)
 
 
 def get_contents(tar_file, path):
@@ -133,12 +134,12 @@ def main(fpath, args):
             tar_file.list(verbose=False)
         for k in args.key:
             print_key(k)
-            info, err = show_tar(tar_file, args, gc, k)
-            if err is None:
-                print(info)
+            info = show_tar(tar_file, args, gc, k)
+            if not info.error:
+                print(info.message)
                 print()
             else:
-                cprint(err, fg=fg, bg=bg)
+                cprint(info.message, fg=fg, bg=bg)
     elif args_chk(args, 'verbose'):
         tar_file.list(verbose=True)
     else:

@@ -4,6 +4,8 @@ import tempfile
 import subprocess
 import mimetypes
 from pathlib import Path
+from argparse import ArgumentParser
+from typing import Any, Union
 
 try:
     from screeninfo import get_monitors
@@ -24,7 +26,21 @@ cv2 = None
 img_viewer = None
 
 
-def get_image_viewer(args):
+def get_image_viewer(args: ArgumentParser) -> str:
+    """
+    get the image viewer following the arguments from the command line and
+    configuration options.
+
+    Parameters
+    ----------
+    args: ArgumentParser
+        The arguments given by the command line.
+
+    Returns
+    -------
+    str
+        the name of image viewer.
+    """
     global img_viewer
     if img_viewer is not None:
         return img_viewer
@@ -98,7 +114,22 @@ def get_exec_cmds(args, fname):
     return res
 
 
-def show_image_file(img_file, args):
+def show_image_file(img_file: str, args: ArgumentParser) -> bool:
+    """
+    show an image file with the image viewer.
+
+    Parameters
+    ----------
+    img_file: str
+        image file.
+    args: ArgumentParser
+        The arguments given by the command line.
+
+    Returns
+    -------
+    bool
+        Return True if the file opened successfully, otherwise False.
+    """
     name = os.path.basename(img_file)
     img_viewer = get_image_viewer(args)
     debug_print('  use {}'.format(img_viewer))
@@ -132,7 +163,25 @@ def show_image_file(img_file, args):
     return True
 
 
-def show_image_ndarray(data, name, args):
+def show_image_ndarray(data: Any, name: str, args: ArgumentParser) -> bool:
+    """
+    show a given ndArray as an image with the image viewer.
+
+    Parameters
+    ----------
+    data: numpy.ndarray
+        Data to be shown as an image. the shape of the data should be
+        (h, w, 3) or (h, w, 4).
+    name: str
+        The name of the image.
+    args: ArgumentParser
+        The arguments given by the command line.
+
+    Returns
+    -------
+    bool
+        Return True if the image is shown successfully, otherwise False.
+    """
     img_viewer = get_image_viewer(args)
     debug_print('{}\n  use {}'.format(data.shape, img_viewer))
     if img_viewer is None:
@@ -177,7 +226,20 @@ def show_image_ndarray(data, name, args):
     return True
 
 
-def is_image(path):
+def is_image(path: Union[str, os.PathLike]) -> bool:
+    """
+    judge whether the file of a given path is an image file.
+
+    Parameters
+    ----------
+    path: str or PathLike
+        a path to a file judging whether it is an image file or not.
+
+    Returns
+    -------
+    bool
+        return True if the file is judged as an image file.
+    """
     mime = mimetypes.guess_type(path)[0]
     if mime is None:
         return False
