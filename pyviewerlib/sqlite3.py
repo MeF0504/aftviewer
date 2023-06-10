@@ -4,6 +4,7 @@ from functools import partial
 
 from . import args_chk, print_key, cprint, debug_print, get_col,\
     interactive_view, interactive_cui, help_template
+from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str
 try:
     from tabulate import tabulate
@@ -70,7 +71,7 @@ def show_table(cursor, table_path, verbose=True, **kwargs):
                 for itm in itms:
                     tmp_res += ' {} |'.format(itm)
                 res.append(tmp_res)
-    return '\n'.join(res), None
+    return RM('\n'.join(res), False)
 
 
 def get_contents(cursor, tables, path):
@@ -115,14 +116,14 @@ def main(fpath, args):
         for k in args.key:
             print_key(k)
             fg, bg = get_col('error')
-            info, err = show_table(cursor, k, verbose=True)
-            if err is None:
-                print(info)
+            info = show_table(cursor, k, verbose=True)
+            if not info.error:
+                print(info.message)
                 print()
             else:
-                cprint(err, fg=fg, bg=bg)
+                cprint(info.message, fg=fg, bg=bg)
     else:
         for table in tables:
-            info, err = show_table(cursor, table, verbose=args.verbose)
-            if err is None:
-                print(info)
+            info = show_table(cursor, table, verbose=args.verbose)
+            if not info.error:
+                print(info.message)

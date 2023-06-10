@@ -291,11 +291,11 @@ def interactive_view(fname: str,
                 key_name = key_name[:-1]
             if key_name in files:
                 cprint('output::', '\n', fg=fg3, bg=bg3)
-                info, err = show_func(str(cpath/key_name), cui=False)
-                if err is None:
-                    print(info)
+                info = show_func(str(cpath/key_name), cui=False)
+                if not info.error:
+                    print(info.message)
                 else:
-                    cprint(err, fg=fge, bg=bge)
+                    cprint(info.message, fg=fge, bg=bge)
             elif key_name in dirs:
                 cpath /= key_name
             else:

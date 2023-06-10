@@ -8,6 +8,7 @@ from pathlib import PurePosixPath
 from . import args_chk, is_image, print_key, cprint, debug_print, get_col,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer,\
     run_system_cmd, help_template
+from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 import pyviewerlib.core.cui
 import pyviewerlib.core
@@ -68,7 +69,7 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
         zipinfo = zip_file.getinfo(key_name)
     except KeyError as e:
         debug_print(e)
-        return '', 'Error!! cannot open {}.'.format(cpath)
+        return RM('Error!! cannot open {}.'.format(cpath), True)
 
     if zipinfo.is_dir():
         # directory
@@ -89,20 +90,20 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
                 ret = run_system_cmd(tmpfile)
                 stdscr.getkey()
             if ret:
-                return 'open {}'.format(cpath), None
+                return RM('open {}'.format(cpath), False)
             else:
-                return '', 'Failed to open {}.'.format(cpath)
+                return RM('Failed to open {}.'.format(cpath), True)
         elif is_image(key_name):
             if 'cui' in kwargs and kwargs['cui']:
                 ava_iv = ['PIL', 'matplotlib', 'OpenCV']
                 if img_viewer not in ava_iv:
-                    return '', 'Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer)
+                    return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
             with tempfile.TemporaryDirectory() as tmpdir:
                 zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
                 tmpfile = os.path.join(tmpdir, cpath)
                 ret = show_image_file(tmpfile, args)
             if not ret:
-                return '', 'Failed to show image.'
+                return RM('Failed to show image.', True)
 
         # text file?
         else:
@@ -110,9 +111,9 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:
-                    return '', 'Error!! {}'.format(e)
+                    return RM('Error!! {}'.format(e), True)
 
-    return '\n'.join(res), None
+    return RM('\n'.join(res), False)
 
 
 def show_help():
@@ -154,12 +155,12 @@ def main(fpath, args):
         fg, bg = get_col('error')
         for k in args.key:
             print_key(k)
-            info, err = show_zip(zip_file, pwd, args, gc, k)
-            if err is None:
-                print(info)
+            info = show_zip(zip_file, pwd, args, gc, k)
+            if not info.error:
+                print(info.message)
                 print()
             else:
-                cprint(err, fg=fg, bg=bg)
+                cprint(info.message, fg=fg, bg=bg)
     elif args_chk(args, 'verbose'):
         zip_file.printdir()
     else:
