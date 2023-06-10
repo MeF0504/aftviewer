@@ -22,6 +22,6 @@ for mod, funcs in funcs.items():
     for func in funcs:
         ret = import_module(mod, 'pyviewerlib')
         ret2 = eval(f'ret.{func}')
-        print('- {}'.format(ret2.__name__))
+        print('## {}'.format(ret2.__name__))
         print(ret2.__doc__)
         print()
