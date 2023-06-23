@@ -118,7 +118,7 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
 
 def show_help():
     helpmsg = help_template('zip', 'show the contents of a zip file.',
-                            sup_iv=True, sup_encoding=True, sup_password=True,
+                            sup_iv=True, sup_password=True,
                             sup_v=True, sup_k=True, sup_i=True, sup_c=True)
     print(helpmsg)
 
