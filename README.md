@@ -44,9 +44,7 @@ show the constitution of a file. support file types ... hdf5, pickle, numpy,
 np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm
 
 positional arguments:
-  file                  [input file] | update [update pyviewer] | config_list
-                        [show the current optional configuration] | help [show
-                        the detailed help of each type]
+  file                  input file
 
 options:
   -h, --help            show this help message and exit
@@ -67,6 +65,10 @@ options:
   -i, --interactive     open a file with interactive mode.
   -c, --interactive_cui
                         open a file with interactive CUI mode.
+
+PyViewer has some subcommands, 'pyviewer update' updates this command,
+'pyviewer config_list' shows the current optional configuration, and 'pyviewer
+help -t TYPE' shows the detailed help of each type.
 ```
 
 ## Customize
