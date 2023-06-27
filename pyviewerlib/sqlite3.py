@@ -15,7 +15,7 @@ else:
     is_tabulate = True
 
 
-def show_table(cursor, table_path, verbose=True, **kwargs):
+def show_table(cursor, tables, table_path, verbose=True, **kwargs):
     shift = '  '
     res = []
     if '/' in table_path:
@@ -27,6 +27,9 @@ def show_table(cursor, table_path, verbose=True, **kwargs):
         table = table_path
         column = None
         debug_print('table: {}'.format(table))
+
+    if table not in tables:
+        return RM('{} not in tables'.format(table), True)
     cursor.execute("pragma table_info('{}')".format(table))
     table_info = cursor.fetchall()
 
@@ -47,7 +50,10 @@ def show_table(cursor, table_path, verbose=True, **kwargs):
             cursor.execute('select * from {}'.format(table))
         else:
             headers = column.split(',')
-            cursor.execute('select {} from {}'.format(column, table))
+            try:
+                cursor.execute('select {} from {}'.format(column, table))
+            except sqlite3.OperationalError:
+                return RM('Incorrect columns: {}'.format(column), True)
         columns = cursor.fetchall()
         table = []
         for col in columns:
@@ -106,9 +112,9 @@ def main(fpath, args):
     gc = partial(get_contents, cursor, tables)
 
     if args_chk(args, 'interactive'):
-        interactive_view(fname, gc, partial(show_table, cursor))
+        interactive_view(fname, gc, partial(show_table, cursor, tables))
     elif args_chk(args, 'cui'):
-        interactive_cui(fname, gc, partial(show_table, cursor))
+        interactive_cui(fname, gc, partial(show_table, cursor, tables))
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             for t in tables:
@@ -116,7 +122,7 @@ def main(fpath, args):
         for k in args.key:
             print_key(k)
             fg, bg = get_col('error')
-            info = show_table(cursor, k, verbose=True)
+            info = show_table(cursor, tables, k, verbose=True)
             if not info.error:
                 print(info.message)
                 print()
@@ -124,6 +130,6 @@ def main(fpath, args):
                 cprint(info.message, fg=fg, bg=bg)
     else:
         for table in tables:
-            info = show_table(cursor, table, verbose=args.verbose)
+            info = show_table(cursor, tables, table, verbose=args.verbose)
             if not info.error:
                 print(info.message)
