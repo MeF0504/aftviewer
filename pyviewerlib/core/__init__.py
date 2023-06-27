@@ -3,12 +3,11 @@ import json
 import platform
 import subprocess
 from pathlib import Path, PurePath
-from argparse import ArgumentParser
 from typing import Callable, Union, List, Tuple, Any
 from dataclasses import dataclass
 
 from pymeflib.color import FG, BG, FG256, BG256, END
-from pymeflib.tree2 import TreeViewer
+from pymeflib.tree2 import TreeViewer, GC
 
 
 # global variables
@@ -56,6 +55,39 @@ type_config = {
 type_config.update(json_opts['type'])
 
 
+@dataclass
+class ReturnMessage:
+    """
+    class for returned message.
+
+    self.message: str
+        returned message.
+    self.error: bool
+        True if this message is an error.
+    """
+    message: str
+    error: bool
+
+
+@dataclass
+class Args:
+    """
+    wrapper of argument parser.
+    """
+    file: str
+    type: str
+    image_viewer: str
+    encoding: str
+    ask_password: bool
+    verbose: bool
+    key: List[str]
+    interactive: bool
+    cui: bool
+    debug: bool
+
+SF = Callable[..., ReturnMessage]
+
+
 def debug_print(msg: str) -> None:
     """
     print a message if PyViewer works in debug mode.
@@ -73,14 +105,14 @@ def debug_print(msg: str) -> None:
         print(msg)
 
 
-def args_chk(args: ArgumentParser, attr: str) -> bool:
+def args_chk(args: Args, attr: str) -> bool:
     """
     return True if a given attribute is set in args.
     NOTE: This function supports only default attributes.
 
     Parameters
     ----------
-    args: argparse.ArgumentParser
+    args: Args
         The arguments given by the command line.
     attr: str
         The attribute to check that is set from the command line.
@@ -159,18 +191,18 @@ def cprint(str1: str, str2: str = '',
     -------
     None
     """
-    if fg in FG:
+    if type(fg) is str and fg in FG:
         fg_str = FG[fg]
-    elif type(fg) == int and 0 <= fg <= 255:
+    elif type(fg) is int and 0 <= fg <= 255:
         fg_str = FG256(fg)
     elif fg is None:
         fg_str = ''
     else:
         debug_print(f'incorrect type for fg: {fg}')
         fg_str = ''
-    if bg in BG:
+    if type(bg) is str and bg in BG:
         bg_str = BG[bg]
-    elif type(bg) == int and 0 <= bg <= 255:
+    elif type(bg) is int and 0 <= bg <= 255:
         bg_str = BG256(bg)
     elif bg is None:
         bg_str = ''
@@ -211,24 +243,7 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
         return None, None
 
 
-@dataclass
-class ReturnMessage:
-    """
-    class for returned message.
-
-    self.message: str
-        returned message.
-    self.error: bool
-        True if this message is an error.
-    """
-    message: str
-    error: bool
-
-
-def interactive_view(fname: str,
-                     get_contents: Callable[[str],
-                                            Tuple[List[str], List[str]]],
-                     show_func: Callable[[str, Any], ReturnMessage]) -> None:
+def interactive_view(fname: str, get_contents: GC, show_func: SF) -> None:
     """
     provide the interactive UI to show the contents.
 
@@ -236,7 +251,7 @@ def interactive_view(fname: str,
     ----------
     fname: str
         An opened file name.
-    get_contents: Callable[[str], Tuple[List[str], List[str]]]
+    get_contents: Callable[[PurePath], Tuple[List[str], List[str]]]
         A function to get lists of directories and files.
         The argument is the path to an item.
         The first return value is a list of directory names,

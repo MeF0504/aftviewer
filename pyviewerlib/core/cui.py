@@ -2,10 +2,10 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath, Path
-from typing import Callable, List, Tuple, Any
+from typing import Callable, List, Tuple
 
-from pymeflib.tree2 import TreeViewer
-from . import debug, conf_dir, json_opts, ReturnMessage
+from pymeflib.tree2 import TreeViewer, GC
+from . import debug, conf_dir, json_opts, ReturnMessage, SF
 curses_debug = debug
 
 help_str = '''
@@ -51,8 +51,8 @@ default_color_set = {
         'w': curses.COLOR_WHITE,
         }
 
-class CursesCUI():
 
+class CursesCUI():
     def __init__(self):
         # side bar val
         self.sel_idx = 0
@@ -268,8 +268,7 @@ class CursesCUI():
             else:
                 fpath = str(self.cpath/self.sel_cont)
             self.info = self.show_func(fpath, cui=True,
-                                                 system=system,
-                                                 stdscr=self.stdscr)
+                                       system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
             self.message = [ln.replace("\t", "  ") for ln in self.message]
             self.main_shift_ud = 0
@@ -373,7 +372,7 @@ class CursesCUI():
 
     def show_help_message(self):
         self.message = help_str.format(self.scroll_h,
-                                    self.scroll_h).split('\n')
+                                       self.scroll_h).split('\n')
         self.sel_cont = '<help>'
         self.main_shift_ud = 0
         self.main_shift_lr = 0
@@ -466,7 +465,7 @@ class CursesCUI():
         self.win_pwd.refresh()
 
     def main(self, stdscr, fname: str,
-             show_func: Callable[[str, Any], ReturnMessage],
+             show_func: Callable[..., ReturnMessage],
              cpath: PurePath, tv: TreeViewer) -> None:
         self.stdscr = stdscr
         self.fname = fname
@@ -554,6 +553,8 @@ class CursesCUI():
 
 
 log_init = False
+
+
 def debug_log(msg):
     if not curses_debug:
         return
@@ -568,10 +569,7 @@ def debug_log(msg):
         f.write(msg+"\n")
 
 
-def interactive_cui(fname: str,
-                    get_contents: Callable[[str],
-                                           Tuple[List[str], List[str]]],
-                    show_func: Callable[[str, Any], ReturnMessage]) -> None:
+def interactive_cui(fname: str, get_contents: GC, show_func: SF) -> None:
     """
     provide the CUI (TUI) to show the contents.
 
@@ -579,7 +577,7 @@ def interactive_cui(fname: str,
     ----------
     fname: str
         An opened file name.
-    get_contents: Callable[[str], Tuple[List[str], List[str]]]
+    get_contents: Callable[[PurePath], Tuple[List[str], List[str]]]
         A function to get lists of directories and files.
         The argument is the path to an item.
         The first return value is a list of directory names,
