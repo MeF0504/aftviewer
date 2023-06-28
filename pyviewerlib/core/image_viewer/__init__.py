@@ -26,7 +26,7 @@ def get_image_viewer(args: Args) -> Optional[str]:
 
     Returns
     -------
-    str
+    Optional[str]
         the name of image viewer.
     """
     global __ImgViewer
