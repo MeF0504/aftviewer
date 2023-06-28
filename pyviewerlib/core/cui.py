@@ -267,12 +267,15 @@ class CursesCUI():
                 fpath = self.sel_cont
             else:
                 fpath = str(self.cpath/self.sel_cont)
+            self.main_shift_ud = 0
+            self.main_shift_lr = 0
+            # message of waiting for opening an item
+            self.message = ['opening an item...']
+            self.update_main_window()
             self.info = self.show_func(fpath, cui=True,
                                        system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
             self.message = [ln.replace("\t", "  ") for ln in self.message]
-            self.main_shift_ud = 0
-            self.main_shift_lr = 0
 
     def down_main(self, num):
         main_h = self.winy-self.win_h
