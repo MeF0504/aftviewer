@@ -4,7 +4,6 @@ import tempfile
 import subprocess
 import mimetypes
 from pathlib import Path
-from argparse import ArgumentParser
 from typing import Any, Union
 
 try:
@@ -14,7 +13,7 @@ except ImportError:
 else:
     get_screen = True
 
-from . import args_chk, debug_print, debug, json_opts
+from . import args_chk, debug_print, debug, json_opts, Args
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
@@ -26,14 +25,14 @@ cv2 = None
 img_viewer = None
 
 
-def get_image_viewer(args: ArgumentParser) -> str:
+def get_image_viewer(args: Args) -> str:
     """
     get the image viewer following the arguments from the command line and
     configuration options.
 
     Parameters
     ----------
-    args: ArgumentParser
+    args: Args
         The arguments given by the command line.
 
     Returns
@@ -114,7 +113,7 @@ def get_exec_cmds(args, fname):
     return res
 
 
-def show_image_file(img_file: str, args: ArgumentParser) -> bool:
+def show_image_file(img_file: str, args: Args) -> bool:
     """
     show an image file with the image viewer.
 
@@ -122,7 +121,7 @@ def show_image_file(img_file: str, args: ArgumentParser) -> bool:
     ----------
     img_file: str
         image file.
-    args: ArgumentParser
+    args: Args
         The arguments given by the command line.
 
     Returns
@@ -163,7 +162,7 @@ def show_image_file(img_file: str, args: ArgumentParser) -> bool:
     return True
 
 
-def show_image_ndarray(data: Any, name: str, args: ArgumentParser) -> bool:
+def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
     """
     show a given ndArray as an image with the image viewer.
 
@@ -174,7 +173,7 @@ def show_image_ndarray(data: Any, name: str, args: ArgumentParser) -> bool:
         (h, w, 3) or (h, w, 4).
     name: str
         The name of the image.
-    args: ArgumentParser
+    args: Args
         The arguments given by the command line.
 
     Returns
