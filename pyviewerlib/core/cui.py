@@ -2,7 +2,7 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath, Path
-from typing import Callable, List, Tuple
+from typing import Callable
 
 from pymeflib.tree2 import TreeViewer, GC
 from . import debug, conf_dir, json_opts, ReturnMessage, SF
@@ -403,7 +403,7 @@ class CursesCUI():
         main_h = self.winy-self.win_h
         main_w = self.winx-self.win_w
         self.win_main.clear()
-        # show titme
+        # show title
         self.win_main.addstr(0, 0, self.sel_cont, curses.A_REVERSE)
         if len(self.sel_cont) != 0:
             if main_w > len(self.sel_cont)+2:
