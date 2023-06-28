@@ -4,7 +4,7 @@ import tempfile
 import subprocess
 import mimetypes
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Union, Optional
 
 try:
     from screeninfo import get_monitors
@@ -19,13 +19,10 @@ from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
 # image viewer
-Image = None
-plt = None
-cv2 = None
 img_viewer = None
 
 
-def get_image_viewer(args: Args) -> str:
+def get_image_viewer(args: Args) -> Optional[str]:
     """
     get the image viewer following the arguments from the command line and
     configuration options.
@@ -43,18 +40,18 @@ def get_image_viewer(args: Args) -> str:
     global img_viewer
     if img_viewer is not None:
         return img_viewer
-    global Image
-    global plt
-    global cv2
     if args_chk(args, 'image_viewer'):
         debug_print('set image viewer from args')
         img_viewer = args.image_viewer
         if img_viewer == 'PIL':
             from PIL import Image
+            global Image
         elif img_viewer == 'matplotlib':
             import matplotlib.pyplot as plt
+            global plt
         elif img_viewer == 'OpenCV':
             import cv2
+            global cv2
         else:
             # external command
             if not chk_cmd(img_viewer, debug):
@@ -64,6 +61,7 @@ def get_image_viewer(args: Args) -> str:
         try:
             from PIL import Image
             debug_print(' => image_viewer: PIL')
+            global Image
         except ImportError:
             pass
         else:
@@ -73,6 +71,7 @@ def get_image_viewer(args: Args) -> str:
             try:
                 import matplotlib.pyplot as plt
                 debug_print(' => image_viewer: matplotlib')
+                global plt
             except ImportError:
                 pass
             else:
@@ -82,6 +81,7 @@ def get_image_viewer(args: Args) -> str:
             try:
                 import cv2
                 debug_print(' => image_viewer: OpenCV')
+                global cv2
             except ImportError:
                 debug_print("can't find image_viewer")
                 img_viewer = None
