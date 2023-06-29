@@ -7,7 +7,7 @@ from pathlib import PurePosixPath
 
 from . import args_chk, is_image, print_key, cprint, debug_print, get_col,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer,\
-    run_system_cmd, help_template
+    run_system_cmd, help_template, ImageViewers
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 import pyviewerlib.core.cui
@@ -95,7 +95,7 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
                 return RM('Failed to open {}.'.format(cpath), True)
         elif is_image(key_name):
             if 'cui' in kwargs and kwargs['cui']:
-                ava_iv = ['PIL', 'matplotlib', 'OpenCV']
+                ava_iv = ImageViewers
                 if img_viewer not in ava_iv:
                     return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
             with tempfile.TemporaryDirectory() as tmpdir:

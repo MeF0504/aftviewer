@@ -1,9 +1,11 @@
 import os
+import sys
 import tempfile
 import subprocess
 import mimetypes
 from typing import Any, Union, Optional
 from importlib import import_module
+from pathlib import Path
 
 from .. import args_chk, debug_print, debug, json_opts, Args
 from pymeflib.color import make_bitmap
@@ -11,7 +13,7 @@ from pymeflib.util import chk_cmd
 
 # image viewer
 __ImgViewer = None
-__mods = ['PIL', 'matplotlib', 'OpenCV']
+ImageViewers = ['PIL', 'matplotlib', 'cv2']
 
 
 def get_image_viewer(args: Args) -> Optional[str]:
@@ -37,32 +39,15 @@ def get_image_viewer(args: Args) -> Optional[str]:
         __ImgViewer = args.image_viewer
     else:
         debug_print('search available image_viewer')
-        try:
-            from PIL import Image
-            debug_print(' => image_viewer: PIL')
-        except ImportError:
-            pass
-        else:
-            __ImgViewer = 'PIL'
-
-        if __ImgViewer is None:
-            try:
-                import matplotlib.pyplot as plt
-                debug_print(' => image_viewer: matplotlib')
-            except ImportError:
-                pass
-            else:
-                __ImgViewer = 'matplotlib'
-
-        if __ImgViewer is None:
-            try:
-                import cv2
-                debug_print(' => image_viewer: OpenCV')
-            except ImportError:
-                pass
-            else:
-                __ImgViewer = 'OpenCV'
-
+        for iv in ImageViewers:
+            for p in sys.path:
+                if (Path(p)/iv).exists():
+                    __ImgViewer = iv
+                    debug_print(f' => image_viewer: {iv}')
+                    break
+            if __ImgViewer is not None:
+                # image viewer is set.
+                break
         if __ImgViewer is None:
             debug_print("can't find image_viewer")
     return __ImgViewer
@@ -105,7 +90,7 @@ def show_image_file(img_file: str, args: Args) -> bool:
     if img_viewer is None:
         print("I can't find any libraries to show image.")
         return False
-    elif img_viewer in __mods:
+    elif img_viewer in ImageViewers:
         mod = import_module(f'pyviewerlib.core.image_viewer.{img_viewer}')
         mod.show_image_file(img_file)
     else:
@@ -141,9 +126,9 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
     img_viewer = get_image_viewer(args)
     debug_print('{}\n  use {}'.format(data.shape, img_viewer))
     if img_viewer is None:
-        print("I can't find any libraries to show image. Please install Pillow or matplotlib.")
+        print("I can't find any libraries to show image.")
         return False
-    elif img_viewer in __mods:
+    elif img_viewer in ImageViewers:
         mod = import_module(f'pyviewerlib.core.image_viewer.{img_viewer}')
         mod.show_image_ndarray(data, name)
     else:

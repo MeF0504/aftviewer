@@ -6,7 +6,7 @@ from pathlib import PurePosixPath
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui,\
-    show_image_file, run_system_cmd, get_col, help_template
+    show_image_file, run_system_cmd, get_col, help_template, ImageViewers
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 import pyviewerlib.core.cui
@@ -46,7 +46,7 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
                 return RM('Failed to open {}.'.format(cpath), True)
         elif is_image(key_name):
             if 'cui' in kwargs and kwargs['cui']:
-                ava_iv = ['PIL', 'matplotlib', 'OpenCV']
+                ava_iv = ImageViewers
                 if img_viewer not in ava_iv:
                     return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
             with tempfile.TemporaryDirectory() as tmpdir:

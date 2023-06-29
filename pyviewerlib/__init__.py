@@ -7,7 +7,7 @@ from .core import debug_print, args_chk, cprint, print_key, get_col,\
 # class
 from .core import ReturnMessage
 from .core.image_viewer import get_image_viewer, is_image,\
-    show_image_file, show_image_ndarray
+    show_image_file, show_image_ndarray, ImageViewers
 from .core.helpmsg import help_template
 try:
     from .core.cui import interactive_cui
