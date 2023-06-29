@@ -8,7 +8,7 @@ iv_help = dict(help="set image viewer. " +
                     "Supported args are " +
                     "'matplotlib' (use matplotlib.pyplot.imshow), " +
                     "'PIL' (use PIL.Image.show), " +
-                    "'OpenCV' (use cv2.imshow), " +
+                    "'cv2' (use cv2.imshow), " +
                     "and other string is treated as an external command (e.g. gosr, open).",
                type=str,
                )
