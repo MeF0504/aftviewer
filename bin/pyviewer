@@ -13,7 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from pyviewerlib import debug, json_opts, type_config, args_chk, debug_print,\
     show_opts
 from pyviewerlib.core.update import update
-from pyviewerlib.core import helpmsg
+from pyviewerlib.core.helpmsg import set_def_args
 
 
 def get_filetype(fpath):
@@ -109,14 +109,9 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type. "pyviewer help -t TYPE" will show the detailed help.',
                         choices=supported_type)
-    parser.add_argument('-iv', '--image_viewer', **helpmsg.iv_help)
-    parser.add_argument('--encoding', **helpmsg.encoding_help)
-    parser.add_argument('--ask_password', '-p', **helpmsg.pass_help)
-    ex_group = parser.add_mutually_exclusive_group()
-    ex_group.add_argument('-v', '--verbose', **helpmsg.verbose_help)
-    ex_group.add_argument('-k', '--key', **helpmsg.key_help)
-    ex_group.add_argument('-i', '--interactive', **helpmsg.interactive_help)
-    ex_group.add_argument('-c', '--interactive_cui', **helpmsg.cui_help)
+    set_def_args(parser,
+                 sup_iv=True, sup_encoding=True, sup_password=True,
+                 sup_v=True, sup_k=True, sup_i=True, sup_c=True)
     if json_opts['add_args'] is not None:
         try:
             # additional arguments

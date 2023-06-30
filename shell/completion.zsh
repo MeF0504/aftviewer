@@ -31,12 +31,12 @@ _pyviewer_alters()
 _pyviewr_types()
 {
     _values 'types' \
-        $(_get_pyviewer_types)
+        $(_get_pyviewer_types 'type')
 }
 _pyviewer_iv()
 {
     _values 'image viewer' \
-        'PIL' 'matplotlib' 'OpenCV'
+        $(_get_pyviewer_types 'image_viewer')
 }
 compdef _pyviewer_cmp pyviewer
 

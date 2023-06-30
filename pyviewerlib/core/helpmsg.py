@@ -4,38 +4,6 @@ from typing import Optional
 
 from . import type_config, debug_print
 
-iv_help = dict(help="set image viewer. " +
-                    "Supported args are " +
-                    "'matplotlib' (use matplotlib.pyplot.imshow), " +
-                    "'PIL' (use PIL.Image.show), " +
-                    "'OpenCV' (use cv2.imshow), " +
-                    "and other string is treated as an external command (e.g. gosr, open).",
-               type=str,
-               )
-encoding_help = dict(help='specify the encoding format.',
-                     dest='encoding', type=str,
-                     )
-pass_help = dict(help='ask for the password for the file if needed.',
-                 action='store_true',
-                 )
-verbose_help = dict(help='show details',
-                    dest='verbose',
-                    action='store_true',
-                    )
-key_help = dict(help='specify the key name to show. ' +
-                     'If no key is specified, return the list of keys.',
-                dest='key',
-                nargs='*',
-                )
-interactive_help = dict(help='open a file with interactive mode.',
-                        dest='interactive',
-                        action='store_true',
-                        )
-cui_help = dict(help='open a file with interactive CUI mode.',
-                dest='cui',
-                action='store_true',
-                )
-
 
 def help_template(filetype: str, description: str,
                   sup_iv: bool = False, sup_encoding: bool = False,
@@ -85,31 +53,69 @@ def help_template(filetype: str, description: str,
     parser = argparse.ArgumentParser(description=description,
                                      prog=f'pyviewer FILE -t {filetype}',
                                      add_help=False)
-    if sup_iv:
-        parser.add_argument('-iv', '--image_viewer', **iv_help)
-    if sup_encoding:
-        parser.add_argument('--encoding', **encoding_help)
-    if sup_password:
-        parser.add_argument('--ask_password', '-p', **pass_help)
-    if int(sup_v) + int(sup_k) + int(sup_i) + int(sup_c) > 1:
-        group = parser.add_mutually_exclusive_group()
-    else:
-        group = parser
-    if sup_v:
-        group.add_argument('-v', '--verbose', **verbose_help)
-    if sup_k:
-        group.add_argument('-k', '--key', **key_help)
-    if sup_i:
-        group.add_argument('-i', '--interactive', **interactive_help)
-    if sup_c:
-        group.add_argument('-c', '--interactive_cui', **cui_help)
+    set_def_args(parser, sup_iv=sup_iv, sup_encoding=sup_encoding,
+                 sup_password=sup_password,
+                 sup_v=sup_v, sup_k=sup_k, sup_i=sup_i, sup_c=sup_c)
     if add_args is not None:
         try:
             # additional arguments
             lib = import_module("pyviewerlib.{}".format(add_args))
         except ImportError as e:
-            debug_print(e)
+            debug_print(e.msg)
         else:
             lib.main(parser)
 
     return parser.format_help()
+
+
+def set_def_args(parser: argparse.ArgumentParser,
+                 sup_iv: bool = False, sup_encoding: bool = False,
+                 sup_password: bool = False,
+                 sup_v: bool = False, sup_k: bool = False,
+                 sup_i: bool = False, sup_c: bool = False,
+                 add_args: Optional[str] = None,
+                 ) -> None:
+    if sup_iv:
+        parser.add_argument('-iv', '--image_viewer',
+                            help="set image viewer. " +
+                            "Supported args are " +
+                            "'matplotlib' (use matplotlib.pyplot.imshow), " +
+                            "'PIL' (use PIL.Image.show), " +
+                            "'cv2' (use cv2.imshow), " +
+                            "and other string is treated as an external command (e.g. gosr, open).",
+                            type=str,
+                            )
+    if sup_encoding:
+        parser.add_argument('--encoding', help='specify the encoding format.',
+                            dest='encoding', type=str,
+                            )
+    if sup_password:
+        parser.add_argument('--ask_password', '-p',
+                            help='ask for the password for the file if needed.',
+                            action='store_true',
+                            )
+    group = parser.add_mutually_exclusive_group()
+    if sup_v:
+        group.add_argument('-v', '--verbose', help='show details',
+                           dest='verbose',
+                           action='store_true',
+                           )
+    if sup_k:
+        group.add_argument('-k', '--key',
+                           help='specify the key name to show. ' +
+                           'If no key is specified, return the list of keys.',
+                           dest='key',
+                           nargs='*',
+                           )
+    if sup_i:
+        group.add_argument('-i', '--interactive',
+                           help='open a file with interactive mode.',
+                           dest='interactive',
+                           action='store_true',
+                           )
+    if sup_c:
+        group.add_argument('-c', '--interactive_cui',
+                           help='open a file with interactive CUI mode.',
+                           dest='cui',
+                           action='store_true',
+                           )

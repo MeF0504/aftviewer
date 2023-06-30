@@ -54,8 +54,8 @@ options:
   -iv IMAGE_VIEWER, --image_viewer IMAGE_VIEWER
                         set image viewer. Supported args are 'matplotlib' (use
                         matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show),
-                        'OpenCV' (use cv2.imshow), and other string is treated
-                        as an external command (e.g. gosr, open).
+                        'cv2' (use cv2.imshow), and other string is treated as
+                        an external command (e.g. gosr, open).
   --encoding ENCODING   specify the encoding format.
   --ask_password, -p    ask for the password for the file if needed.
   -v, --verbose         show details
@@ -79,7 +79,7 @@ The json file should contain one dictionary. The possible key names of this are 
 - image_viewer (str)
     - The method to show images. The role of the argument is the same as the command-line argument (-iv). If image viewer is specified in both json file and command-line arguments, the latter one is applied.
 - iv_exec_cmd (list)
-    - The executed command used to show an image. '%c' and '%s' are replaced by the command and file name respectively. Note that this option is effective when the image viewer is nor 'PIL', 'matplotlib', and 'OpenCV'.
+    - The executed command used to show an image. '%c' and '%s' are replaced by the command and file name respectively. Note that this option is effective when the image viewer is nor 'PIL', 'matplotlib', and 'cv2'.
 - pickle_encoding (str)
     - The character code used to encode the pickle file.
 - type (dict)

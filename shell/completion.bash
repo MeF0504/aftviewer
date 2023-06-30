@@ -7,8 +7,8 @@ _pyviewer_cmp()
     prev=${COMP_WORDS[${COMP_CWORD}-1]}
 
     local opts="-h -t -iv -p -v -k -i -c --encoding"
-    local types="$(_get_pyviewer_types)"
-    local image_viewer="PIL matplotlib OpenCV"
+    local types="$(_get_pyviewer_types 'type')"
+    local image_viewer="$(_get_pyviewer_types 'image_viewer')"
     if [[ "${cur:0:1}" = "-" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
     elif [[ "${prev}" = "-h" ]]; then

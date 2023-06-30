@@ -85,6 +85,7 @@ class Args:
     cui: bool
     debug: bool
 
+
 SF = Callable[..., ReturnMessage]
 
 

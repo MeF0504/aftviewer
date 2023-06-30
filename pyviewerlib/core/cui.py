@@ -2,7 +2,7 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath, Path
-from typing import Callable, List, Tuple
+from typing import Callable
 
 from pymeflib.tree2 import TreeViewer, GC
 from . import debug, conf_dir, json_opts, ReturnMessage, SF
@@ -267,12 +267,15 @@ class CursesCUI():
                 fpath = self.sel_cont
             else:
                 fpath = str(self.cpath/self.sel_cont)
+            self.main_shift_ud = 0
+            self.main_shift_lr = 0
+            # message of waiting for opening an item
+            self.message = ['opening an item...']
+            self.update_main_window()
             self.info = self.show_func(fpath, cui=True,
                                        system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
             self.message = [ln.replace("\t", "  ") for ln in self.message]
-            self.main_shift_ud = 0
-            self.main_shift_lr = 0
 
     def down_main(self, num):
         main_h = self.winy-self.win_h
@@ -403,7 +406,7 @@ class CursesCUI():
         main_h = self.winy-self.win_h
         main_w = self.winx-self.win_w
         self.win_main.clear()
-        # show titme
+        # show title
         self.win_main.addstr(0, 0, self.sel_cont, curses.A_REVERSE)
         if len(self.sel_cont) != 0:
             if main_w > len(self.sel_cont)+2:
