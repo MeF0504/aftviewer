@@ -468,7 +468,7 @@ class CursesCUI():
         self.win_pwd.refresh()
 
     def main(self, stdscr, fname: str,
-             show_func: Callable[..., ReturnMessage],
+             show_func: SF,
              cpath: PurePath, tv: TreeViewer) -> None:
         self.stdscr = stdscr
         self.fname = fname
