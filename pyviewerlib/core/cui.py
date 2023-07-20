@@ -13,33 +13,33 @@ key   function
 (S- means shift+key)
 q     quit
 ?     show this help
-↓     select items (1 down)
-J     select items (1 down)
-↑     select items (1 up)
-K     select items (1 up)
-D     select item ({} down)
-U     select item ({} up)
-S-←   select item (goto top)
-S-→   select item (goto bottom)
-←     shift strings in the side bar left
-→     shift strings in the side bar right
-H     shift strings in the side bar left
-L     shift strings in the side bar right
+↓     move the sidebar cursor down by 1
+J     move the sidebar cursor down by 1
+↑     move the sidebar cursor up by 1
+K     move the sidebar cursor up by 1
+D     move the sidebar cursor down by {}
+U     move the sidebar cursor up by {}
+S-←   move the sidebar cursor to the first line
+S-→   move the sidebar cursor to the end line
+←     shift strings in the sidebar left
+→     shift strings in the sidebar right
+H     shift strings in the sidebar left
+L     shift strings in the sidebar right
 <CR>  open the item in the main window
 S-↑   go up the path or quit the search mode
 j     scroll down the main window
 k     scroll up the main window
 h     shift the main window left
 l     shift the main window right
-g     goto the top of main view
-G     goto the bottom if main view
+g     go to the top of the main window
+G     go to the bottom if main window
 ^     go to the first character of the line
 $     go to the {} columns of the line
 /     start the search mode
-n     jump to next searching word
-N     jump to previous searching word
+n     jump to the next search word
+N     jump to the previous search word
 f     search file names
-S-↓   open the items in system command if supported
+S-↓   open the items in the system command if supported
 '''
 
 default_color_set = {
@@ -56,7 +56,7 @@ default_color_set = {
 
 class CursesCUI():
     def __init__(self):
-        # side bar val
+        # sidebar val
         self.sel_idx = 0
         self.side_shift_ud = 0
         self.side_shift_lr = 0
@@ -76,7 +76,7 @@ class CursesCUI():
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
         self.win_h = 3   # height of top window
-        self.win_w = int(self.winx*3/10)  # width of side bar
+        self.win_w = int(self.winx*3/10)  # width of sidebar
         self.search_h = 1    # height of search window
         self.scroll_h = 5
         self.scroll_w = 5
