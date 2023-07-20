@@ -361,9 +361,9 @@ class CursesCUI():
         search_word = box.gather()
         self.search_word2 = search_word.replace("\n", '')[:-1]
         self.search_word = ''
-        self.jump_search_word(self.main_shift_ud, False)
+        self.jump_search_word(self.main_shift_ud, 0, False)
 
-    def jump_search_word(self, start_line, reverse=False):
+    def jump_search_word(self, start_line, start_col, reverse=False):
         if not self.search_word2:
             return
         if reverse:
@@ -371,9 +371,15 @@ class CursesCUI():
         else:
             lines = range(start_line, len(self.message))
         for i in lines:
-            line = self.message[i]
+            if i == start_line:
+                line = self.message[i][start_col:]
+                shift = start_col
+            else:
+                line = self.message[i]
+                shift = 0
             if self.search_word2 in line:
                 self.main_shift_ud = i
+                self.main_shift_lr = line.find(self.search_word2)+shift
                 break
 
     def show_help_message(self):
@@ -536,9 +542,10 @@ class CursesCUI():
             elif self.key == '/':
                 self.into_search_mode()
             elif self.key == 'n':
-                self.jump_search_word(self.main_shift_ud+1, False)
+                self.jump_search_word(self.main_shift_ud,
+                                      self.main_shift_lr+1, False)
             elif self.key == 'N':
-                self.jump_search_word(self.main_shift_ud-1, True)
+                self.jump_search_word(self.main_shift_ud-1, 0, True)
             elif self.key == '?':
                 self.show_help_message()
 
