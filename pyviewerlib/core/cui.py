@@ -2,7 +2,6 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath, Path
-from typing import Callable
 
 from pymeflib.tree2 import TreeViewer, GC
 from . import debug, conf_dir, json_opts, ReturnMessage, SF
