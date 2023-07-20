@@ -33,6 +33,8 @@ h     shift the main window left
 l     shift the main window right
 g     goto the top of main view
 G     goto the bottom if main view
+^     go to the first character of the line
+$     go to the {} columns of the line
 /     start the search mode
 n     jump to next searching word
 N     jump to previous searching word
@@ -79,6 +81,7 @@ class CursesCUI():
         self.scroll_h = 5
         self.scroll_w = 5
         self.scroll_side = 3
+        self.scroll_doll = 100
         self.exp = ''
         self.exp += 'q:quit ↑↓←→:sel'
         self.exp += ' shift+↑:back'
@@ -291,14 +294,14 @@ class CursesCUI():
         else:
             self.main_shift_ud -= num
 
-    def shift_left_main(self):
-        if self.main_shift_lr < self.scroll_w:
+    def shift_left_main(self, num):
+        if self.main_shift_lr < num:
             self.main_shift_lr = 0
         else:
-            self.main_shift_lr -= self.scroll_w
+            self.main_shift_lr -= num
 
-    def shift_right_main(self):
-        self.main_shift_lr += self.scroll_w
+    def shift_right_main(self, num):
+        self.main_shift_lr += num
 
     def file_search(self):
         # file name search mode
@@ -375,7 +378,9 @@ class CursesCUI():
 
     def show_help_message(self):
         self.message = help_str.format(self.scroll_h,
-                                       self.scroll_h).split('\n')
+                                       self.scroll_h,
+                                       self.scroll_doll,
+                                       ).split('\n')
         self.sel_cont = '<help>'
         self.main_shift_ud = 0
         self.main_shift_lr = 0
@@ -411,8 +416,10 @@ class CursesCUI():
         if len(self.sel_cont) != 0:
             if main_w > len(self.sel_cont)+2:
                 self.win_main.addstr(0, len(self.sel_cont)+2,
-                                     '{}/{}'.format(self.main_shift_ud+1,
-                                                    len(self.message)),
+                                     '{}/{}, {}'.format(self.main_shift_ud+1,
+                                                        len(self.message),
+                                                        self.main_shift_lr+1,
+                                                        ),
                                      curses.color_pair(4))
         if not self.info.error:
             # show contents
@@ -513,13 +520,17 @@ class CursesCUI():
             elif self.key == 'k':
                 self.up_main(self.scroll_h)
             elif self.key == 'l':
-                self.shift_right_main()
+                self.shift_right_main(self.scroll_w)
             elif self.key == 'h':
-                self.shift_left_main()
+                self.shift_left_main(self.scroll_w)
             elif self.key == 'g':
                 self.up_main(self.main_shift_ud)
             elif self.key == 'G':
                 self.down_main(len(self.message)-self.main_shift_ud-2)
+            elif self.key == '^':
+                self.shift_left_main(self.main_shift_lr)
+            elif self.key == '$':
+                self.shift_right_main(self.scroll_doll)
             elif self.key == 'f':
                 self.file_search()
             elif self.key == '/':
@@ -544,7 +555,7 @@ class CursesCUI():
             if self.key in ['', "\n", 'KEY_ENTER',
                             'KEY_SF', 'KEY_SDOWN',
                             'KEY_SR', 'KEY_SUP',
-                            'j', 'k', 'h', 'l', 'g', 'G',
+                            'j', 'k', 'h', 'l', 'g', 'G', '^', '$',
                             '?', '/', 'n', 'N',
                             ]:
                 self.update_main_window()
