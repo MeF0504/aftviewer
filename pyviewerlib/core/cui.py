@@ -2,7 +2,6 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath, Path
-from typing import Callable
 
 from pymeflib.tree2 import TreeViewer, GC
 from . import debug, conf_dir, json_opts, ReturnMessage, SF
@@ -13,31 +12,33 @@ key   function
 (S- means shift+key)
 q     quit
 ?     show this help
-↓     select items (1 down)
-J     select items (1 down)
-↑     select items (1 up)
-K     select items (1 up)
-D     select item ({} down)
-U     select item ({} up)
-S-←   select item (goto top)
-S-→   select item (goto bottom)
-←     shift strings in the side bar left
-→     shift strings in the side bar right
-H     shift strings in the side bar left
-L     shift strings in the side bar right
+↓     move the sidebar cursor down by 1
+J     move the sidebar cursor down by 1
+↑     move the sidebar cursor up by 1
+K     move the sidebar cursor up by 1
+D     move the sidebar cursor down by {}
+U     move the sidebar cursor up by {}
+S-←   move the sidebar cursor to the first line
+S-→   move the sidebar cursor to the end line
+←     shift strings in the sidebar left
+→     shift strings in the sidebar right
+H     shift strings in the sidebar left
+L     shift strings in the sidebar right
 <CR>  open the item in the main window
 S-↑   go up the path or quit the search mode
 j     scroll down the main window
 k     scroll up the main window
 h     shift the main window left
 l     shift the main window right
-g     goto the top of main view
-G     goto the bottom if main view
+g     go to the top of the main window
+G     go to the bottom if main window
+^     go to the first character of the line
+$     go to the {} columns of the line
 /     start the search mode
-n     jump to next searching word
-N     jump to previous searching word
+n     jump to the next search word
+N     jump to the previous search word
 f     search file names
-S-↓   open the items in system command if supported
+S-↓   open the items in the system command if supported
 '''
 
 default_color_set = {
@@ -54,7 +55,7 @@ default_color_set = {
 
 class CursesCUI():
     def __init__(self):
-        # side bar val
+        # sidebar val
         self.sel_idx = 0
         self.side_shift_ud = 0
         self.side_shift_lr = 0
@@ -74,11 +75,12 @@ class CursesCUI():
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
         self.win_h = 3   # height of top window
-        self.win_w = int(self.winx*3/10)  # width of side bar
+        self.win_w = int(self.winx*3/10)  # width of sidebar
         self.search_h = 1    # height of search window
         self.scroll_h = 5
         self.scroll_w = 5
         self.scroll_side = 3
+        self.scroll_doll = 100
         self.exp = ''
         self.exp += 'q:quit ↑↓←→:sel'
         self.exp += ' shift+↑:back'
@@ -291,14 +293,14 @@ class CursesCUI():
         else:
             self.main_shift_ud -= num
 
-    def shift_left_main(self):
-        if self.main_shift_lr < self.scroll_w:
+    def shift_left_main(self, num):
+        if self.main_shift_lr < num:
             self.main_shift_lr = 0
         else:
-            self.main_shift_lr -= self.scroll_w
+            self.main_shift_lr -= num
 
-    def shift_right_main(self):
-        self.main_shift_lr += self.scroll_w
+    def shift_right_main(self, num):
+        self.main_shift_lr += num
 
     def file_search(self):
         # file name search mode
@@ -358,9 +360,9 @@ class CursesCUI():
         search_word = box.gather()
         self.search_word2 = search_word.replace("\n", '')[:-1]
         self.search_word = ''
-        self.jump_search_word(self.main_shift_ud, False)
+        self.jump_search_word(self.main_shift_ud, 0, False)
 
-    def jump_search_word(self, start_line, reverse=False):
+    def jump_search_word(self, start_line, start_col, reverse=False):
         if not self.search_word2:
             return
         if reverse:
@@ -368,14 +370,22 @@ class CursesCUI():
         else:
             lines = range(start_line, len(self.message))
         for i in lines:
-            line = self.message[i]
+            if i == start_line:
+                line = self.message[i][start_col:]
+                shift = start_col
+            else:
+                line = self.message[i]
+                shift = 0
             if self.search_word2 in line:
                 self.main_shift_ud = i
+                self.main_shift_lr = line.find(self.search_word2)+shift
                 break
 
     def show_help_message(self):
         self.message = help_str.format(self.scroll_h,
-                                       self.scroll_h).split('\n')
+                                       self.scroll_h,
+                                       self.scroll_doll,
+                                       ).split('\n')
         self.sel_cont = '<help>'
         self.main_shift_ud = 0
         self.main_shift_lr = 0
@@ -411,8 +421,10 @@ class CursesCUI():
         if len(self.sel_cont) != 0:
             if main_w > len(self.sel_cont)+2:
                 self.win_main.addstr(0, len(self.sel_cont)+2,
-                                     '{}/{}'.format(self.main_shift_ud+1,
-                                                    len(self.message)),
+                                     '{}/{}, {}'.format(self.main_shift_ud+1,
+                                                        len(self.message),
+                                                        self.main_shift_lr+1,
+                                                        ),
                                      curses.color_pair(4))
         if not self.info.error:
             # show contents
@@ -513,21 +525,26 @@ class CursesCUI():
             elif self.key == 'k':
                 self.up_main(self.scroll_h)
             elif self.key == 'l':
-                self.shift_right_main()
+                self.shift_right_main(self.scroll_w)
             elif self.key == 'h':
-                self.shift_left_main()
+                self.shift_left_main(self.scroll_w)
             elif self.key == 'g':
                 self.up_main(self.main_shift_ud)
             elif self.key == 'G':
                 self.down_main(len(self.message)-self.main_shift_ud-2)
+            elif self.key == '^':
+                self.shift_left_main(self.main_shift_lr)
+            elif self.key == '$':
+                self.shift_right_main(self.scroll_doll)
             elif self.key == 'f':
                 self.file_search()
             elif self.key == '/':
                 self.into_search_mode()
             elif self.key == 'n':
-                self.jump_search_word(self.main_shift_ud+1, False)
+                self.jump_search_word(self.main_shift_ud,
+                                      self.main_shift_lr+1, False)
             elif self.key == 'N':
-                self.jump_search_word(self.main_shift_ud-1, True)
+                self.jump_search_word(self.main_shift_ud-1, 0, True)
             elif self.key == '?':
                 self.show_help_message()
 
@@ -544,7 +561,7 @@ class CursesCUI():
             if self.key in ['', "\n", 'KEY_ENTER',
                             'KEY_SF', 'KEY_SDOWN',
                             'KEY_SR', 'KEY_SUP',
-                            'j', 'k', 'h', 'l', 'g', 'G',
+                            'j', 'k', 'h', 'l', 'g', 'G', '^', '$',
                             '?', '/', 'n', 'N',
                             ]:
                 self.update_main_window()
