@@ -3,7 +3,7 @@
 import sys
 from importlib import import_module
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # NumPy Style -> https://numpydoc.readthedocs.io/en/latest/format.html
 
 funcs = {
