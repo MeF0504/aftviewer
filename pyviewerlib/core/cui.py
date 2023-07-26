@@ -33,7 +33,7 @@ l     shift the main window right
 g     go to the top of the main window
 G     go to the bottom if main window
 ^     go to the first character of the line
-$     go to the {} columns of the line
+$     go to the last column of the line
 /     start the search mode
 n     jump to the next search word
 N     jump to the previous search word
@@ -80,7 +80,8 @@ class CursesCUI():
         self.scroll_h = 5
         self.scroll_w = 5
         self.scroll_side = 3
-        self.scroll_doll = 100
+        # actually this↓ almost means the max length of messages.
+        self.scroll_doll = 0
         self.exp = ''
         self.exp += 'q:quit ↑↓←→:sel'
         self.exp += ' shift+↑:back'
@@ -278,6 +279,10 @@ class CursesCUI():
                                        system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
             self.message = [ln.replace("\t", "  ") for ln in self.message]
+            self.scroll_doll = max([len(ln) for ln in self.message]) -\
+                (self.winx-self.win_w)+5
+            if self.scroll_doll < 0:
+                self.scroll_doll = 0
 
     def down_main(self, num):
         main_h = self.winy-self.win_h
@@ -384,7 +389,6 @@ class CursesCUI():
     def show_help_message(self):
         self.message = help_str.format(self.scroll_h,
                                        self.scroll_h,
-                                       self.scroll_doll,
                                        ).split('\n')
         self.sel_cont = '<help>'
         self.main_shift_ud = 0
@@ -535,7 +539,7 @@ class CursesCUI():
             elif self.key == '^':
                 self.shift_left_main(self.main_shift_lr)
             elif self.key == '$':
-                self.shift_right_main(self.scroll_doll)
+                self.shift_right_main(self.scroll_doll-self.main_shift_lr)
             elif self.key == 'f':
                 self.file_search()
             elif self.key == '/':
