@@ -83,7 +83,7 @@ def show_image_file(img_file: str, args: Args) -> bool:
         Return True if the file opened successfully, otherwise False.
     """
     img_viewer = get_image_viewer(args)
-    debug_print('  use {}'.format(img_viewer))
+    debug_print('img file:{}\n  use {}'.format(img_file, img_viewer))
     if not os.path.isfile(img_file):
         debug_print('image file {} in not found'.format(img_file))
         return False
@@ -124,7 +124,7 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
         Return True if the image is shown successfully, otherwise False.
     """
     img_viewer = get_image_viewer(args)
-    debug_print('{}\n  use {}'.format(data.shape, img_viewer))
+    debug_print('data shape: {}\n  use {}'.format(data.shape, img_viewer))
     if img_viewer is None:
         print("I can't find any libraries to show image.")
         return False
