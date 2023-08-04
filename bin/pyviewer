@@ -123,10 +123,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     args.debug = debug
-    if not args_chk(args, 'image_viewer'):
-        if json_opts['image_viewer'] is not None:
-            args.image_viewer = json_opts['image_viewer']
-    # args.opts = json_opts
     main(args)
 
 # vim: set filetype=python:
