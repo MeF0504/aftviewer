@@ -33,10 +33,21 @@ def get_image_viewer(args: Args) -> Optional[str]:
     """
     global __ImgViewer
     if __ImgViewer is not None:
+        # already set
         return __ImgViewer
+
     if args_chk(args, 'image_viewer'):
         debug_print('set image viewer from args')
         __ImgViewer = args.image_viewer
+    elif args.cui and \
+            'image_viewer_cui' in json_opts and \
+            json_opts['image_viewer_cui'] is not None:
+        debug_print('set image viewer from config file (CUI)')
+        __ImgViewer = json_opts['image_viewer_cui']
+    elif 'image_viewer' in json_opts and \
+            json_opts['image_viewer'] is not None:
+        debug_print('set image viewer from config file')
+        __ImgViewer = json_opts['image_viewer']
     else:
         debug_print('search available image_viewer')
         for iv in ImageViewers:
@@ -53,13 +64,13 @@ def get_image_viewer(args: Args) -> Optional[str]:
     return __ImgViewer
 
 
-def get_exec_cmds(args, fname):
+def get_exec_cmds(image_viewer, fname):
     res = []
     for cmd in json_opts['iv_exec_cmd']:
         if cmd == '%s':
             res.append(fname)
         elif cmd == '%c':
-            res.append(args.image_viewer)
+            res.append(image_viewer)
         else:
             res.append(cmd)
     debug_print('executed command: {}'.format(res))
@@ -97,7 +108,7 @@ def show_image_file(img_file: str, args: Args) -> bool:
         if not chk_cmd(img_viewer):
             print(f'{img_viewer} is not executable')
             return False
-        cmds = get_exec_cmds(args, img_file)
+        cmds = get_exec_cmds(img_viewer, img_file)
         subprocess.run(cmds)
         # wait to open file. this is for, e.g., open command on Mac OS.
         input('Press Enter to continue')
@@ -137,7 +148,7 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
             return False
         with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
             make_bitmap(tmp.name, data, verbose=debug)
-            cmds = get_exec_cmds(args, tmp.name)
+            cmds = get_exec_cmds(img_viewer, tmp.name)
             subprocess.run(cmds)
             # wait to open file. this is for, e.g., open command on Mac OS.
             input('Press Enter to continue')
