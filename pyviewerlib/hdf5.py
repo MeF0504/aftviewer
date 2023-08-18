@@ -9,12 +9,6 @@ from . import args_chk, print_key, cprint, debug_print, get_col,\
     interactive_view, interactive_cui, help_template
 from . import ReturnMessage as RM
 from pymeflib.tree2 import show_tree
-import pyviewerlib.core.cui
-import pyviewerlib.core
-import pymeflib.tree2
-pyviewerlib.core.cui.PurePath = PurePosixPath
-pyviewerlib.core.PurePath = PurePosixPath
-pymeflib.tree2.PurePath = PurePosixPath
 
 try:
     import numpy as np
@@ -134,11 +128,12 @@ def main(fpath, args):
 
     h5_file = h5py.File(fpath, 'r')
     gc = partial(get_contents, h5_file)
+    sf = partial(show_hdf5, h5_file)
 
     if args_chk(args, 'interactive'):
-        interactive_view(fname, gc, partial(show_hdf5, h5_file))
+        interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, gc, partial(show_hdf5, h5_file))
+        interactive_cui(fpath, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         fg, bg = get_col('error')
         if args.key:
@@ -155,6 +150,6 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         h5_file.visititems(partial(show_detail, h5_file))
     else:
-        show_tree(fname, gc)
+        show_tree(fname, gc, purepath=PurePosixPath)
 
     h5_file.close()
