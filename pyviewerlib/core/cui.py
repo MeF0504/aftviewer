@@ -1,9 +1,10 @@
 import re
 import curses
 from curses.textpad import Textbox, rectangle
-from pathlib import Path
+from pathlib import Path, PurePath
+from typing import List
 
-from pymeflib.tree2 import TreeViewer, GC, PurePath  # for overwrapping
+from pymeflib.tree2 import TreeViewer, GC, PPath
 from . import debug, conf_dir, json_opts, ReturnMessage, SF
 curses_debug = debug
 
@@ -54,16 +55,16 @@ default_color_set = {
 
 
 class CursesCUI():
-    def __init__(self):
+    def __init__(self, purepath: PPath = PurePath):
         # sidebar val
         self.sel_idx = 0
         self.side_shift_ud = 0
         self.side_shift_lr = 0
-        self.contents = []
+        self.contents: List[str] = []
         self.sel_cont = ''
         # main window val
         self.info = ReturnMessage('', False)
-        self.message = []
+        self.message: List[str] = []
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         # mode val
@@ -71,6 +72,8 @@ class CursesCUI():
         self.search_word = ''  # file name search
         self.search_word2 = ''  # word search in current file
         self.is_search = False
+        # called path-like class
+        self.purepath = purepath
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
@@ -259,7 +262,7 @@ class CursesCUI():
         self.sel_cont = self.contents[self.sel_idx]
         if self.sel_cont in self.dirs:
             if self.is_search:
-                self.cpath = PurePath(self.sel_cont)
+                self.cpath = self.purepath(self.sel_cont)
             else:
                 self.cpath = self.cpath/self.sel_cont
             self.dirs, self.files = self.tv.get_contents(self.cpath)
@@ -593,7 +596,8 @@ def debug_log(msg):
         f.write(msg+"\n")
 
 
-def interactive_cui(fname: str, get_contents: GC, show_func: SF) -> None:
+def interactive_cui(fname: str, get_contents: GC, show_func: SF,
+                    purepath: PPath = PurePath) -> None:
     """
     provide the CUI (TUI) to show the contents.
 
@@ -621,9 +625,9 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF) -> None:
     -------
     None
     """
-    cpath = PurePath('.')
-    tv = TreeViewer('.', get_contents)
-    curses_cui = CursesCUI()
+    cpath = purepath('.')
+    tv = TreeViewer('.', get_contents, purepath)
+    curses_cui = CursesCUI(purepath)
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)
     except AssertionError as e:

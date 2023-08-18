@@ -2,12 +2,12 @@ import os
 import json
 import platform
 import subprocess
-from pathlib import Path, PurePath
+from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from typing import Callable, Union, List, Tuple, Any
 from dataclasses import dataclass
 
 from pymeflib.color import FG, BG, FG256, BG256, END
-from pymeflib.tree2 import TreeViewer, GC
+from pymeflib.tree2 import TreeViewer, GC, PPath
 
 
 # global variables
@@ -244,7 +244,8 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
         return None, None
 
 
-def interactive_view(fname: str, get_contents: GC, show_func: SF) -> None:
+def interactive_view(fname: str, get_contents: GC, show_func: SF,
+                     purepath: PPath = PurePath) -> None:
     """
     provide the interactive UI to show the contents.
 
@@ -272,7 +273,7 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF) -> None:
     -------
     None
     """
-    cpath = PurePath('.')
+    cpath = purepath('.')
     inter_str = "'q':quit, '..':go to parent, key_name:select a key >> "
     fg1, bg1 = get_col('interactive_path')
     fg2, bg2 = get_col('interactive_contents')

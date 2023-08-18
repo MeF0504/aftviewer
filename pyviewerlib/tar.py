@@ -9,8 +9,6 @@ from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     show_image_file, run_system_cmd, get_col, help_template, ImageViewers
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
-import pymeflib.tree2
-pymeflib.tree2.PurePath = PurePosixPath
 
 
 def show_tar(tar_file, args, get_contents, cpath, **kwargs):
@@ -121,9 +119,9 @@ def main(fpath, args):
     sf = partial(show_tar, tar_file, args, gc)
 
     if args_chk(args, 'interactive'):
-        interactive_view(fname, gc, sf)
+        interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, gc, sf)
+        interactive_cui(fpath, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         fg, bg = get_col('error')
         if len(args.key) == 0:
@@ -139,6 +137,6 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         tar_file.list(verbose=True)
     else:
-        show_tree(fname, gc)
+        show_tree(fname, gc, purepath=PurePosixPath)
 
     tar_file.close()

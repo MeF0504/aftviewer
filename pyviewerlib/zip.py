@@ -10,8 +10,6 @@ from . import args_chk, is_image, print_key, cprint, debug_print, get_col,\
     run_system_cmd, help_template, ImageViewers
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
-import pymeflib.tree2
-pymeflib.tree2.PurePath = PurePosixPath
 
 
 def get_pwd():
@@ -126,28 +124,21 @@ def main(fpath, args):
     zip_file = zipfile.ZipFile(fpath, 'r')
     fname = os.path.basename(fpath)
     gc = partial(get_contents, zip_file)
+    if args.ask_password:
+        pwd = get_pwd()
+    else:
+        pwd = None
+    sf = partial(show_zip, zip_file, pwd, args, gc)
 
     if args_chk(args, 'interactive'):
-        if args.ask_password:
-            pwd = get_pwd()
-        else:
-            pwd = None
-        interactive_view(fname, gc, partial(show_zip, zip_file, pwd, args, gc))
+        interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        if args.ask_password:
-            pwd = get_pwd()
-        else:
-            pwd = None
-        interactive_cui(fpath, gc, partial(show_zip, zip_file, pwd, args, gc))
+        interactive_cui(fpath, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             for fy in zip_file.namelist():
                 print(fy)
             return
-        if args.ask_password:
-            pwd = get_pwd()
-        else:
-            pwd = None
         fg, bg = get_col('error')
         for k in args.key:
             print_key(k)
@@ -160,6 +151,6 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         zip_file.printdir()
     else:
-        show_tree(fname, gc)
+        show_tree(fname, gc, purepath=PurePosixPath)
 
     zip_file.close()
