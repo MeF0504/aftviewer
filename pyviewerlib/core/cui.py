@@ -1,9 +1,9 @@
 import re
 import curses
 from curses.textpad import Textbox, rectangle
-from pathlib import PurePath, Path
+from pathlib import Path
 
-from pymeflib.tree2 import TreeViewer, GC
+from pymeflib.tree2 import TreeViewer, GC, PurePath  # for overwrapping
 from . import debug, conf_dir, json_opts, ReturnMessage, SF
 curses_debug = debug
 

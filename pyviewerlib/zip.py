@@ -10,11 +10,7 @@ from . import args_chk, is_image, print_key, cprint, debug_print, get_col,\
     run_system_cmd, help_template, ImageViewers
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
-import pyviewerlib.core.cui
-import pyviewerlib.core
 import pymeflib.tree2
-pyviewerlib.core.cui.PurePath = PurePosixPath
-pyviewerlib.core.PurePath = PurePosixPath
 pymeflib.tree2.PurePath = PurePosixPath
 
 
