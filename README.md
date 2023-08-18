@@ -6,7 +6,10 @@ See the [wiki page](https://github.com/MeF0504/pyviewer/wiki) for the details.
 
 ## Requirements
 
-- [Python](https://www.python.org/) > 3.7?
+Basically, PyViewer works for supported [Python](https://www.python.org/) versions
+without any third-party libraries.
+
+Some third-party libraries are required to open some file types.
 - [numpy](https://numpy.org/) for numpy, xpm, np_pickle
 - [h5py](https://docs.h5py.org/) for hdf5
 - [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
