@@ -123,7 +123,7 @@ def main(fpath, args):
     elif args_chk(args, 'cui'):
         interactive_cui(fpath, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
-        fg, bg = get_col('error')
+        fg, bg = get_col('msg_error')
         if len(args.key) == 0:
             tar_file.list(verbose=False)
         for k in args.key:

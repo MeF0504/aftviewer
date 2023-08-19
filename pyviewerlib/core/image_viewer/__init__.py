@@ -7,7 +7,7 @@ from typing import Any, Union, Optional
 from importlib import import_module
 from pathlib import Path
 
-from .. import args_chk, debug_print, debug, json_opts, Args
+from .. import args_chk, debug_print, debug, get_config, Args
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
@@ -36,18 +36,18 @@ def get_image_viewer(args: Args) -> Optional[str]:
         # already set
         return __ImgViewer
 
+    iv_config = get_config('config', 'image_viewer')
+    iv_cui_config = get_config('config', 'image_viewer_cui')
     if args_chk(args, 'image_viewer'):
         debug_print('set image viewer from args')
         __ImgViewer = args.image_viewer
     elif args.cui and \
-            'image_viewer_cui' in json_opts and \
-            json_opts['image_viewer_cui'] is not None:
+            iv_cui_config is not None:
         debug_print('set image viewer from config file (CUI)')
-        __ImgViewer = json_opts['image_viewer_cui']
-    elif 'image_viewer' in json_opts and \
-            json_opts['image_viewer'] is not None:
+        __ImgViewer = iv_cui_config
+    elif iv_config is not None:
         debug_print('set image viewer from config file')
-        __ImgViewer = json_opts['image_viewer']
+        __ImgViewer = iv_config
     else:
         debug_print('search available image_viewer')
         for iv in ImageViewers:
@@ -66,7 +66,7 @@ def get_image_viewer(args: Args) -> Optional[str]:
 
 def get_exec_cmds(image_viewer, fname):
     res = []
-    for cmd in json_opts['iv_exec_cmd']:
+    for cmd in get_config('config', 'iv_exec_cmd'):
         if cmd == '%s':
             res.append(fname)
         elif cmd == '%c':

@@ -1,34 +1,41 @@
 {
-    "type": {},
-    "image_viewer": null,
-    "image_viewer_cui": null,
-    "iv_exec_cmd": ["%c", "%s"],
-    "system_cmd": {
-        "cmd": null,
-        "args": ["%c", "%s"]
+    "additional_types": {
     },
-    "pickle_encoding": "ASCII",
-    "add_args": null,
-    "numpy_format": {},
-    "color_config": {
-        "error": ["r", null],
-        "update_message": ["y", null],
+    "config": {
+        "add_args": [],
+        "image_viewer": null,
+        "image_viewer_cui": null,
+        "iv_exec_cmd": ["%c", "%s"],
+        "system_cmd": null,
+        "system_cmd_args": ["%c", "%s"]
+    },
+    "colors": {
+        "msg_error": ["r", null],
+        "msg_update": ["y", null],
+        "msg_key_name": ["k", "y"],
         "interactive_path": [null, "c"],
         "interactive_contents": [null, "g"],
         "interactive_output": [null, "r"],
-        "key_name": ["k", "y"],
-        "jupyter_input": ["c", null],
-        "jupyter_output": ["r", null],
-        "jupyter_type": ["g", null],
-        "hdf5_type": ["k", "w"]
+        "cui_top": ["w", "g"],
+        "cui_left": ["w", "b"],
+        "cui_error": ["r", "k"],
+        "cui_file_info": ["y", "k"],
+        "cui_dir_index": ["g", "w"],
+        "cui_file_index": ["m", "w"]
     },
-    "cui_color_config": {
-        "top": ["w", "g"],
-        "left": ["w", "b"],
-        "error": ["r", "k"],
-        "file_info": ["y", "k"],
-        "dir_index": ["g", "w"],
-        "file_index": ["m", "w"]
+    "pickle": {
+        "encoding": "ASCII"
+    },
+    "numpy": {
+        "print_option": {}
+    },
+    "jupyter": {
+        "input_color": ["c", null],
+        "output_color": ["r", null],
+        "type_color": ["g", null]
+    },
+    "hdf5": {
+        "type_color": ["k", "w"]
     }
 }
 

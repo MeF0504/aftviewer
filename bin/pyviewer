@@ -10,8 +10,8 @@ from importlib import import_module
 from types import FunctionType
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from pyviewerlib import debug, json_opts, type_config, args_chk, debug_print,\
-    show_opts
+from pyviewerlib import debug, get_config, type_config, args_chk,\
+    debug_print, show_opts
 from pyviewerlib.core.update import update
 from pyviewerlib.core.helpmsg import set_def_args
 
@@ -112,10 +112,10 @@ if __name__ == "__main__":
     set_def_args(parser,
                  sup_iv=True, sup_encoding=True, sup_password=True,
                  sup_v=True, sup_k=True, sup_i=True, sup_c=True)
-    if json_opts['add_args'] is not None:
+    for aa_file in get_config('config', 'add_args'):
         try:
             # additional arguments
-            lib = import_module("pyviewerlib.{}".format(json_opts['add_args']))
+            lib = import_module("pyviewerlib.{}".format(aa_file))
         except ImportError as e:
             debug_print(e)
         else:
