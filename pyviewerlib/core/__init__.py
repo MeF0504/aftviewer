@@ -31,9 +31,12 @@ if (conf_dir/'setting.json').is_file():
             load_opts = {}
         if 'additional_types' in load_opts:
             add_types = load_opts['additional_types']
+            json_opts['additional_types'] = add_types
         else:
             add_types = {}
         for key in list(json_opts.keys()) + list(add_types.keys()):
+            if key == 'additional_types':
+                continue
             if key in load_opts:
                 if key in json_opts:
                     # update values in default.json
