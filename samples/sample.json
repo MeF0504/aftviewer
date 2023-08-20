@@ -1,14 +1,18 @@
 {
-    "type": {
+    "additional_types": {
         "png_sample": "png PNG jpeg jpg JPG"
     },
-    "image_viewer": "open",
-    "iv_exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
-    "system_cmd": {
-        "cmd": "open",
-        "args": ["%c", "%s"]
+    "config": {
+        "add_args": ["add_args"],
+        "image_viewer": "open",
+        "iv_exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
+        "system_cmd": "open",
+        "system_cmd_args": ["%c", "%s"]
     },
-    "pickle_encoding": "ASCII",
-    "add_args": "add_args",
-    "numpy_format": {"edgeitems": 10, "threshold": 100}
+    "pickle": {
+        "encoding": "ASCII"
+    },
+    "numpy": {
+        "print_option": {"edgeitems": 10, "threshold": 100}
+    }
 }
