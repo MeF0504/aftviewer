@@ -71,6 +71,7 @@ class CursesCUI():
         self.key = ''
         self.search_word = ''  # file name search
         self.search_word2 = ''  # word search in current file
+        self.search_cmt = ''
         self.is_search = False
         # called path-like class
         self.purepath = purepath
@@ -384,9 +385,11 @@ class CursesCUI():
             else:
                 line = self.message[i]
                 shift = 0
+            self.search_cmt = f'"{self.search_word2}" not found'
             if self.search_word2 in line:
                 self.main_shift_ud = i
                 self.main_shift_lr = line.find(self.search_word2)+shift
+                self.search_cmt = ''
                 break
 
     def show_help_message(self):
@@ -428,10 +431,12 @@ class CursesCUI():
         if len(self.sel_cont) != 0:
             if main_w > len(self.sel_cont)+2:
                 self.win_main.addstr(0, len(self.sel_cont)+2,
-                                     '{}/{}, {}'.format(self.main_shift_ud+1,
-                                                        len(self.message),
-                                                        self.main_shift_lr+1,
-                                                        ),
+                                     '{}/{}, {}; {}'.format(
+                                         self.main_shift_ud+1,
+                                         len(self.message),
+                                         self.main_shift_lr+1,
+                                         self.search_cmt,
+                                         ),
                                      curses.color_pair(4))
         if not self.info.error:
             # show contents
@@ -451,6 +456,7 @@ class CursesCUI():
         else:
             # show error
             self.win_main.addstr(1, 0, self.info.message, curses.color_pair(3))
+        self.search_cmt = ''
         self.win_main.refresh()
 
     def update_pwd_window(self):
