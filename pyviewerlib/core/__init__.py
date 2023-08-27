@@ -171,6 +171,9 @@ def get_config(key1, key2) -> Any:
         Return specified configuration value. If it is not set, return None.
     """
     assert key1 in ["config", "colors"] + list(type_config.keys())
+    if key1 not in json_opts:
+        # type name is not set in setting.json.
+        return None
     val1 = json_opts[key1]
     if key2 not in val1:
         return None
