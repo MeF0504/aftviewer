@@ -5,7 +5,7 @@ from pathlib import PurePosixPath
 import h5py
 
 from . import args_chk, print_key, cprint, debug_print, get_col,\
-    FG, BG, FG256, BG256, END, set_numpy_format,\
+    FG, BG, FG256, BG256, END, set_numpy_format, get_config,\
     interactive_view, interactive_cui, help_template
 from . import ReturnMessage as RM
 from pymeflib.tree2 import show_tree
@@ -25,7 +25,7 @@ def show_hdf5(h5_file, cpath, **kwargs):
         bg = ''
         end = ''
     else:
-        fgkey, bgkey = get_col('hdf5_type')
+        fgkey, bgkey = get_config('hdf5', 'type_color')
         if fgkey in FG:
             fg = FG[fgkey]
         elif type(fgkey) == int:
@@ -135,7 +135,7 @@ def main(fpath, args):
     elif args_chk(args, 'cui'):
         interactive_cui(fpath, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
-        fg, bg = get_col('error')
+        fg, bg = get_col('msg_error')
         if args.key:
             for k in args.key:
                 print_key(k)

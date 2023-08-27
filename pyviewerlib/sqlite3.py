@@ -121,7 +121,7 @@ def main(fpath, args):
                 print(t)
         for k in args.key:
             print_key(k)
-            fg, bg = get_col('error')
+            fg, bg = get_col('msg_error')
             info = show_table(cursor, tables, k, verbose=True)
             if not info.error:
                 print(info.message)

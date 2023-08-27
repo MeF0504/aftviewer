@@ -5,7 +5,7 @@ from functools import partial
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key, set_numpy_format, debug_print, json_opts,\
+from . import args_chk, print_key, set_numpy_format, debug_print, get_config,\
     interactive_view, interactive_cui, help_template
 from . import ReturnMessage as RM
 from .numpy import show_numpy
@@ -65,7 +65,7 @@ def main(fpath, args):
         debug_print('set encoding from args')
         encoding = args.encoding
     else:
-        encoding = json_opts['pickle_encoding']
+        encoding = get_config('pickle', 'encoding')
     debug_print('encoding: {}'.format(encoding))
 
     data = np.load(fpath, allow_pickle=True, encoding=encoding)

@@ -1,6 +1,6 @@
 from pymeflib.color import FG, BG, FG256, BG256, END
 # values
-from .core import debug, json_opts, type_config
+from .core import debug, get_config, type_config
 # functions
 from .core import debug_print, args_chk, cprint, print_key, get_col,\
     set_numpy_format, interactive_view, run_system_cmd, show_opts

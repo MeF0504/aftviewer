@@ -3,7 +3,7 @@ import base64
 import tempfile
 
 from . import args_chk, cprint, debug_print, show_image_file,\
-    get_col, help_template
+    get_config, help_template
 
 
 def show_output(output, args):
@@ -36,9 +36,9 @@ def main(fpath, args):
     with open(fpath, 'r') as f:
         data = json.load(f)
     debug_print('keys: {}'.format(data.keys()))
-    fgi, bgi = get_col('jupyter_input')
-    fgo, bgo = get_col('jupyter_output')
-    fgt, bgt = get_col('jupyter_type')
+    fgi, bgi = get_config('jupyter', 'input_color')
+    fgo, bgo = get_config('jupyter', 'output_color')
+    fgt, bgt = get_config('jupyter', 'type_color')
 
     if args_chk(args, 'verbose'):
         meta = data['metadata']

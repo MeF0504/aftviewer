@@ -5,7 +5,7 @@ from pathlib import Path, PurePath
 from typing import List
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from . import debug, conf_dir, json_opts, ReturnMessage, SF
+from . import debug, conf_dir, get_config, ReturnMessage, SF
 curses_debug = debug
 
 help_str = '''
@@ -119,8 +119,7 @@ class CursesCUI():
 
     def create_color_set(self, num, name):
         assert num < curses.COLOR_PAIRS
-        col_conf = json_opts['cui_color_config']
-        fg, bg = col_conf[name]
+        fg, bg = get_config('colors', f'cui_{name}')
         if fg in default_color_set:
             fg = default_color_set[fg]
         if bg in default_color_set:

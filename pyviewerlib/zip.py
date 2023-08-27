@@ -139,7 +139,7 @@ def main(fpath, args):
             for fy in zip_file.namelist():
                 print(fy)
             return
-        fg, bg = get_col('error')
+        fg, bg = get_col('msg_error')
         for k in args.key:
             print_key(k)
             info = show_zip(zip_file, pwd, args, gc, k)

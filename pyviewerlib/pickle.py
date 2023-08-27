@@ -3,7 +3,7 @@ import os
 from pathlib import PurePath
 from functools import partial
 
-from . import args_chk, print_key, debug_print, json_opts, \
+from . import args_chk, print_key, debug_print, get_config, \
     interactive_view, interactive_cui, help_template
 from . import ReturnMessage as RM
 
@@ -57,7 +57,7 @@ def main(fpath, args):
         debug_print('set encoding from args')
         encoding = args.encoding
     else:
-        encoding = json_opts['pickle_encoding']
+        encoding = get_config('pickle', 'encoding')
     debug_print('encoding: {}'.format(encoding))
     with open(fpath, 'rb') as f:
         data = pickle.load(f, encoding=encoding)

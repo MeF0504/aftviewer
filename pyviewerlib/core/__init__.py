@@ -25,17 +25,27 @@ with (Path(__file__).parent/'default.json').open('r') as f:
 if (conf_dir/'setting.json').is_file():
     with open(conf_dir/'setting.json') as f:
         load_opts = json.load(f)
+        if 'debug' in load_opts:
+            debug = bool(load_opts['debug'])
         if 'force_default' in load_opts and load_opts['force_default']:
             load_opts = {}
-        for key, val in json_opts.items():
+        if 'additional_types' in load_opts:
+            add_types = load_opts['additional_types']
+            json_opts['additional_types'] = add_types
+        else:
+            add_types = {}
+        for key in list(json_opts.keys()) + list(add_types.keys()):
+            if key == 'additional_types':
+                continue
             if key in load_opts:
-                # update
-                if type(val) is dict:
-                    val.update(load_opts[key])
+                if key in json_opts:
+                    # update values in default.json
+                    for k2, v2 in load_opts[key].items():
+                        if k2 in json_opts[key]:
+                            json_opts[key][k2] = v2
                 else:
+                    # create settings for new file type
                     json_opts[key] = load_opts[key]
-    if 'debug' in load_opts:
-        debug = bool(load_opts['debug'])
     del load_opts
 
 # set supported file types
@@ -52,7 +62,8 @@ type_config = {
     "xpm": "xpm",
     "text": "py txt",
 }
-type_config.update(json_opts['type'])
+type_config.update(add_types)
+del add_types
 
 
 @dataclass
@@ -141,6 +152,33 @@ def args_chk(args: Args, attr: str) -> bool:
         return args.cui
     else:
         return False
+
+
+def get_config(key1, key2) -> Any:
+    """
+    get the current configuration value.
+
+    Parameters
+    ----------
+    key1: str
+        Main key name. Selected one from "config", "colors" and type names.
+    key2: str
+        configuration key name.
+
+    Returns
+    -------
+    Any
+        Return specified configuration value. If it is not set, return None.
+    """
+    assert key1 in ["config", "colors"] + list(type_config.keys())
+    if key1 not in json_opts:
+        # type name is not set in setting.json.
+        return None
+    val1 = json_opts[key1]
+    if key2 not in val1:
+        return None
+    else:
+        return val1[key2]
 
 
 def show_opts() -> None:
@@ -236,12 +274,12 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
     Union[str, int, None]
         foreground color id. If the name is incorrect, return None.
     """
-    col_conf = json_opts['color_config']
-    if name in col_conf:
-        return col_conf[name]
-    else:
+    col_conf = get_config('colors', name)
+    if name is None:
         debug_print(f'incorrect color set name: {name}')
         return None, None
+    else:
+        return col_conf
 
 
 def interactive_view(fname: str, get_contents: GC, show_func: SF,
@@ -278,7 +316,7 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     fg1, bg1 = get_col('interactive_path')
     fg2, bg2 = get_col('interactive_contents')
     fg3, bg3 = get_col('interactive_output')
-    fge, bge = get_col('error')
+    fge, bge = get_col('msg_error')
     tv = TreeViewer('.', get_contents)
     while(True):
         dirs, files = tv.get_contents(cpath)
@@ -333,7 +371,7 @@ def print_key(key_name: str) -> None:
     -------
     None
     """
-    fg, bg = get_col('key_name')
+    fg, bg = get_col('msg_key_name')
     cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg)
 
 
@@ -351,7 +389,7 @@ def run_system_cmd(fname: str) -> bool:
     bool
         Return True if the command succeeded, otherwise False.
     """
-    cmd = json_opts['system_cmd']['cmd']
+    cmd = get_config('config', 'system_cmd')
     if cmd is None:
         if platform.system() == 'Windows':
             cmd = 'start'
@@ -363,7 +401,7 @@ def run_system_cmd(fname: str) -> bool:
             print('Unsupported platform')
             return False
     res = []
-    for arg in json_opts['system_cmd']['args']:
+    for arg in get_config('config', 'system_cmd_args'):
         if arg == '%s':
             res.append(fname)
         elif arg == '%c':
@@ -396,5 +434,5 @@ def set_numpy_format(numpy: Any) -> None:
     -------
     None
     """
-    opts = json_opts['numpy_format']
+    opts = get_config('numpy', 'print_option')
     numpy.set_printoptions(**opts)

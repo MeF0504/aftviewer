@@ -6,7 +6,7 @@ from . import debug_print, cprint, get_col
 
 
 def update_err(cmd):
-    fg, bg = get_col('error')
+    fg, bg = get_col('msg_error')
     cprint('failed to run {}. please check {}'.format(
         ' '.join(cmd), Path(__file__).parent.parent),
         fg=fg, bg=bg, file=sys.stderr)
@@ -15,7 +15,7 @@ def update_err(cmd):
 def update():
     import subprocess
     os.chdir(Path(__file__).parent)
-    fg, bg = get_col('update_message')
+    fg, bg = get_col('msg_update')
     # ~~~~~~~~~~~~~~~ fetch ~~~~~~~~~~~~~~~
     cmd = 'git fetch'.split()
     cprint('running "{}"...'.format(' '.join(cmd)), fg=fg, bg=bg)
