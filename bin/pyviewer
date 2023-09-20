@@ -11,9 +11,9 @@ from types import FunctionType
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from pyviewerlib import debug, get_config, type_config, args_chk,\
-    debug_print, show_opts
-from pyviewerlib.core.update import update
+    debug_print, show_opts, get_col
 from pyviewerlib.core.helpmsg import set_def_args
+from pymeflib import update
 
 
 def get_filetype(fpath):
@@ -48,7 +48,10 @@ def load_lib(args):
 
 def main(args):
     if args.file == 'update':
-        update()
+        root = Path(__file__).parent.parent
+        msg_fg, msg_bg = get_col('msg_update')
+        err_fg, err_bg = get_col('msg_error')
+        update.run(str(root), msg_fg, msg_bg, err_fg, err_bg)
         return
 
     if args.file == 'config_list':
