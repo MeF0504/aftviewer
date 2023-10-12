@@ -20,28 +20,40 @@ def show_keys(data, key):
             print(k)
 
 
-def show_func(data, cpath, **kwargs):
+def get_item(data, cpath):
     tmp_data = data
     for k in PurePath(cpath).parts:
-        if k in tmp_data:
-            tmp_data = tmp_data[k]
-        else:
-            return RM('Error! no key {}'.format(k), True)
+        tmp_data_update = False
+        for key in tmp_data.keys():
+            if str(key) == k:
+                tmp_data = tmp_data[key]
+                tmp_data_update = True
+                break
+        if not tmp_data_update:
+            debug_print(f'key not found: {cpath}, {k}')
+            return None
+    return tmp_data
+
+
+def show_func(data, cpath, **kwargs):
+    tmp_data = get_item(data, cpath)
+    if tmp_data is None:
+        return RM(f'Error! no key {cpath}', False)
     return RM('{}'.format(tmp_data), False)
 
 
 def get_contents(data, path):
-    tmp_data = data
     dirs = []
     files = []
-    for k in PurePath(path).parts:
-        tmp_data = tmp_data[k]
+    tmp_data = get_item(data, path)
+    if tmp_data is None:
+        return [], []
     if isinstance(tmp_data, dict):
         for k in tmp_data.keys():
             if isinstance(tmp_data[k], dict):
-                dirs.append(k)
+                dirs.append(str(k))
             else:
-                files.append(k)
+                files.append(str(k))
     return dirs, files
 
 
