@@ -7,7 +7,7 @@ from typing import Any, Union, Optional
 from importlib import import_module
 from pathlib import Path
 
-from .. import args_chk, debug_print, debug, get_config, Args
+from .. import args_chk, debug_print, debug, get_config, Args, cprint
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
@@ -102,8 +102,14 @@ def show_image_file(img_file: str, args: Args) -> bool:
         print("I can't find any libraries to show image.")
         return False
     elif img_viewer in ImageViewers:
-        mod = import_module(f'pyviewerlib.core.image_viewer.{img_viewer}')
-        mod.show_image_file(img_file)
+        try:
+            mod = import_module(f'pyviewerlib.core.image_viewer.{img_viewer}')
+            mod.show_image_file(img_file)
+        except Exception as e:
+            cprint(f'failed to show an image file {img_file}.',
+                   file=sys.stderr, fg='r')
+            cprint(f'{type(e).__name__}: {e}', file=sys.stderr, fg='r')
+            return False
     else:
         if not chk_cmd(img_viewer):
             print(f'{img_viewer} is not executable')
@@ -140,8 +146,13 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
         print("I can't find any libraries to show image.")
         return False
     elif img_viewer in ImageViewers:
-        mod = import_module(f'pyviewerlib.core.image_viewer.{img_viewer}')
-        mod.show_image_ndarray(data, name)
+        try:
+            mod = import_module(f'pyviewerlib.core.image_viewer.{img_viewer}')
+            mod.show_image_ndarray(data, name)
+        except Exception as e:
+            cprint('failed to show an image data.', file=sys.stderr, fg='r')
+            cprint(f'{type(e).__name__}: {e}', file=sys.stderr, fg='r')
+            return False
     else:
         if not chk_cmd(img_viewer):
             print(f'{img_viewer} is not executable')
