@@ -8,6 +8,7 @@ from . import type_config, debug_print
 def help_template(filetype: str, description: str,
                   sup_iv: bool = False, sup_encoding: bool = False,
                   sup_password: bool = False,
+                  sup_o: bool = False,
                   sup_v: bool = False, sup_k: bool = False,
                   sup_i: bool = False, sup_c: bool = False,
                   add_args: Optional[str] = None,
@@ -26,6 +27,8 @@ def help_template(filetype: str, description: str,
         set True if this file type supports --image_viewer option.
     sup_encoding: bool
         set True if this file type supports --encoding option.
+    sup_o: bool
+        set True if this file type supports --output option.
     sup_password: bool
         set True if this file type supports --ask_password option.
     sup_v: bool
@@ -71,6 +74,7 @@ def help_template(filetype: str, description: str,
 def set_def_args(parser: argparse.ArgumentParser,
                  sup_iv: bool = False, sup_encoding: bool = False,
                  sup_password: bool = False,
+                 sup_o: bool = False,
                  sup_v: bool = False, sup_k: bool = False,
                  sup_i: bool = False, sup_c: bool = False,
                  add_args: Optional[str] = None,
@@ -94,6 +98,10 @@ def set_def_args(parser: argparse.ArgumentParser,
                             help='ask for the password for the file if needed.',
                             action='store_true',
                             )
+    if sup_o:
+        parser.add_argument('-o', '--output',
+                            help='specify the output file if supported.',
+                            type=str)
     group = parser.add_mutually_exclusive_group()
     if sup_v:
         group.add_argument('-v', '--verbose', help='show details',

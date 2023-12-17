@@ -113,7 +113,7 @@ if __name__ == "__main__":
                         help='specify the file type. "pyviewer help -t TYPE" will show the detailed help.',
                         choices=supported_type)
     set_def_args(parser,
-                 sup_iv=True, sup_encoding=True, sup_password=True,
+                 sup_iv=True, sup_encoding=True, sup_password=True, sup_o=True,
                  sup_v=True, sup_k=True, sup_i=True, sup_c=True)
     for aa_file in get_config('config', 'add_args'):
         try:
