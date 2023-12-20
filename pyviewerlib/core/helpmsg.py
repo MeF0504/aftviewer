@@ -57,7 +57,7 @@ def help_template(filetype: str, description: str,
                                      prog=f'pyviewer FILE -t {filetype}',
                                      add_help=False)
     set_def_args(parser, sup_iv=sup_iv, sup_encoding=sup_encoding,
-                 sup_password=sup_password,
+                 sup_password=sup_password, sup_o=sup_o,
                  sup_v=sup_v, sup_k=sup_k, sup_i=sup_i, sup_c=sup_c)
     if add_args is not None:
         try:
