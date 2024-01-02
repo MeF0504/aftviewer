@@ -3,7 +3,7 @@ import zipfile
 import tempfile
 from functools import partial
 from getpass import getpass
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 
 from . import args_chk, is_image, print_key, cprint, debug_print, get_col,\
     interactive_view, interactive_cui, show_image_file, get_image_viewer,\
@@ -65,6 +65,13 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
         debug_print(e)
         return RM('Error!! cannot open {}.'.format(cpath), True)
 
+    if args_chk(args, 'output') and args_chk(args, 'key'):
+        outpath = Path(args.output)
+        if not outpath.parent.is_dir():
+            outpath.parent.mkdir(parents=True)
+        zip_file.extract(zipinfo, path=outpath, pwd=pwd)
+        return RM(f'file is saved to {outpath/cpath}', False)
+
     if zipinfo.is_dir():
         # directory
         res.append('{}'.format(key_name))
@@ -111,8 +118,9 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
 
 
 def show_help():
-    helpmsg = help_template('zip', 'show the contents of a zip file.',
-                            sup_iv=True, sup_password=True,
+    helpmsg = help_template('zip', 'show the contents of a zip file.' +
+                            ' NOTE: --output works only with --key.',
+                            sup_iv=True, sup_password=True, sup_o=True,
                             sup_v=True, sup_k=True, sup_i=True, sup_c=True)
     print(helpmsg)
 

@@ -2,7 +2,7 @@ import os
 import tarfile
 import tempfile
 from functools import partial
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
     is_image, interactive_view, interactive_cui,\
@@ -24,6 +24,13 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
     except KeyError as e:
         debug_print(e)
         return RM('Error!! Cannot open {}.'.format(cpath), True)
+
+    if args_chk(args, 'output') and args_chk(args, 'key'):
+        outpath = Path(args.output)
+        if not outpath.parent.is_dir():
+            outpath.parent.mkdir(parents=True)
+        tar_file.extractall(path=outpath, members=[tarinfo])
+        return RM(f'file is saved to {outpath/cpath}', False)
 
     if tarinfo.isfile():
         # file
@@ -103,8 +110,9 @@ def get_contents(tar_file, path):
 def show_help():
     helpmsg = help_template('tar', 'show the contents of a tar file.' +
                             ' The tar file type is identified by the'
-                            ' "tarfile" module, not the extension of a file.',
-                            sup_iv=True,
+                            ' "tarfile" module, not the extension of a file.' +
+                            ' NOTE: --output works only with --key.',
+                            sup_iv=True, sup_o=True,
                             sup_v=True, sup_k=True, sup_i=True, sup_c=True)
     print(helpmsg)
 
