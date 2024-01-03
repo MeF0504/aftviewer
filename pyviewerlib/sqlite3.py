@@ -115,8 +115,10 @@ def init_outfile(output):
 
 def show_help():
     helpmsg = help_template('sqlite3', 'show the contents of the database. ' +
-                            'In this type, you can specify multiple columns' +
-                            ' by "-k table/col,col2".',
+                            'In this type, you can specify multiple columns ' +
+                            'by "-k table/col,col2". ' +
+                            'NOTE: --output is supported when --verbose or ' +
+                            '--key is specified.',
                             sup_v=True, sup_k=True, sup_i=True, sup_c=True)
     print(helpmsg)
 
