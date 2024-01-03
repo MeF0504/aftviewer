@@ -152,7 +152,8 @@ def main(fpath, args):
             else:
                 cprint(info.message, fg=fg, bg=bg)
     else:
-        init_outfile(args.output)
+        if args_chk(args, 'verbose'):
+            init_outfile(args.output)
         for table in tables:
             info = show_table(cursor, tables, table, verbose=args.verbose,
                               output=args.output)
