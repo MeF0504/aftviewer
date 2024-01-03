@@ -19,6 +19,7 @@ def show_table(cursor, tables, table_path,
                verbose=True, output=None, **kwargs):
     shift = '  '
     res = []
+    is_csv = (type(output) == str) and output.endswith('csv')
     if '/' in table_path:
         table, column = table_path.split('/')
         if column == '':
@@ -34,7 +35,11 @@ def show_table(cursor, tables, table_path,
     cursor.execute("pragma table_info('{}')".format(table))
     table_info = cursor.fetchall()
 
-    res.append(table)
+    if is_csv:
+        debug_print('save CSV file')
+        res.append(f'# {table}')
+    else:
+        res.append(table)
     if not verbose:
         for tinfo in table_info:
             if tinfo[2] == '':
@@ -56,14 +61,18 @@ def show_table(cursor, tables, table_path,
             except sqlite3.OperationalError:
                 return RM('Incorrect columns: {}'.format(column), True)
         columns = cursor.fetchall()
-        table = []
+        table_items = []
         for col in columns:
-            table.append([])
+            table_items.append([])
             for item in col:
-                table[-1].append(item)
+                table_items[-1].append(item)
 
-        if is_tabulate:
-            table_str = tabulate(table, headers, tablefmt='orgtbl')
+        if is_csv:
+            res.append(','.join(headers))
+            for itms in table_items:
+                res.append(','.join([str(x) for x in itms]))
+        elif is_tabulate:
+            table_str = tabulate(table_items, headers, tablefmt='orgtbl')
             table_str = table_str.replace('\n', '\n'+shift)
             res.append(shift + table_str)
         else:
@@ -72,7 +81,7 @@ def show_table(cursor, tables, table_path,
             for hd in headers:
                 tmp_res += ' {} |'.format(hd)
             res.append(tmp_res)
-            for itms in table:
+            for itms in table_items:
                 tmp_res = ''
                 tmp_res += shift+'|'
                 for itm in itms:
@@ -118,7 +127,9 @@ def show_help():
                             'In this type, you can specify multiple columns ' +
                             'by "-k table/col,col2". ' +
                             'NOTE: --output is supported when --verbose or ' +
-                            '--key is specified.',
+                            '--key is specified. ' +
+                            'If extension of the output file is".csv",' +
+                            'it is saved as the CSV file.',
                             sup_v=True, sup_k=True, sup_i=True, sup_c=True)
     print(helpmsg)
 
