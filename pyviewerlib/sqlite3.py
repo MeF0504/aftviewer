@@ -15,9 +15,11 @@ else:
     is_tabulate = True
 
 
-def show_table(cursor, tables, table_path, verbose=True, **kwargs):
+def show_table(cursor, tables, table_path,
+               verbose=True, output=None, **kwargs):
     shift = '  '
     res = []
+    is_csv = (type(output) == str) and output.endswith('csv')
     if '/' in table_path:
         table, column = table_path.split('/')
         if column == '':
@@ -33,7 +35,11 @@ def show_table(cursor, tables, table_path, verbose=True, **kwargs):
     cursor.execute("pragma table_info('{}')".format(table))
     table_info = cursor.fetchall()
 
-    res.append(table)
+    if is_csv:
+        debug_print('save CSV file')
+        res.append(f'# {table}')
+    else:
+        res.append(table)
     if not verbose:
         for tinfo in table_info:
             if tinfo[2] == '':
@@ -55,14 +61,18 @@ def show_table(cursor, tables, table_path, verbose=True, **kwargs):
             except sqlite3.OperationalError:
                 return RM('Incorrect columns: {}'.format(column), True)
         columns = cursor.fetchall()
-        table = []
+        table_items = []
         for col in columns:
-            table.append([])
+            table_items.append([])
             for item in col:
-                table[-1].append(item)
+                table_items[-1].append(item)
 
-        if is_tabulate:
-            table_str = tabulate(table, headers, tablefmt='orgtbl')
+        if is_csv:
+            res.append(','.join(headers))
+            for itms in table_items:
+                res.append(','.join([str(x) for x in itms]))
+        elif is_tabulate:
+            table_str = tabulate(table_items, headers, tablefmt='orgtbl')
             table_str = table_str.replace('\n', '\n'+shift)
             res.append(shift + table_str)
         else:
@@ -71,13 +81,19 @@ def show_table(cursor, tables, table_path, verbose=True, **kwargs):
             for hd in headers:
                 tmp_res += ' {} |'.format(hd)
             res.append(tmp_res)
-            for itms in table:
+            for itms in table_items:
                 tmp_res = ''
                 tmp_res += shift+'|'
                 for itm in itms:
                     tmp_res += ' {} |'.format(itm)
                 res.append(tmp_res)
-    return RM('\n'.join(res), False)
+    if output is None or not verbose:
+        return RM('\n'.join(res), False)
+    else:
+        with open(output, 'a') as f:
+            f.write('\n'.join(res))
+            f.write('\n\n')
+        return RM(f'{table_path} is saved', False)
 
 
 def get_contents(cursor, tables, path):
@@ -95,10 +111,25 @@ def get_contents(cursor, tables, path):
     #     return [], files
 
 
+def init_outfile(output):
+    if output is None:
+        return
+    dirname = os.path.dirname(output)
+    if not os.path.isdir(dirname):
+        os.makedirs(dirname)
+    with open(output, 'w') as f:
+        f.write('')
+    print(f'file is created at {output}')
+
+
 def show_help():
     helpmsg = help_template('sqlite3', 'show the contents of the database. ' +
-                            'In this type, you can specify multiple columns' +
-                            ' by "-k table/col,col2".',
+                            'In this type, you can specify multiple columns ' +
+                            'by "-k table/col,col2". ' +
+                            'NOTE: --output is supported when --verbose or ' +
+                            '--key is specified. ' +
+                            'If extension of the output file is".csv",' +
+                            'it is saved as the CSV file.',
                             sup_v=True, sup_k=True, sup_i=True, sup_c=True)
     print(helpmsg)
 
@@ -119,17 +150,23 @@ def main(fpath, args):
         if len(args.key) == 0:
             for t in tables:
                 print(t)
+            return
+        init_outfile(args.output)
         for k in args.key:
             print_key(k)
             fg, bg = get_col('msg_error')
-            info = show_table(cursor, tables, k, verbose=True)
+            info = show_table(cursor, tables, k, verbose=True,
+                              output=args.output)
             if not info.error:
                 print(info.message)
                 print()
             else:
                 cprint(info.message, fg=fg, bg=bg)
     else:
+        if args_chk(args, 'verbose'):
+            init_outfile(args.output)
         for table in tables:
-            info = show_table(cursor, tables, table, verbose=args.verbose)
+            info = show_table(cursor, tables, table, verbose=args.verbose,
+                              output=args.output)
             if not info.error:
                 print(info.message)

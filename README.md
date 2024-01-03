@@ -42,7 +42,7 @@ python -c "$(curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/instal
 usage: pyviewer [-h]
                 [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}]
                 [-iv IMAGE_VIEWER] [--encoding ENCODING] [--ask_password]
-                [-v | -k [KEY ...] | -i | -c]
+                [-o OUTPUT] [-v | -k [KEY ...] | -i | -c]
                 file
 
 show the constitution of a file. support file types ... hdf5, pickle, numpy,
@@ -63,6 +63,8 @@ options:
                         an external command (e.g. gosr, open).
   --encoding ENCODING   specify the encoding format.
   --ask_password, -p    ask for the password for the file if needed.
+  -o OUTPUT, --output OUTPUT
+                        specify the output file if supported.
   -v, --verbose         show details
   -k [KEY ...], --key [KEY ...]
                         specify the key name to show. If no key is specified,

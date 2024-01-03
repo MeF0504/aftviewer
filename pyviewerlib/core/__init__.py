@@ -95,6 +95,7 @@ class Args:
     interactive: bool
     cui: bool
     debug: bool
+    output: str
 
 
 SF = Callable[..., ReturnMessage]
@@ -150,6 +151,8 @@ def args_chk(args: Args, attr: str) -> bool:
         return args.encoding is not None
     elif attr == 'cui':
         return args.cui
+    elif attr == 'output':
+        return args.output is not None
     else:
         return False
 

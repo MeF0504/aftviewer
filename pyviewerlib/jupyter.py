@@ -1,23 +1,29 @@
+import sys
 import json
 import base64
 import tempfile
+from pathlib import Path
 
 from . import args_chk, cprint, debug_print, show_image_file,\
     get_config, help_template
 
 
-def show_output(output, args):
+def show_output(output, args, out_obj):
+    if out_obj == sys.stdout:
+        header = ''
+    else:
+        header = '# '
     if 'text' in output:
         for text in output['text']:
-            print(text, end='')
-        print()
+            print(f'{header}{text}', end='', file=out_obj)
+        print(file=out_obj)
     elif 'data' in output:
         out_data = output['data']
         for out_type in out_data:
             if out_type == 'text/plain':
                 for text in out_data['text/plain']:
-                    print(text, end='')
-                print()
+                    print(f'{header}{text}', end='', file=out_obj)
+                print(file=out_obj)
             elif out_type == 'image/png':
                 img_code = out_data['image/png']
                 img_bin = base64.b64decode(img_code.encode())
@@ -27,8 +33,8 @@ def show_output(output, args):
 
 
 def show_help():
-    helpmsg = help_template('jupyter', 'show the saved jupyter notebook.',
-                             sup_iv=True, sup_v=True)
+    helpmsg = help_template('jupyter', 'show the saved jupyter notebook. NOTE: If the --output option is specified, the output file is saved as the python script.',
+                            sup_iv=True, sup_v=True, sup_o=True)
     print(helpmsg)
 
 
@@ -36,20 +42,34 @@ def main(fpath, args):
     with open(fpath, 'r') as f:
         data = json.load(f)
     debug_print('keys: {}'.format(data.keys()))
-    fgi, bgi = get_config('jupyter', 'input_color')
-    fgo, bgo = get_config('jupyter', 'output_color')
-    fgt, bgt = get_config('jupyter', 'type_color')
+    if args_chk(args, 'output'):
+        outp = Path(args.output)
+        if not outp.parent.is_dir():
+            outp.parent.mkdir(parents=True)
+        with open(outp, 'w') as f:
+            f.write('#! /usr/bin/env python3\n')
+        outf = open(outp, 'a')
+        header = '# '
+        fgi, bgi = ('', '')
+        fgo, bgo = ('', '')
+        fgt, bgt = ('', '')
+    else:
+        outf = sys.stdout
+        header = ''
+        fgi, bgi = get_config('jupyter', 'input_color')
+        fgo, bgo = get_config('jupyter', 'output_color')
+        fgt, bgt = get_config('jupyter', 'type_color')
 
     if args_chk(args, 'verbose'):
         meta = data['metadata']
         debug_print('{}'.format(meta))
-        print('kernel   : {}'.format(meta['kernelspec']['display_name']))
+        print(f'{header}kernel   : {meta["kernelspec"]["display_name"]}',
+              file=outf)
         if 'language_info' in meta:
-            print('language : {}-{}'.format(
-                    meta['language_info']['name'],
-                    meta['language_info']['version']))
+            print(f'{header}language : {meta["language_info"]["name"]}-{meta["language_info"]["version"]}',
+                  file=outf)
         if 'colab' in meta:
-            print('colab : {}'.format(meta['colab']['name']))
+            print(f'{header}colab : {meta["colab"]["name"]}', file=outf)
 
     for cell in data['cells']:
         debug_print('{}\n{}\n{}'.format(
@@ -59,28 +79,30 @@ def main(fpath, args):
             if cnt is None:
                 cnt = ' '
             # Input
-            cprint('In [{}]'.format(cnt), fg=fgi, bg=bgi)
+            cprint(f'{header}In [{cnt}]', fg=fgi, bg=bgi, file=outf)
             for instr in cell['source']:
-                print(instr, end='')
-            print()
+                print(instr, end='', file=outf)
+            print(file=outf)
             # Output
             if len(cell['outputs']) != 0:
-                cprint('Out [{}]'.format(cnt), fg=fgo, bg=bgo)
+                cprint(f'{header}Out [{cnt}]', fg=fgo, bg=bgo, file=outf)
             for output in cell['outputs']:
-                show_output(output, args)
+                show_output(output, args, outf)
         elif cell['cell_type'] == 'markdown':
-            cprint('markdown', fg=fgt, bg=bgt)
+            cprint(f'{header}markdown', fg=fgt, bg=bgt, file=outf)
             for instr in cell['source']:
-                print(instr, end='')
-            print()
+                print(f'{header}{instr}', end='', file=outf)
+            print(file=outf)
         elif cell['cell_type'] == 'raw':
-            cprint('raw', fg=fgt, bg=bgt)
+            cprint(f'{header}raw', fg=fgt, bg=bgt, file=outf)
             for instr in cell['source']:
-                print(instr, end='')
-            print()
+                print(f'{header}{instr}', end='', file=outf)
+            print(file=outf)
 
         else:
             debug_print('not a supported type of cell: {}'.format(cell['cell_type']))
 
-        if not args_chk(args, 'verbose'):
+        if not (args_chk(args, 'verbose') or args_chk(args, 'output')):
             input(' >>> Press ENTER to continue')
+
+    outf.close()

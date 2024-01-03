@@ -6,6 +6,7 @@ _pyviewer_cmp()
         '(- *)'{-h,--help}'[show help]' \
         '(-t --type)'{-t,--type}'[set type]:type:_pyviewr_types' \
         '(-iv --image_viewer)'{-iv,--image_viewer}'[set image viewer]:image viewer:_pyviewer_iv' \
+        '(-o --output)'{-o,--output}'[output file or directory]:output:_files' \
         '(-p --ask_password)'{-p,--ask_password}'[password is asked when opening a file]:pass' \
         '(-v --verbose)'{-v,--verbose}'[view file with verbose mode]:verbose' \
         '(-k --key)'{-k,--key}'[set viewing keys]:keys' \
