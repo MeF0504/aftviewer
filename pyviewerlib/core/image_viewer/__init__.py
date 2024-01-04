@@ -13,7 +13,8 @@ from pymeflib.util import chk_cmd
 
 # image viewer
 __ImgViewer = None
-ImageViewers = ['PIL', 'matplotlib', 'cv2']
+__set_ImgViewer = False
+ImageViewers = ['None', 'PIL', 'matplotlib', 'cv2']
 
 
 def get_image_viewer(args: Args) -> Optional[str]:
@@ -31,8 +32,8 @@ def get_image_viewer(args: Args) -> Optional[str]:
     Optional[str]
         the name of image viewer.
     """
-    global __ImgViewer
-    if __ImgViewer is not None:
+    global __ImgViewer, __set_ImgViewer
+    if __set_ImgViewer:
         # already set
         return __ImgViewer
 
@@ -51,6 +52,8 @@ def get_image_viewer(args: Args) -> Optional[str]:
     else:
         debug_print('search available image_viewer')
         for iv in ImageViewers:
+            if iv == 'None':
+                continue
             for p in sys.path:
                 if (Path(p)/iv).exists():
                     __ImgViewer = iv
@@ -61,6 +64,7 @@ def get_image_viewer(args: Args) -> Optional[str]:
                 break
         if __ImgViewer is None:
             debug_print("can't find image_viewer")
+    __set_ImgViewer = True
     return __ImgViewer
 
 
@@ -95,6 +99,8 @@ def show_image_file(img_file: str, args: Args) -> bool:
     """
     img_viewer = get_image_viewer(args)
     debug_print('img file:{}\n  use {}'.format(img_file, img_viewer))
+    if img_viewer == 'None':
+        return True
     if not os.path.isfile(img_file):
         debug_print('image file {} in not found'.format(img_file))
         return False
@@ -142,6 +148,8 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
     """
     img_viewer = get_image_viewer(args)
     debug_print('data shape: {}\n  use {}'.format(data.shape, img_viewer))
+    if img_viewer == 'None':
+        return True
     if img_viewer is None:
         print("I can't find any libraries to show image.")
         return False
