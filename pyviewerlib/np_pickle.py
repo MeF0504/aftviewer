@@ -21,7 +21,7 @@ def show_func(data, path, **kwargs):
         res = RM('{}'.format(data[parts[0]]), False)
     else:
         pdata = data[parts[0]]
-        assert pdata.dtype == np.dtype('O')
+        assert pdata.dtype == np.dtype('O'), f'incorrect type, {pdata.dtype}'
         res = show_pickle(pdata.item(), os.sep.join(parts[1:]))
     return res
 
@@ -38,7 +38,7 @@ def get_contents(data, path):
                 files.append(k)
     else:
         pdata = data[parts[0]]
-        assert pdata.dtype == np.dtype('O')
+        assert pdata.dtype == np.dtype('O'), f'incorrect type, {pdata.dtype}'
         dirs, files = get_pickle(pdata.item(), os.sep.join(parts[1:]))
     return dirs, files
 

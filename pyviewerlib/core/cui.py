@@ -93,8 +93,8 @@ class CursesCUI():
         self.exp += ' jkhl:scroll'
         self.exp += ' /:search'
         self.exp += ' ?:help'
-        if self.winx <= len(self.exp)+1:
-            raise AssertionError(self.winx, len(self.exp)+1)
+        assert self.winx > len(self.exp)+1, \
+            f'window width {self.winx} should be larger than {len(self.exp)+1}'
         self.win_pwd = curses.newwin(self.win_h, self.winx, 0, 0)
         self.win_side = curses.newwin(self.winy-self.win_h,
                                       self.win_w, self.win_h, 0)
@@ -118,7 +118,8 @@ class CursesCUI():
         #  win_w     winx-win_w
 
     def create_color_set(self, num, name):
-        assert num < curses.COLOR_PAIRS
+        assert num < curses.COLOR_PAIRS, \
+            f'color number {num} is larger than {curses.COLOR_PAIRS}'
         fg, bg = get_config('colors', f'cui_{name}')
         if fg in default_color_set:
             fg = default_color_set[fg]
@@ -636,5 +637,4 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)
     except AssertionError as e:
-        winx, lenexp = e.args
-        print('Window width should be larger than {:d} (current: {:d})'.format(lenexp, winx))
+        print(e)

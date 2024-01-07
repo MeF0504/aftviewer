@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 from . import args_chk, cprint, debug_print, show_image_file,\
-    get_config, help_template
+    get_config, help_template, get_image_viewer
 
 
 def show_output(output, args, out_obj):
@@ -25,11 +25,16 @@ def show_output(output, args, out_obj):
                     print(f'{header}{text}', end='', file=out_obj)
                 print(file=out_obj)
             elif out_type == 'image/png':
-                img_code = out_data['image/png']
-                img_bin = base64.b64decode(img_code.encode())
-                with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
-                    tmp.write(img_bin)
-                    show_image_file(tmp.name, args)
+                img_viewer = get_image_viewer(args)
+                if img_viewer == 'None':
+                    if out_obj == sys.stdout:
+                        print('image viewer is None')
+                else:
+                    img_code = out_data['image/png']
+                    img_bin = base64.b64decode(img_code.encode())
+                    with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
+                        tmp.write(img_bin)
+                        show_image_file(tmp.name, args)
 
 
 def show_help():

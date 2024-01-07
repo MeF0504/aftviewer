@@ -57,7 +57,8 @@ options:
                         specify the file type. "pyviewer help -t TYPE" will
                         show the detailed help.
   -iv IMAGE_VIEWER, --image_viewer IMAGE_VIEWER
-                        set image viewer. Supported args are 'matplotlib' (use
+                        set image viewer. Supported args are 'None' (do not
+                        show any images), 'matplotlib' (use
                         matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show),
                         'cv2' (use cv2.imshow), and other string is treated as
                         an external command (e.g. gosr, open).

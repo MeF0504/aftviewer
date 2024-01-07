@@ -95,6 +95,8 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
             else:
                 return RM('Failed to open {}.'.format(cpath), True)
         elif is_image(key_name):
+            if img_viewer == 'None':
+                return RM('image viewer is None', False)
             if 'cui' in kwargs and kwargs['cui']:
                 ava_iv = ImageViewers
                 if img_viewer not in ava_iv:

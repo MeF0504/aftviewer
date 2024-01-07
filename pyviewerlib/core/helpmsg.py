@@ -83,6 +83,7 @@ def set_def_args(parser: argparse.ArgumentParser,
         parser.add_argument('-iv', '--image_viewer',
                             help="set image viewer. " +
                             "Supported args are " +
+                            "'None' (do not show any images), " +
                             "'matplotlib' (use matplotlib.pyplot.imshow), " +
                             "'PIL' (use PIL.Image.show), " +
                             "'cv2' (use cv2.imshow), " +
