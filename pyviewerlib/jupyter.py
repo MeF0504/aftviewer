@@ -27,7 +27,8 @@ def show_output(output, args, out_obj):
             elif out_type == 'image/png':
                 img_viewer = get_image_viewer(args)
                 if img_viewer == 'None':
-                    return 'image viewer is None'
+                    if out_obj == sys.stdout:
+                        print('image viewer is None')
                 else:
                     img_code = out_data['image/png']
                     img_bin = base64.b64decode(img_code.encode())
