@@ -47,6 +47,8 @@ if (conf_dir/'setting.json').is_file():
                     # create settings for new file type
                     json_opts[key] = load_opts[key]
     del load_opts
+else:
+    add_types = {}
 
 # set supported file types
 type_config = {
