@@ -5,8 +5,8 @@ from functools import partial
 from getpass import getpass
 from pathlib import Path, PurePosixPath
 
-from . import args_chk, is_image, print_key, cprint, debug_print, get_col,\
-    interactive_view, interactive_cui, show_image_file, get_image_viewer,\
+from . import args_chk, is_image, print_key, cprint, debug_print, get_col, \
+    interactive_view, interactive_cui, show_image_file, get_image_viewer, \
     run_system_cmd, help_template, ImageViewers
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
@@ -53,7 +53,7 @@ def get_contents(zip_file, path):
     return dirs, files
 
 
-def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
+def show_zip(zip_file, pwd, tmpdir, args, get_contents, cpath, **kwargs):
     res = []
     img_viewer = get_image_viewer(args)
     try:
@@ -84,12 +84,9 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
     else:
         # file
         if 'system' in kwargs and kwargs['system']:
-            stdscr = kwargs['stdscr']
-            with tempfile.TemporaryDirectory() as tmpdir:
-                zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
-                tmpfile = os.path.join(tmpdir, cpath)
-                ret = run_system_cmd(tmpfile)
-                stdscr.getkey()
+            zip_file.extract(zipinfo, path=tmpdir.name, pwd=pwd)
+            tmpfile = os.path.join(tmpdir.name, cpath)
+            ret = run_system_cmd(tmpfile)
             if ret:
                 return RM('open {}'.format(cpath), False)
             else:
@@ -101,10 +98,9 @@ def show_zip(zip_file, pwd, args, get_contents, cpath, **kwargs):
                 ava_iv = ImageViewers
                 if img_viewer not in ava_iv:
                     return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
-            with tempfile.TemporaryDirectory() as tmpdir:
-                zip_file.extract(zipinfo, path=tmpdir, pwd=pwd)
-                tmpfile = os.path.join(tmpdir, cpath)
-                ret = show_image_file(tmpfile, args)
+            zip_file.extract(zipinfo, path=tmpdir.name, pwd=pwd)
+            tmpfile = os.path.join(tmpdir.name, cpath)
+            ret = show_image_file(tmpfile, args)
             if not ret:
                 return RM('Failed to show image.', True)
 
@@ -132,13 +128,14 @@ def main(fpath, args):
         print('{} is not a zip file.'.format(fpath))
         return
     zip_file = zipfile.ZipFile(fpath, 'r')
+    tmpdir = tempfile.TemporaryDirectory()
     fname = os.path.basename(fpath)
     gc = partial(get_contents, zip_file)
     if args.ask_password:
         pwd = get_pwd()
     else:
         pwd = None
-    sf = partial(show_zip, zip_file, pwd, args, gc)
+    sf = partial(show_zip, zip_file, pwd, tmpdir, args, gc)
 
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
@@ -152,7 +149,7 @@ def main(fpath, args):
         fg, bg = get_col('msg_error')
         for k in args.key:
             print_key(k)
-            info = show_zip(zip_file, pwd, args, gc, k)
+            info = show_zip(zip_file, pwd, tmpdir, args, gc, k)
             if not info.error:
                 print(info.message)
                 print()
@@ -164,3 +161,4 @@ def main(fpath, args):
         show_tree(fname, gc, purepath=PurePosixPath)
 
     zip_file.close()
+    tmpdir.cleanup()

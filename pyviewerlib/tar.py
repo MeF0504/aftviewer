@@ -4,14 +4,14 @@ import tempfile
 from functools import partial
 from pathlib import Path, PurePosixPath
 
-from . import args_chk, print_key, cprint, debug_print, get_image_viewer,\
-    is_image, interactive_view, interactive_cui,\
+from . import args_chk, print_key, cprint, debug_print, get_image_viewer, \
+    is_image, interactive_view, interactive_cui, \
     show_image_file, run_system_cmd, get_col, help_template, ImageViewers
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 
 
-def show_tar(tar_file, args, get_contents, cpath, **kwargs):
+def show_tar(tar_file, tmpdir, args, get_contents, cpath, **kwargs):
     res = []
     img_viewer = get_image_viewer(args)
     # check cpath
@@ -35,12 +35,9 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
     if tarinfo.isfile():
         # file
         if 'system' in kwargs and kwargs['system']:
-            stdscr = kwargs['stdscr']
-            with tempfile.TemporaryDirectory() as tmpdir:
-                tar_file.extractall(path=tmpdir, members=[tarinfo])
-                tmpfile = os.path.join(tmpdir, cpath)
-                ret = run_system_cmd(tmpfile)
-                stdscr.getkey()
+            tar_file.extractall(path=tmpdir.name, members=[tarinfo])
+            tmpfile = os.path.join(tmpdir.name, cpath)
+            ret = run_system_cmd(tmpfile)
             if ret:
                 return RM('open {}'.format(cpath), False)
             else:
@@ -52,10 +49,9 @@ def show_tar(tar_file, args, get_contents, cpath, **kwargs):
                 ava_iv = ImageViewers
                 if img_viewer not in ava_iv:
                     return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
-            with tempfile.TemporaryDirectory() as tmpdir:
-                tar_file.extractall(path=tmpdir, members=[tarinfo])
-                tmpfile = os.path.join(tmpdir, cpath)
-                ret = show_image_file(tmpfile, args)
+            tar_file.extractall(path=tmpdir.name, members=[tarinfo])
+            tmpfile = os.path.join(tmpdir.name, cpath)
+            ret = show_image_file(tmpfile, args)
             if not ret:
                 return RM('Failed to show image.', True)
 
@@ -124,9 +120,10 @@ def main(fpath, args):
         print('{} is not a tar file.'.format(fpath))
         return
     tar_file = tarfile.open(fpath, 'r:*')
+    tmpdir = tempfile.TemporaryDirectory()
     fname = os.path.basename(fpath)
     gc = partial(get_contents, tar_file)
-    sf = partial(show_tar, tar_file, args, gc)
+    sf = partial(show_tar, tar_file, tmpdir, args, gc)
 
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
@@ -138,7 +135,7 @@ def main(fpath, args):
             tar_file.list(verbose=False)
         for k in args.key:
             print_key(k)
-            info = show_tar(tar_file, args, gc, k)
+            info = show_tar(tar_file, tmpdir, args, gc, k)
             if not info.error:
                 print(info.message)
                 print()
@@ -150,3 +147,4 @@ def main(fpath, args):
         show_tree(fname, gc, purepath=PurePosixPath)
 
     tar_file.close()
+    tmpdir.cleanup()
