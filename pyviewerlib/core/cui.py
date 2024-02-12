@@ -201,8 +201,7 @@ class CursesCUI():
                            'go up the path or quit the search mode',
                            True, True, True,
                            ],
-                'KEY_SUP': [self.go_up_sidebar, [], 'S-↑',
-                            'go up the path or quit the search mode',
+                'KEY_SUP': [self.go_up_sidebar, [], '', '',
                             True, True, True,
                             ],
                 '\n': [self.select_item, [False], "<CR>",
@@ -271,7 +270,7 @@ class CursesCUI():
         debug_log('set default key maps')
         for k in def_keymaps:
             if k not in self.keymaps:
-                debug_log(f'set {k} as default')
+                debug_log(f'set key "{k}" as default')
                 self.keymaps[k] = def_keymaps[k]
 
     def create_help_msg(self):
@@ -631,7 +630,7 @@ q\t quit
         self.win_pwd.refresh()
 
     def add_key_maps(self, key, config):
-        debug_log(f'add {key}')
+        debug_log(f'add key "{key}"')
         self.keymaps[key] = config
 
     def main(self, stdscr, fname: str,

@@ -1,11 +1,19 @@
 import os
 import sqlite3
 from functools import partial
+from pathlib import PurePath
+try:
+    import curses
+except ImportError:
+    import_curses = False
+else:
+    import_curses = True
 
-from . import args_chk, print_key, cprint, debug_print, get_col,\
-    interactive_view, interactive_cui, help_template
+from . import args_chk, print_key, cprint, debug_print, get_col, \
+    interactive_view, help_template
 from . import ReturnMessage as RM
-from pymeflib.tree2 import branch_str
+from pymeflib.tree2 import branch_str, TreeViewer
+from .core.cui import CursesCUI, debug_log
 try:
     from tabulate import tabulate
 except ImportError:
@@ -13,13 +21,14 @@ except ImportError:
     is_tabulate = False
 else:
     is_tabulate = True
+sel_items = ''
 
 
 def show_table(cursor, tables, table_path,
                verbose=True, output=None, **kwargs):
     shift = '  '
     res = []
-    is_csv = (type(output) == str) and output.endswith('csv')
+    is_csv = (type(output) is str) and output.endswith('csv')
     if '/' in table_path:
         table, column = table_path.split('/')
         if column == '':
@@ -96,19 +105,67 @@ def show_table(cursor, tables, table_path,
         return RM(f'{table_path} is saved', False)
 
 
-def get_contents(cursor, tables, path):
-    # this is enough?
+def get_contents_i(cursor, tables, path):
     return [], tables
-    # if str(path) == '.':
-    #     return tables, []
-    # else:
-    #     files = []
-    #     cursor.execute("pragma table_info('{}')".format(path))
-    #     table_info = cursor.fetchall()
-    #     for tinfo in table_info:
-    #         name = tinfo[1]
-    #         files.append(name)
-    #     return [], files
+
+
+def get_contents_c(cursor, tables, path):
+    if str(path) == '.':
+        # at root
+        return tables, []
+    else:
+        files = []
+        cursor.execute("pragma table_info('{}')".format(path))
+        table_info = cursor.fetchall()
+        for tinfo in table_info:
+            name = tinfo[1]
+            files.append(name)
+        return [], files
+
+
+def add_contents(curs):
+    # wrapper of core.cui.CursesCUI.select_item
+    global sel_items
+    curs.sel_cont = curs.contents[curs.sel_idx]
+    if curs.sel_cont in curs.dirs:
+        if curs.is_search:
+            curs.cpath = curs.purepath(curs.sel_cont)
+        else:
+            curs.cpath = curs.cpath/curs.sel_cont
+        curs.dirs, curs.files = curs.tv.get_contents_c(curs.cpath)
+        curs.is_search = False
+        curs.init_var()
+    else:
+        if curs.is_search:
+            fpath = sel_items
+        else:
+            if '/' in sel_items:
+                cols = os.path.basename(sel_items).split(',')
+                debug_log(f'{cols}')
+                if curs.sel_cont not in cols:
+                    sel_items += f',{curs.sel_cont}'
+            else:
+                sel_items = str(curs.cpath/curs.sel_cont)
+            fpath = sel_items
+        debug_log(f'set {fpath}')
+        curs.main_shift_ud = 0
+        curs.main_shift_lr = 0
+        # message of waiting for opening an item
+        curs.message = ['opening an item...']
+        curs.update_main_window()
+        curs.info = curs.show_func(fpath, cui=True)
+        curs.message = curs.info.message.split("\n")
+        curs.message = [ln.replace("\t", "  ") for ln in curs.message]
+        curs.scroll_doll = max([len(ln) for ln in curs.message]) -\
+            (curs.winx-curs.win_w)+5
+        if curs.scroll_doll < 0:
+            curs.scroll_doll = 0
+
+
+def clear_items(curs):
+    global sel_items
+    sel_items = ''
+    curs.go_up_sidebar()
 
 
 def init_outfile(output):
@@ -140,12 +197,33 @@ def main(fpath, args):
     cursor.execute("select name from sqlite_master where type='table'")
     tables = [table[0] for table in cursor.fetchall()]
     fname = os.path.basename(fpath)
-    gc = partial(get_contents, cursor, tables)
+    gc = partial(get_contents_i, cursor, tables)
 
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, partial(show_table, cursor, tables))
     elif args_chk(args, 'cui'):
-        interactive_cui(fname, gc, partial(show_table, cursor, tables))
+        # interactive_cui(fname, gc, partial(show_table, cursor, tables))
+        if not import_curses:
+            print('failed to import curses.')
+            return
+        tv = TreeViewer('.', gc, PurePath)
+        curses_cui = CursesCUI()
+        curses_cui.add_key_maps('\n', [add_contents, [curses_cui], '<CR>',
+                                       'open/add the item in the main window',
+                                       True, True, True])
+        curses_cui.add_key_maps('KEY_ENTER', [add_contents, [curses_cui],
+                                              '', '', True, True, True])
+        curses_cui.add_key_maps('KEY_SR', [clear_items, [curses_cui], 'S-↑',
+                                           'go up the path or quit the search mode',
+                                           True, True, True])
+        curses_cui.add_key_maps('KEY_SUP', [clear_items, [curses_cui],
+                                            '', '', True, True, True])
+        try:
+            curses.wrapper(curses_cui.main, fname,
+                           partial(show_table, cursor, tables),
+                           PurePath('.'), tv)
+        except AssertionError as e:
+            print(e)
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             for t in tables:
