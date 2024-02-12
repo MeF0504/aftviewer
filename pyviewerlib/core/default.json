@@ -2,6 +2,7 @@
     "additional_types": {
     },
     "config": {
+        "default_branch": "main",
         "add_args": [],
         "image_viewer": null,
         "image_viewer_cui": null,

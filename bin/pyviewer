@@ -51,7 +51,8 @@ def main(args):
         root = Path(__file__).parent.parent
         msg_fg, msg_bg = get_col('msg_update')
         err_fg, err_bg = get_col('msg_error')
-        update.run(str(root), msg_fg, msg_bg, err_fg, err_bg)
+        def_branch = get_config('config', 'default_branch')
+        update.run(str(root), msg_fg, msg_bg, err_fg, err_bg, def_branch)
         return
 
     if args.file == 'config_list':
