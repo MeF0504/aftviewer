@@ -8,40 +8,6 @@ from pymeflib.tree2 import TreeViewer, GC, PPath
 from . import debug, conf_dir, get_config, ReturnMessage, SF
 curses_debug = debug
 
-help_str = '''
-key   function
-(S- means shift+key)
-q     quit
-?     show this help
-↓     move the sidebar cursor down by 1
-J     move the sidebar cursor down by 1
-↑     move the sidebar cursor up by 1
-K     move the sidebar cursor up by 1
-D     move the sidebar cursor down by {}
-U     move the sidebar cursor up by {}
-S-←   move the sidebar cursor to the first line
-S-→   move the sidebar cursor to the end line
-←     shift strings in the sidebar left
-→     shift strings in the sidebar right
-H     shift strings in the sidebar left
-L     shift strings in the sidebar right
-<CR>  open the item in the main window
-S-↑   go up the path or quit the search mode
-j     scroll down the main window
-k     scroll up the main window
-h     shift the main window left
-l     shift the main window right
-g     go to the top of the main window
-G     go to the bottom if main window
-^     go to the first character of the line
-$     go to the last column of the line
-/     start the search mode
-n     jump to the next search word
-N     jump to the previous search word
-f     search file names
-S-↓   open the items in the system command if supported
-'''
-
 default_color_set = {
         'k': curses.COLOR_BLACK,
         'r': curses.COLOR_RED,
@@ -75,6 +41,7 @@ class CursesCUI():
         self.is_search = False
         # called path-like class
         self.purepath = purepath
+        self.keymaps = {}
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
@@ -126,10 +93,10 @@ class CursesCUI():
         if bg in default_color_set:
             bg = default_color_set[bg]
 
-        if not (type(fg) == int and fg < curses.COLORS):
+        if not (type(fg) is int and fg < curses.COLORS):
             debug_log(f'incorrect fg: {fg}')
             fg = curses.COLOR_WHITE
-        if not (type(bg) == int and bg < curses.COLORS):
+        if not (type(bg) is int and bg < curses.COLORS):
             debug_log(f'incorrect bg: {bg}')
             bg = curses.COLOR_BLACK
         curses.init_pair(num, fg, bg)
@@ -172,6 +139,154 @@ class CursesCUI():
             self.dirs.sort()
         if hasattr(self, 'files'):
             self.files.sort()
+
+    def set_keymap(self):
+        # default key maps
+        # key: [function, [args], help_msg, key_symbol,
+        #       update_main, up_top, up_side]
+        def_keymaps = {
+                '?': [self.show_help_message, [], '?',
+                      'show this help',
+                      True, False, False,
+                      ],
+                'J': [self.down_sidebar, [1], 'J',
+                      'move the sidebar cursor down by 1',
+                      True, False, True,
+                      ],
+                'KEY_DOWN': [self.down_sidebar, [1], '↓',
+                             'move the sidebar cursor down by 1',
+                             False, False, True,
+                             ],
+                'K': [self.up_sidebar, [1], 'K',
+                      'move the sidebar cursor up by 1',
+                      True, False, True,
+                      ],
+                'KEY_UP': [self.up_sidebar, [1], '↑',
+                           'move the sidebar cursor up by 1',
+                           False, False, True,
+                           ],
+                'D': [self.down_sidebar, [self.scroll_h], 'D',
+                      f'move the sidebar cursor down by {self.scroll_h}',
+                      False, False, True,
+                      ],
+                'U': [self.up_sidebar, [self.scroll_h], 'U',
+                      f'move the sidebar cursor up by {self.scroll_h}',
+                      False, False, True,
+                      ],
+                'KEY_SLEFT': [self.top_sidebar, [], 'S-←',
+                              'move the sidebar cursor to the first line',
+                              False, False, True,
+                              ],
+                'KEY_SRIGHT': [self.bottom_sidebar, [], 'S-→',
+                               'move the sidebar cursor to the end line',
+                               False, False, True,
+                               ],
+                'L': [self.shift_right_sidebar, [], 'L',
+                      'shift strings in the sidebar right',
+                      False, False, True,
+                      ],
+                'KEY_RIGHT': [self.shift_right_sidebar, [], '→',
+                              'shift strings in the sidebar right',
+                              False, False, True,
+                              ],
+                'H': [self.shift_left_sidebar, [], 'H',
+                      'shift strings in the sidebar left',
+                      False, False, True,
+                      ],
+                'KEY_LEFT': [self.shift_left_sidebar, [], '←',
+                             'shift strings in the sidebar left',
+                             False, False, True,
+                             ],
+                'KEY_SR': [self.go_up_sidebar, [], 'S-↑',
+                           'go up the path or quit the search mode',
+                           True, True, True,
+                           ],
+                'KEY_SUP': [self.go_up_sidebar, [], '', '',
+                            True, True, True,
+                            ],
+                '\n': [self.select_item, [False], "<CR>",
+                       'open the item in the main window',
+                       True, True, True,
+                       ],
+                'KEY_ENTER': [self.select_item, [False], '', '',
+                              True, True, True,
+                              ],
+                "KEY_SDOWN": [self.select_item, [True], "S-↓",
+                              'open the items in the system command if supported',
+                              True, True, False,
+                              ],
+                'KEY_SF': [self.select_item, [True], '', '',
+                           True, True, False,
+                           ],
+                'j': [self.down_main, [self.scroll_h], 'j',
+                      'scroll down the main window',
+                      True, False, False,
+                      ],
+                'k': [self.up_main, [self.scroll_h], 'k',
+                      'scroll up the main window',
+                      True, False, False,
+                      ],
+                'l': [self.shift_right_main, [self.scroll_w], 'l',
+                      'shift the main window right',
+                      True, False, False,
+                      ],
+                'h': [self.shift_left_main, [self.scroll_w], 'h',
+                      'shift the main window left',
+                      True, False, False,
+                      ],
+                'g': [self.top_main, [], 'g',
+                      'go to the top of the main window',
+                      True, False, False,
+                      ],
+                'G': [self.bottom_main, [], 'G',
+                      'go to the bottom if main window',
+                      True, False, False,
+                      ],
+                '^': [self.hat_main, [], '^',
+                      'go to the first character of the line',
+                      True, False, False,
+                      ],
+                '$': [self.doll_main, [], '$',
+                      'go to the last column of the line',
+                      True, False, False,
+                      ],
+                'f': [self.file_search, [], 'f',
+                      'search file names',
+                      True, False, False,
+                      ],
+                '/': [self.into_search_mode, [], '/',
+                      'start the search mode',
+                      True, False, True,
+                      ],
+                'n': [self.jump_search_word_next, [], 'n',
+                      'jump to the next search word',
+                      True, False, False,
+                      ],
+                'N': [self.jump_search_word_pre, [], 'N',
+                      'jump to the previous search word',
+                      True, False, False,
+                      ],
+                }
+        debug_log('set default key maps')
+        for k in def_keymaps:
+            if k not in self.keymaps:
+                debug_log(f'set key "{k}" as default')
+                self.keymaps[k] = def_keymaps[k]
+
+    def create_help_msg(self):
+        help_msg = '''
+key\t function
+(S- means shift+key)
+q\t quit
+'''
+        for k, confs in self.keymaps.items():
+            _, _, symbol, help_str, _, _, _ = confs
+            if len(symbol) == 0:
+                continue
+            help_line = f'{symbol}\t {help_str}\n'
+            help_msg += help_line
+
+        return help_msg
 
     @staticmethod
     def editer_cmd(key):
@@ -233,6 +348,12 @@ class CursesCUI():
         if self.side_shift_ud < 0:
             self.side_shift_ud = 0
 
+    def bottom_sidebar(self):
+        self.down_sidebar(len(self.contents)-self.sel_idx-1)
+
+    def top_sidebar(self):
+        self.up_sidebar(self.sel_idx)
+
     def shift_left_sidebar(self):
         if self.side_shift_lr < self.scroll_side:
             self.side_shift_lr = 0
@@ -266,7 +387,13 @@ class CursesCUI():
                 self.cpath = self.purepath(self.sel_cont)
             else:
                 self.cpath = self.cpath/self.sel_cont
-            self.dirs, self.files = self.tv.get_contents(self.cpath)
+            dirs, files = self.tv.get_contents(self.cpath)
+            if len(dirs+files) == 0:
+                self.message = ['empty directory.']
+                self.cpath = self.cpath.parent
+                return
+            self.dirs = dirs
+            self.files = files
             self.is_search = False
             self.init_var()
         else:
@@ -302,6 +429,12 @@ class CursesCUI():
         else:
             self.main_shift_ud -= num
 
+    def bottom_main(self):
+        self.down_main(len(self.message)-self.main_shift_ud-2)
+
+    def top_main(self):
+        self.up_main(self.main_shift_ud)
+
     def shift_left_main(self, num):
         if self.main_shift_lr < num:
             self.main_shift_lr = 0
@@ -310,6 +443,12 @@ class CursesCUI():
 
     def shift_right_main(self, num):
         self.main_shift_lr += num
+
+    def hat_main(self):
+        self.shift_left_main(self.main_shift_lr)
+
+    def doll_main(self):
+        self.shift_right_main(self.scroll_doll-self.main_shift_lr)
 
     def file_search(self):
         # file name search mode
@@ -392,10 +531,14 @@ class CursesCUI():
                 self.search_cmt = ''
                 break
 
+    def jump_search_word_next(self):
+        self.jump_search_word(self.main_shift_ud, self.main_shift_lr+1, False)
+
+    def jump_search_word_pre(self):
+        self.jump_search_word(self.main_shift_ud-1, 0, True)
+
     def show_help_message(self):
-        self.message = help_str.format(self.scroll_h,
-                                       self.scroll_h,
-                                       ).split('\n')
+        self.message = self.create_help_msg().split('\n')
         self.sel_cont = '<help>'
         self.main_shift_ud = 0
         self.main_shift_lr = 0
@@ -492,6 +635,10 @@ class CursesCUI():
                             'srch: {}'.format(sw))
         self.win_pwd.refresh()
 
+    def add_key_maps(self, key, config):
+        debug_log(f'add key "{key}"')
+        self.keymaps[key] = config
+
     def main(self, stdscr, fname: str,
              show_func: SF,
              cpath: PurePath, tv: TreeViewer) -> None:
@@ -507,79 +654,27 @@ class CursesCUI():
         self.set_color()
         self.dirs, self.files = tv.get_contents(cpath)
         self.contents = self.dirs+self.files
+        self.set_keymap()
         stdscr.refresh()
 
         while self.key != 'q':
             # showed indices are side_shift_ud ~ side_shift_ud+(winy-win_h)
-            if self.key in ['J', 'KEY_DOWN']:
-                self.down_sidebar(1)
-            elif self.key in ['K', 'KEY_UP']:
-                self.up_sidebar(1)
-            elif self.key == 'D':
-                self.down_sidebar(self.scroll_h)
-            elif self.key == 'U':
-                self.up_sidebar(self.scroll_h)
-            elif self.key == 'KEY_SLEFT':
-                self.up_sidebar(self.sel_idx)
-            elif self.key == 'KEY_SRIGHT':
-                self.down_sidebar(len(self.contents)-self.sel_idx-1)
-            elif self.key in ['L', 'KEY_RIGHT']:
-                self.shift_right_sidebar()
-            elif self.key in ['H', 'KEY_LEFT']:
-                self.shift_left_sidebar()
-            elif self.key in ['KEY_SR', 'KEY_SUP']:
-                self.go_up_sidebar()
-            elif self.key in ["\n", 'KEY_ENTER']:
-                self.select_item(system=False)
-            elif self.key in ['KEY_SDOWN', 'KEY_SF']:
-                self.select_item(system=True)
-            elif self.key == 'j':
-                self.down_main(self.scroll_h)
-            elif self.key == 'k':
-                self.up_main(self.scroll_h)
-            elif self.key == 'l':
-                self.shift_right_main(self.scroll_w)
-            elif self.key == 'h':
-                self.shift_left_main(self.scroll_w)
-            elif self.key == 'g':
-                self.up_main(self.main_shift_ud)
-            elif self.key == 'G':
-                self.down_main(len(self.message)-self.main_shift_ud-2)
-            elif self.key == '^':
-                self.shift_left_main(self.main_shift_lr)
-            elif self.key == '$':
-                self.shift_right_main(self.scroll_doll-self.main_shift_lr)
-            elif self.key == 'f':
-                self.file_search()
-            elif self.key == '/':
-                self.into_search_mode()
-            elif self.key == 'n':
-                self.jump_search_word(self.main_shift_ud,
-                                      self.main_shift_lr+1, False)
-            elif self.key == 'N':
-                self.jump_search_word(self.main_shift_ud-1, 0, True)
-            elif self.key == '?':
-                self.show_help_message()
+            if self.key == '':
+                upm, upt, ups = True, True, True
+            else:
+                upm, upt, ups = False, False, False
+            if self.key in self.keymaps:
+                func, args, _, _, upm, upt, ups = self.keymaps[self.key]
+                func(*args)
 
             self.contents = self.dirs+self.files
 
-            if self.key in ['', 'KEY_UP', 'KEY_DOWN',
-                            'KEY_LEFT', 'KEY_RIGHT',
-                            'KEY_SRIGHT', 'KEY_SLEFT',
-                            'KEY_SR', 'KEY_SUP', "\n", 'KEY_ENTER',
-                            'H', 'J', 'K', 'L',
-                            'D', 'U',
-                            ]:
-                self.update_side_bar()
-            if self.key in ['', "\n", 'KEY_ENTER',
-                            'KEY_SF', 'KEY_SDOWN',
-                            'KEY_SR', 'KEY_SUP',
-                            'j', 'k', 'h', 'l', 'g', 'G', '^', '$',
-                            '?', '/', 'n', 'N',
-                            ]:
+            if upm:
                 self.update_main_window()
-            if self.key in ['', "\n", 'KEY_ENTER', 'KEY_SR', 'KEY_SUP']:
+            if upt:
                 self.update_pwd_window()
+            if ups:
+                self.update_side_bar()
             if curses_debug:
                 self.debug_info()
             self.key = self.stdscr.getkey()
