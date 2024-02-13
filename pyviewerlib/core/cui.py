@@ -387,7 +387,13 @@ q\t quit
                 self.cpath = self.purepath(self.sel_cont)
             else:
                 self.cpath = self.cpath/self.sel_cont
-            self.dirs, self.files = self.tv.get_contents(self.cpath)
+            dirs, files = self.tv.get_contents(self.cpath)
+            if len(dirs+files) == 0:
+                self.message = ['empty directory.']
+                self.cpath = self.cpath.parent
+                return
+            self.dirs = dirs
+            self.files = files
             self.is_search = False
             self.init_var()
         else:
