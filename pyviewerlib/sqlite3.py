@@ -132,7 +132,7 @@ def add_contents(curs):
             curs.cpath = curs.purepath(curs.sel_cont)
         else:
             curs.cpath = curs.cpath/curs.sel_cont
-        curs.dirs, curs.files = curs.tv.get_contents_c(curs.cpath)
+        curs.dirs, curs.files = curs.tv.get_contents(curs.cpath)
         curs.is_search = False
         curs.init_var()
     else:
@@ -197,15 +197,16 @@ def main(fpath, args):
     cursor.execute("select name from sqlite_master where type='table'")
     tables = [table[0] for table in cursor.fetchall()]
     fname = os.path.basename(fpath)
-    gc = partial(get_contents_i, cursor, tables)
 
     if args_chk(args, 'interactive'):
+        gc = partial(get_contents_i, cursor, tables)
         interactive_view(fname, gc, partial(show_table, cursor, tables))
     elif args_chk(args, 'cui'):
         # interactive_cui(fname, gc, partial(show_table, cursor, tables))
         if not import_curses:
             print('failed to import curses.')
             return
+        gc = partial(get_contents_c, cursor, tables)
         tv = TreeViewer('.', gc, PurePath)
         curses_cui = CursesCUI()
         curses_cui.add_key_maps('\n', [add_contents, [curses_cui], '<CR>',
