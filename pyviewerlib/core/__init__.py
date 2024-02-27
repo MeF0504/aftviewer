@@ -2,7 +2,7 @@ import os
 import json
 import platform
 import subprocess
-from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
+from pathlib import Path, PurePath
 from typing import Callable, Union, List, Tuple, Any
 from dataclasses import dataclass
 
@@ -159,14 +159,14 @@ def args_chk(args: Args, attr: str) -> bool:
         return False
 
 
-def get_config(key1, key2) -> Any:
+def get_config(key1: str, key2: str) -> Any:
     """
     get the current configuration value.
 
     Parameters
     ----------
     key1: str
-        Main key name. Selected one from "config", "colors" and type names.
+        Main key name. Selected one from "config", "colors", and type names.
     key2: str
         configuration key name.
 
@@ -200,7 +200,7 @@ def show_opts() -> None:
     None
     """
     for key, val in json_opts.items():
-        if type(val) == dict:
+        if type(val) is dict:
             print_key(key)
             for k2, v2 in val.items():
                 print(f'  {k2}: {v2}')
@@ -324,7 +324,7 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     fg3, bg3 = get_col('interactive_output')
     fge, bge = get_col('msg_error')
     tv = TreeViewer('.', get_contents)
-    while(True):
+    while True:
         dirs, files = tv.get_contents(cpath)
         dirs.sort()
         files.sort()

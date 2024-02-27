@@ -142,7 +142,7 @@ class CursesCUI():
 
     def set_keymap(self):
         # default key maps
-        # key: [function, [args], help_msg, key_symbol,
+        # key: [function, [args], key_symbol, help_msg,
         #       update_main, up_top, up_side]
         def_keymaps = {
                 '?': [self.show_help_message, [], '?',
