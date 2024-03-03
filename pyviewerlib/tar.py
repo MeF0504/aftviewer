@@ -6,7 +6,8 @@ from pathlib import Path, PurePosixPath
 
 from . import args_chk, print_key, cprint, debug_print, get_image_viewer, \
     is_image, interactive_view, interactive_cui, \
-    show_image_file, run_system_cmd, get_col, help_template, ImageViewers
+    show_image_file, run_system_cmd, get_col, help_template, ImageViewers, \
+    add_args_imageviewer, add_args_output, add_args_specification
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 
@@ -105,13 +106,19 @@ def get_contents(tar_file, path):
     return dirs, files
 
 
+def add_args(parser):
+    add_args_imageviewer(parser)
+    add_args_output(parser)
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=True, cui=True)
+
+
 def show_help():
     helpmsg = help_template('tar', 'show the contents of a tar file.' +
                             ' The tar file type is identified by the'
                             ' "tarfile" module, not the extension of a file.' +
                             ' NOTE: --output works only with --key.',
-                            sup_iv=True, sup_o=True,
-                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+                            add_args)
     print(helpmsg)
 
 

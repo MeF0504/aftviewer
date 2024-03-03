@@ -11,12 +11,13 @@ from types import FunctionType
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from pyviewerlib import debug, get_config, type_config, args_chk,\
-    debug_print, show_opts, get_col
-from pyviewerlib.core.helpmsg import set_def_args
+    show_opts, get_col
 from pymeflib import update
 
 
-def get_filetype(fpath):
+def get_filetype(fpath: Path):
+    if not fpath.is_file():
+        return None
     ext = fpath.suffix[1:].lower()
     if tarfile.is_tarfile(fpath):
         return 'tar'
@@ -27,21 +28,35 @@ def get_filetype(fpath):
     return None
 
 
-def load_lib(args):
+def load_lib(args, silent):
+    if args.type is None:
+        if not silent:
+            print('This file type is not supported')
+        return None
+    elif args.type == 'text':
+        if not silent:
+            if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
+                print('vimでも使ってろ！')
+            else:
+                print("Why Don't you use vim???")
+        return None
+
     # python import style
     lib_path = "pyviewerlib.{}".format(args.type)
     # file path
     lib_path2 = Path(__file__).parent.parent/"pyviewerlib"
     lib_path2 /= "{}.py".format(args.type)
     if not lib_path2.is_file():
-        print('Library file {} is not found.'.format(lib_path2))
+        if not silent:
+            print('Library file {} is not found.'.format(lib_path2))
         return None
     try:
         lib = import_module(lib_path)
     except ImportError as e:
-        print("Failed to load library")
-        print('lib: {}'.format(lib_path2))
-        print('error: {}'.format(e))
+        if not silent:
+            print("Failed to load library")
+            print('lib: {}'.format(lib_path2))
+            print('error: {}'.format(e))
         return None
     return lib
 
@@ -63,7 +78,7 @@ def main(args):
         if not args_chk(args, 'type'):
             print('please set --type to see the details.')
             return
-        lib = load_lib(args)
+        lib = load_lib(args, False)
         if lib is not None:
             if hasattr(lib, 'show_help') and type(lib.show_help) is FunctionType:
                 lib.show_help()
@@ -82,17 +97,7 @@ def main(args):
     if not args_chk(args, 'type'):
         args.type = get_filetype(fpath)
 
-    if args.type is None:
-        print('This file type is not supported')
-        return
-    elif args.type == 'text':
-        if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
-            print('vimでも使ってろ！')
-        else:
-            print("Why Don't you use vim???")
-        return
-
-    lib = load_lib(args)
+    lib = load_lib(args, False)
     if lib is not None:
         lib.main(fpath, args)
     return
@@ -113,17 +118,12 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type. "pyviewer help -t TYPE" will show the detailed help.',
                         choices=supported_type)
-    set_def_args(parser,
-                 sup_iv=True, sup_encoding=True, sup_password=True, sup_o=True,
-                 sup_v=True, sup_k=True, sup_i=True, sup_c=True)
-    for aa_file in get_config('config', 'add_args'):
-        try:
-            # additional arguments
-            lib = import_module("pyviewerlib.{}".format(aa_file))
-        except ImportError as e:
-            debug_print(e)
-        else:
-            lib.main(parser)
+    tmpargs, rems = parser.parse_known_args()
+    if not args_chk(tmpargs, 'type'):
+        tmpargs.type = get_filetype(Path(tmpargs.file))
+    lib = load_lib(tmpargs, True)
+    if lib is not None:
+        lib.add_args(parser)
     args = parser.parse_args()
 
     args.debug = debug
