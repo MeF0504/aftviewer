@@ -42,7 +42,7 @@ def get_image_viewer(args: Args) -> Optional[str]:
     if args_chk(args, 'image_viewer'):
         debug_print('set image viewer from args')
         __ImgViewer = args.image_viewer
-    elif args.cui and \
+    elif args_chk(args, 'cui') and \
             iv_cui_config is not None:
         debug_print('set image viewer from config file (CUI)')
         __ImgViewer = iv_cui_config

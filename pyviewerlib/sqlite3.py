@@ -10,7 +10,7 @@ else:
     import_curses = True
 
 from . import args_chk, print_key, cprint, debug_print, get_col, \
-    interactive_view, help_template
+    interactive_view, help_template, add_args_specification, add_args_output
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
 from .core.cui import CursesCUI, debug_log
@@ -179,6 +179,12 @@ def init_outfile(output):
     print(f'file is created at {output}')
 
 
+def add_args(parser):
+    add_args_output(parser)
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=True, cui=True)
+
+
 def show_help():
     helpmsg = help_template('sqlite3', 'show the contents of the database. ' +
                             'In this type, you can specify multiple columns ' +
@@ -187,7 +193,7 @@ def show_help():
                             '--key is specified. ' +
                             'If extension of the output file is".csv",' +
                             'it is saved as the CSV file.',
-                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+                            add_args)
     print(helpmsg)
 
 

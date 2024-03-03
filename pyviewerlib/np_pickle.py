@@ -6,7 +6,7 @@ import numpy as np
 from numpy.lib.npyio import NpzFile
 
 from . import args_chk, print_key, set_numpy_format, debug_print, get_config,\
-    interactive_view, interactive_cui, help_template
+    interactive_view, interactive_cui, help_template, add_args_specification
 from . import ReturnMessage as RM
 from .numpy import show_numpy
 from .pickle import show_func as show_pickle, get_contents as get_pickle
@@ -53,10 +53,15 @@ def show_data(data, key):
         show_numpy(data[key])
 
 
+def add_args(parser):
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=True, cui=True)
+
+
 def show_help():
     helpmsg = help_template('np_pickle', 'show the contents of a pickle-allowed NumPy-compressed file.' +
                             ' Note that this type is not specified automatically.',
-                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+                            add_args)
     print(helpmsg)
 
 
