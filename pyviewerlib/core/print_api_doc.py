@@ -14,7 +14,11 @@ funcs = {
         '.core.image_viewer': ['get_image_viewer', 'is_image',
                                'show_image_file', 'show_image_ndarray',
                                ],
-        '.core.helpmsg': ['help_template'],
+        '.core.helpmsg': ['help_template', 'add_args_imageviewer',
+                          'add_args_encoding', 'add_args_output',
+                          'add_args_verbose', 'add_args_key',
+                          'add_args_interactive', 'add_args_cui',
+                          'add_args_specification'],
         '.core.cui': ['interactive_cui'],
         }
 
