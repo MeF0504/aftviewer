@@ -79,9 +79,9 @@ def add_args_verbose(parser: argparse.ArgumentParser):
     None
     """
     parser.add_argument('-v', '--verbose', help='show details',
-                       dest='verbose',
-                       action='store_true',
-                       )
+                        dest='verbose',
+                        action='store_true',
+                        )
 
 
 def add_args_key(parser: argparse.ArgumentParser):
