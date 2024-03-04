@@ -1,7 +1,8 @@
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key, set_numpy_format, help_template
+from . import args_chk, print_key, set_numpy_format, help_template, \
+    add_args_specification
 set_numpy_format(np)
 
 
@@ -61,24 +62,29 @@ min      : {}'''.format(d_mean, d_max, d_min)
     print(prt_str)
 
 
+def add_args(parser):
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=False, cui=False)
+
+
 def show_help():
     helpmsg = help_template('numpy', 'show the contents of a NumPy-compressed file.' +
                             ' If the file is "npz", you can specify the key name.',
-                            sup_v=True, sup_k=True)
+                            add_args)
     print(helpmsg)
 
 
 def main(fpath, args):
     data = np.load(fpath, allow_pickle=False)
     if args_chk(args, 'verbose'):
-        if type(data) == NpzFile:
+        if type(data) is NpzFile:
             for k in data:
                 print_key(k)
                 print(data[k])
         else:
             print(data)
     elif args_chk(args, 'key'):
-        if type(data) == NpzFile:
+        if type(data) is NpzFile:
             if len(args.key) == 0:
                 for k in data:
                     print(k)
@@ -88,7 +94,7 @@ def main(fpath, args):
                 show_numpy(data[k])
                 print()
     else:
-        if type(data) == NpzFile:
+        if type(data) is NpzFile:
             for k in data:
                 print('\n{}'.format(k))
                 show_numpy(data[k])

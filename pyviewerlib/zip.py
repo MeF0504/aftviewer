@@ -7,7 +7,8 @@ from pathlib import Path, PurePosixPath
 
 from . import args_chk, is_image, print_key, cprint, debug_print, get_col, \
     interactive_view, interactive_cui, show_image_file, get_image_viewer, \
-    run_system_cmd, help_template, ImageViewers
+    run_system_cmd, help_template, ImageViewers, \
+    add_args_imageviewer, add_args_output, add_args_specification
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 
@@ -115,11 +116,21 @@ def show_zip(zip_file, pwd, tmpdir, args, get_contents, cpath, **kwargs):
     return RM('\n'.join(res), False)
 
 
+def add_args(parser):
+    add_args_imageviewer(parser)
+    add_args_output(parser)
+    parser.add_argument('--ask_password', '-p',
+                        help='ask for the password for the file if needed.',
+                        action='store_true',
+                        )
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=True, cui=True)
+
+
 def show_help():
     helpmsg = help_template('zip', 'show the contents of a zip file.' +
                             ' NOTE: --output works only with --key.',
-                            sup_iv=True, sup_password=True, sup_o=True,
-                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+                            add_args)
     print(helpmsg)
 
 
@@ -136,6 +147,11 @@ def main(fpath, args):
     else:
         pwd = None
     sf = partial(show_zip, zip_file, pwd, tmpdir, args, gc)
+
+    if args_chk(args, 'output'):
+        if not args_chk(args, 'key') or len(args.key) == 0:
+            print('output is specified but key is not specified')
+            return
 
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)

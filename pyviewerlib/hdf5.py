@@ -4,9 +4,9 @@ from pathlib import PurePosixPath
 
 import h5py
 
-from . import args_chk, print_key, cprint, debug_print, get_col,\
-    FG, BG, FG256, BG256, END, set_numpy_format, get_config,\
-    interactive_view, interactive_cui, help_template
+from . import args_chk, print_key, cprint, debug_print, get_col, \
+    FG, BG, FG256, BG256, END, set_numpy_format, get_config, \
+    interactive_view, interactive_cui, help_template, add_args_specification
 from . import ReturnMessage as RM
 from pymeflib.tree2 import show_tree
 
@@ -28,14 +28,14 @@ def show_hdf5(h5_file, cpath, **kwargs):
         fgkey, bgkey = get_config('hdf5', 'type_color')
         if fgkey in FG:
             fg = FG[fgkey]
-        elif type(fgkey) == int:
+        elif type(fgkey) is int:
             fg = FG256(fgkey)
         else:
             debug_print(f'incorrect fg color: {fgkey}')
             fg = ''
         if bgkey in BG:
             bg = BG[bgkey]
-        elif type(bgkey) == int:
+        elif type(bgkey) is int:
             bg = BG256(bgkey)
         else:
             debug_print(f'incorrect bg color: {bgkey}')
@@ -117,9 +117,14 @@ def get_contents(h5_file, path):
     return dirs, files
 
 
+def add_args(parser):
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=True, cui=True)
+
+
 def show_help():
     helpmsg = help_template('hdf5', 'show an contents in the hdf5 file.',
-                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+                            add_args)
     print(helpmsg)
 
 

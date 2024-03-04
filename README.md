@@ -41,12 +41,10 @@ python -c "$(curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/instal
 ```bash
 usage: pyviewer [-h]
                 [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}]
-                [-iv IMAGE_VIEWER] [--encoding ENCODING] [--ask_password]
-                [-o OUTPUT] [-v | -k [KEY ...] | -i | -c]
                 file
 
-show the constitution of a file. support file types ... hdf5, pickle, numpy,
-np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm
+show the constitution of a file. default support file types ... hdf5, pickle,
+numpy, np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm
 
 positional arguments:
   file                  input file
@@ -56,26 +54,9 @@ options:
   -t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}
                         specify the file type. "pyviewer help -t TYPE" will
                         show the detailed help.
-  -iv IMAGE_VIEWER, --image_viewer IMAGE_VIEWER
-                        set image viewer. Supported args are 'None' (do not
-                        show any images), 'matplotlib' (use
-                        matplotlib.pyplot.imshow), 'PIL' (use PIL.Image.show),
-                        'cv2' (use cv2.imshow), and other string is treated as
-                        an external command (e.g. gosr, open).
-  --encoding ENCODING   specify the encoding format.
-  --ask_password, -p    ask for the password for the file if needed.
-  -o OUTPUT, --output OUTPUT
-                        specify the output file if supported.
-  -v, --verbose         show details
-  -k [KEY ...], --key [KEY ...]
-                        specify the key name to show. If no key is specified,
-                        return the list of keys.
-  -i, --interactive     open a file with interactive mode.
-  -c, --interactive_cui
-                        open a file with interactive CUI mode.
 
-PyViewer has some subcommands, 'pyviewer update' updates this command,
-'pyviewer config_list' shows the current optional configuration, and 'pyviewer
-help -t TYPE' shows the detailed help of each type.
+To see the detailed help of each type, type 'pyviewer help -t TYPE'. PyViewer
+has other some subcommands, 'pyviewer update' updates this command, 'pyviewer
+config_list' shows the current optional configuration.
 ```
 

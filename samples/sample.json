@@ -3,7 +3,6 @@
         "png_sample": "png PNG jpeg jpg JPG"
     },
     "config": {
-        "add_args": ["add_args"],
         "image_viewer": "open",
         "iv_exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
         "system_cmd": "open",

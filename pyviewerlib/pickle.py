@@ -4,7 +4,8 @@ from pathlib import PurePath
 from functools import partial
 
 from . import args_chk, print_key, debug_print, get_config, \
-    interactive_view, interactive_cui, help_template
+    interactive_view, interactive_cui, help_template, \
+    add_args_specification, add_args_encoding
 from . import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
@@ -55,6 +56,12 @@ def get_contents(data, path):
             else:
                 files.append(str(k))
     return dirs, files
+
+
+def add_args(parser):
+    add_args_encoding(parser)
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=True, cui=True)
 
 
 def show_help():

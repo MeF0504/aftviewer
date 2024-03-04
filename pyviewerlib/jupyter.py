@@ -4,8 +4,9 @@ import base64
 import tempfile
 from pathlib import Path
 
-from . import args_chk, cprint, debug_print, show_image_file,\
-    get_config, help_template, get_image_viewer
+from . import args_chk, cprint, debug_print, show_image_file, \
+    get_config, help_template, get_image_viewer, \
+    add_args_imageviewer, add_args_output, add_args_verbose
 
 
 def show_output(output, args, out_obj):
@@ -37,9 +38,17 @@ def show_output(output, args, out_obj):
                         show_image_file(tmp.name, args)
 
 
+def add_args(parser):
+    add_args_imageviewer(parser)
+    add_args_output(parser)
+    add_args_verbose(parser)
+
+
 def show_help():
-    helpmsg = help_template('jupyter', 'show the saved jupyter notebook. NOTE: If the --output option is specified, the output file is saved as the python script.',
-                            sup_iv=True, sup_v=True, sup_o=True)
+    helpmsg = help_template('jupyter', 'show the saved jupyter notebook.' +
+                            ' NOTE: If the --output option is specified,' +
+                            ' the output file is saved as the python script.',
+                            add_args)
     print(helpmsg)
 
 

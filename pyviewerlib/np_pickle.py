@@ -5,8 +5,9 @@ from functools import partial
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key, set_numpy_format, debug_print, get_config,\
-    interactive_view, interactive_cui, help_template
+from . import args_chk, print_key, set_numpy_format, debug_print, \
+    get_config, interactive_view, interactive_cui, help_template, \
+    add_args_specification, add_args_encoding
 from . import ReturnMessage as RM
 from .numpy import show_numpy
 from .pickle import show_func as show_pickle, get_contents as get_pickle
@@ -53,10 +54,16 @@ def show_data(data, key):
         show_numpy(data[key])
 
 
+def add_args(parser):
+    add_args_encoding(parser)
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=True, cui=True)
+
+
 def show_help():
     helpmsg = help_template('np_pickle', 'show the contents of a pickle-allowed NumPy-compressed file.' +
                             ' Note that this type is not specified automatically.',
-                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+                            add_args)
     print(helpmsg)
 
 
@@ -69,7 +76,7 @@ def main(fpath, args):
     debug_print('encoding: {}'.format(encoding))
 
     data = np.load(fpath, allow_pickle=True, encoding=encoding)
-    if type(data) != NpzFile:
+    if type(data) is not NpzFile:
         print('please use --type numpy')
         return
     fname = os.path.basename(fpath)
