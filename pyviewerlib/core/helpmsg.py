@@ -192,6 +192,9 @@ def help_template(filetype: str, description: str,
         supported by the `pyviewer` command.
     description: str
         the description of the file type.
+    add_args: Callable
+        A function to add optional arguments.
+        This function takes one variable which type is ArgumentParser.
 
     Returns
     -------
