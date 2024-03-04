@@ -77,14 +77,14 @@ def show_help():
 def main(fpath, args):
     data = np.load(fpath, allow_pickle=False)
     if args_chk(args, 'verbose'):
-        if type(data) == NpzFile:
+        if type(data) is NpzFile:
             for k in data:
                 print_key(k)
                 print(data[k])
         else:
             print(data)
     elif args_chk(args, 'key'):
-        if type(data) == NpzFile:
+        if type(data) is NpzFile:
             if len(args.key) == 0:
                 for k in data:
                     print(k)
@@ -94,7 +94,7 @@ def main(fpath, args):
                 show_numpy(data[k])
                 print()
     else:
-        if type(data) == NpzFile:
+        if type(data) is NpzFile:
             for k in data:
                 print('\n{}'.format(k))
                 show_numpy(data[k])

@@ -3,7 +3,6 @@
     },
     "config": {
         "default_branch": "main",
-        "add_args": [],
         "image_viewer": null,
         "image_viewer_cui": null,
         "iv_exec_cmd": ["%c", "%s"],

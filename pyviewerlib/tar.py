@@ -132,6 +132,11 @@ def main(fpath, args):
     gc = partial(get_contents, tar_file)
     sf = partial(show_tar, tar_file, tmpdir, args, gc)
 
+    if args_chk(args, 'output'):
+        if not args_chk(args, 'key') or len(args.key) == 0:
+            print('output is specified but key is not specified')
+            return
+
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):

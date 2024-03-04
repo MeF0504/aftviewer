@@ -108,11 +108,13 @@ if __name__ == "__main__":
     supported_type.remove('text')
     parser = argparse.ArgumentParser(
             description="show the constitution of a file."
-            + " support file types ... {}".format(', '.join(supported_type)),
-            epilog="PyViewer has some subcommands,"
+            + " default support file types ... {}".format(', '.join(supported_type)),
+            epilog="To see the detailed help of each type,"
+            + " type 'pyviewer help -t TYPE'. "
+            + " PyViewer has other subcommands,"
             + " 'pyviewer update' updates this command,"
-            + " 'pyviewer config_list' shows the current optional configuration,"
-            + " and 'pyviewer help -t TYPE' shows the detailed help of each type."
+            + " and 'pyviewer config_list' shows"
+            + " the current optional configuration."
             )
     parser.add_argument('file', help='input file')
     parser.add_argument('-t', '--type', dest='type',

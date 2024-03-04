@@ -4,7 +4,7 @@ import base64
 import tempfile
 from pathlib import Path
 
-from . import args_chk, cprint, debug_print, show_image_file,\
+from . import args_chk, cprint, debug_print, show_image_file, \
     get_config, help_template, get_image_viewer, \
     add_args_imageviewer, add_args_output, add_args_verbose
 

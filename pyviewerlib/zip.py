@@ -148,6 +148,11 @@ def main(fpath, args):
         pwd = None
     sf = partial(show_zip, zip_file, pwd, tmpdir, args, gc)
 
+    if args_chk(args, 'output'):
+        if not args_chk(args, 'key') or len(args.key) == 0:
+            print('output is specified but key is not specified')
+            return
+
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
