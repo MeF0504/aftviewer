@@ -19,3 +19,8 @@ __pycache__/
 !/pyviewerlib/xpm.py
 !/pyviewerlib/zip.py
 
+/pyviewerlib/core/image_viewer/*
+!pyviewerlib/core/image_viewer/__init__.py
+!pyviewerlib/core/image_viewer/matplotlib.py
+!pyviewerlib/core/image_viewer/PIL.py
+!pyviewerlib/core/image_viewer/cv2.py

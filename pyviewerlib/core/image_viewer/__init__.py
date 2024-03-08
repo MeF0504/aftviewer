@@ -14,7 +14,7 @@ from pymeflib.util import chk_cmd
 # image viewer
 __ImgViewer = None
 __set_ImgViewer = False
-ImageViewers = ['None', 'PIL', 'matplotlib', 'cv2']
+ImageViewers = ['None']
 
 
 def get_image_viewer(args: Args) -> Optional[str]:
@@ -42,8 +42,7 @@ def get_image_viewer(args: Args) -> Optional[str]:
     if args_chk(args, 'image_viewer'):
         debug_print('set image viewer from args')
         __ImgViewer = args.image_viewer
-    elif args_chk(args, 'cui') and \
-            iv_cui_config is not None:
+    elif args_chk(args, 'cui') and iv_cui_config is not None:
         debug_print('set image viewer from config file (CUI)')
         __ImgViewer = iv_cui_config
     elif iv_config is not None:
@@ -68,7 +67,7 @@ def get_image_viewer(args: Args) -> Optional[str]:
     return __ImgViewer
 
 
-def get_exec_cmds(image_viewer, fname):
+def __get_exec_cmds(image_viewer, fname):
     res = []
     for cmd in get_config('config', 'iv_exec_cmd'):
         if cmd == '%s':
@@ -79,6 +78,22 @@ def get_exec_cmds(image_viewer, fname):
             res.append(cmd)
     debug_print('executed command: {}'.format(res))
     return res
+
+
+def __collect_image_viewers():
+    global ImageViewers
+    file_dir = Path(__file__).parent
+    for fy in file_dir.glob('*'):
+        if not fy.is_file():
+            continue
+        if fy.name.startswith('__'):
+            continue
+        iv_name = os.path.splitext(fy.name)[0]
+        debug_print(f'add {iv_name} to ImageViewers')
+        ImageViewers.append(iv_name)
+
+
+__collect_image_viewers()
 
 
 def show_image_file(img_file: str, args: Args) -> bool:
@@ -120,7 +135,7 @@ def show_image_file(img_file: str, args: Args) -> bool:
         if not chk_cmd(img_viewer):
             print(f'{img_viewer} is not executable')
             return False
-        cmds = get_exec_cmds(img_viewer, img_file)
+        cmds = __get_exec_cmds(img_viewer, img_file)
         subprocess.run(cmds)
         # wait to open file. this is for, e.g., open command on Mac OS.
         input('Press Enter to continue')
@@ -167,7 +182,7 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
             return False
         with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
             make_bitmap(tmp.name, data, verbose=debug)
-            cmds = get_exec_cmds(img_viewer, tmp.name)
+            cmds = __get_exec_cmds(img_viewer, tmp.name)
             subprocess.run(cmds)
             # wait to open file. this is for, e.g., open command on Mac OS.
             input('Press Enter to continue')
