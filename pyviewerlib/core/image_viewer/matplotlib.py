@@ -1,8 +1,9 @@
 from typing import Any, Tuple
+import logging
 
 import matplotlib.pyplot as plt
 
-from ... import debug_print
+from ... import GLOBAL_CONF
 
 try:
     from screeninfo import get_monitors
@@ -10,6 +11,7 @@ except ImportError:
     get_screen = False
 else:
     get_screen = True
+logger = logging.getLogger(GLOBAL_CONF.logname)
 
 
 def clear_mpl_axes(axes):
@@ -31,7 +33,8 @@ def get_size_dpi(shape: Tuple[int, int]) -> Tuple[Tuple[float, float], int]:
     rate = shape[0]/height
     h = shape[0]/rate/dpi
     w = shape[1]/rate/dpi
-    debug_print(f'width: {w:.2f}, height: {h:.2f}, dpi: {dpi}')
+    # debug_print(f'width: {w:.2f}, height: {h:.2f}, dpi: {dpi}')
+    logger.info(f'width: {w:.2f}, height: {h:.2f}, dpi: {dpi}')
     return (w, h), dpi
 
 

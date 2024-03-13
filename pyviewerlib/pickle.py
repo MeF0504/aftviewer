@@ -2,13 +2,15 @@ import pickle
 import os
 from pathlib import PurePath
 from functools import partial
+import logging
 
-from . import args_chk, print_key, debug_print, get_config, \
+from . import GLOBAL_CONF, args_chk, print_key, get_config, \
     interactive_view, interactive_cui, help_template, \
     add_args_specification, add_args_encoding
 from . import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
+logger = logging.getLogger(GLOBAL_CONF.logname)
 
 
 def show_keys(data, key):
@@ -31,7 +33,8 @@ def get_item(data, cpath):
                 tmp_data_update = True
                 break
         if not tmp_data_update:
-            debug_print(f'key not found: {cpath}, {k}')
+            # debug_print(f'key not found: {cpath}, {k}')
+            logger.debug(f'key not found: {cpath}, {k}')
             return None
     return tmp_data
 
@@ -73,11 +76,13 @@ def show_help():
 
 def main(fpath, args):
     if args_chk(args, 'encoding'):
-        debug_print('set encoding from args')
+        # debug_print('set encoding from args')
+        logger.info('set encoding from args')
         encoding = args.encoding
     else:
         encoding = get_config('pickle', 'encoding')
-    debug_print('encoding: {}'.format(encoding))
+    # debug_print('encoding: {}'.format(encoding))
+    logger.info(f'encoding: {encoding}')
     with open(fpath, 'rb') as f:
         data = pickle.load(f, encoding=encoding)
     fname = os.path.basename(fpath)

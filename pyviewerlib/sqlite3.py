@@ -2,6 +2,7 @@ import os
 import sqlite3
 from functools import partial
 from pathlib import PurePath
+import logging
 try:
     import curses
 except ImportError:
@@ -9,7 +10,7 @@ except ImportError:
 else:
     import_curses = True
 
-from . import args_chk, print_key, cprint, debug_print, get_col, \
+from . import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
     interactive_view, help_template, add_args_specification, add_args_output
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
@@ -22,6 +23,7 @@ except ImportError:
 else:
     is_tabulate = True
 sel_items = ''
+logger = logging.getLogger(GLOBAL_CONF.logname)
 
 
 def show_table(cursor, tables, table_path,
@@ -33,11 +35,13 @@ def show_table(cursor, tables, table_path,
         table, column = table_path.split('/')
         if column == '':
             column = None
-        debug_print('table, column: {}, {}'.format(table, column))
+        # debug_print('table, column: {}, {}'.format(table, column))
+        logger.debug(f'table, column: {table}, {column}')
     else:
         table = table_path
         column = None
-        debug_print('table: {}'.format(table))
+        # debug_print('table: {}'.format(table))
+        logger.debug(f'table: {table}')
 
     if table not in tables:
         return RM('{} not in tables'.format(table), True)
@@ -45,7 +49,8 @@ def show_table(cursor, tables, table_path,
     table_info = cursor.fetchall()
 
     if is_csv:
-        debug_print('save CSV file')
+        # debug_print('save CSV file')
+        logger.debug('save CSV file')
         res.append(f'# {table}')
     else:
         res.append(table)

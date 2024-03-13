@@ -100,6 +100,9 @@ del add_types
 __logname = 'PyViewerLog'
 __log_file = __conf_dir/'debug.log'
 __logger = logging.getLogger(__logname)
+# DEBUG < INFO < WARNING < ERROR < CRITICAL
+# in debug mode, INFO or larger than it is shown in stdout and
+# all log are saved in conf_dir/debug.log.
 if __debug:
     __logger.setLevel(logging.DEBUG)
     with open(__log_file, 'w') as f:
@@ -162,7 +165,7 @@ class Args:
 SF = Callable[..., ReturnMessage]
 
 
-def debug_print(msg: str) -> None:
+def __will_be_removed_debug_print(msg: str) -> None:
     """
     print a message if PyViewer works in debug mode.
 

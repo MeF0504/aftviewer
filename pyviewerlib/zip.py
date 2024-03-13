@@ -4,13 +4,15 @@ import tempfile
 from functools import partial
 from getpass import getpass
 from pathlib import Path, PurePosixPath
+import logging
 
-from . import args_chk, is_image, print_key, cprint, debug_print, get_col, \
+from . import GLOBAL_CONF, args_chk, is_image, print_key, cprint, get_col, \
     interactive_view, interactive_cui, show_image_file, get_image_viewer, \
     run_system_cmd, help_template, ImageViewers, \
     add_args_imageviewer, add_args_output, add_args_specification
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
+logger = logging.getLogger(GLOBAL_CONF.logname)
 
 
 def get_pwd():
@@ -63,7 +65,8 @@ def show_zip(zip_file, pwd, tmpdir, args, get_contents, cpath, **kwargs):
             key_name += '/'
         zipinfo = zip_file.getinfo(key_name)
     except KeyError as e:
-        debug_print(e)
+        # debug_print(e)
+        logger.debug(e)
         return RM('Error!! cannot open {}.'.format(cpath), True)
 
     if args_chk(args, 'output') and args_chk(args, 'key'):

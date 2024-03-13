@@ -1,10 +1,11 @@
 import os
 from functools import partial
 from pathlib import PurePosixPath
+import logging
 
 import h5py
 
-from . import args_chk, print_key, cprint, debug_print, get_col, \
+from . import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
     FG, BG, FG256, BG256, END, set_numpy_format, get_config, \
     interactive_view, interactive_cui, help_template, add_args_specification
 from . import ReturnMessage as RM
@@ -17,6 +18,7 @@ except ImportError:
 else:
     imp_np = True
     set_numpy_format(np)
+logger = logging.getLogger(GLOBAL_CONF.logname)
 
 
 def show_hdf5(h5_file, cpath, **kwargs):
@@ -31,14 +33,16 @@ def show_hdf5(h5_file, cpath, **kwargs):
         elif type(fgkey) is int:
             fg = FG256(fgkey)
         else:
-            debug_print(f'incorrect fg color: {fgkey}')
+            # debug_print(f'incorrect fg color: {fgkey}')
+            logger.debug(f'incorrect fg color: {fgkey}')
             fg = ''
         if bgkey in BG:
             bg = BG[bgkey]
         elif type(bgkey) is int:
             bg = BG256(bgkey)
         else:
-            debug_print(f'incorrect bg color: {bgkey}')
+            # debug_print(f'incorrect bg color: {bgkey}')
+            logger.debug(f'incorrect bg color: {bgkey}')
             bg = ''
         end = END
     data = h5_file[cpath]
@@ -67,22 +71,26 @@ def show_hdf5(h5_file, cpath, **kwargs):
                 dmean = np.nanmean(data)
                 res.append('mean : {}'.format(dmean))
             except Exception as e:
-                debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
+                # debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
+                logger.debug(f'{type(e).__name__}: {e}')
             try:
                 dmax = np.nanmax(data)
                 res.append(' max : {}'.format(dmax))
             except Exception as e:
-                debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
+                # debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
+                logger.debug(f'{type(e).__name__}: {e}')
             try:
                 dmin = np.nanmin(data)
                 res.append(' min : {}'.format(dmin))
             except Exception as e:
-                debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
+                # debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
+                logger.debug(f'{type(e).__name__}: {e}')
             try:
                 dstd = np.nanstd(data)
                 res.append(' std : {}'.format(dstd))
             except Exception as e:
-                debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
+                # debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
+                logger.debug(f'{type(e).__name__}: {e}')
             if hasattr(data, 'shape'):
                 try:
                     nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)

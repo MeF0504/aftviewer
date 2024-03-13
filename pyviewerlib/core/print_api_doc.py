@@ -7,8 +7,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # NumPy Style -> https://numpydoc.readthedocs.io/en/latest/format.html
 
 funcs = {
-        '.core': ['debug_print', 'args_chk', 'get_config', 'cprint',
-                  'print_key', 'get_col', 'set_numpy_format', 'show_opts',
+        '.core': ['args_chk', 'get_config', 'cprint', 'print_key',
+                  'get_col', 'set_numpy_format', 'show_opts',
                   'interactive_view', 'run_system_cmd',
                   ],
         '.core.image_viewer': ['get_image_viewer', 'is_image',
