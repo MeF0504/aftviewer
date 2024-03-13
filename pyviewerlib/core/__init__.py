@@ -12,47 +12,75 @@ from pymeflib.tree2 import TreeViewer, GC, PPath
 
 
 # global variables
-DEBUG = False
+@dataclass
+class CONF:
+    """
+    Global configuration variables.
+
+    Parameters
+    ----------
+    debug: bool
+        debug mode is enabled or not.
+    conf_dir: pathlib.Path
+        configuration directory.
+        default: "$XDG_CONFIG_HOME/pyviewer" or "~/.config/pyviewer"
+    opts: dict
+        behavior options. This values are overridden by conf_dir/setting.json.
+    types: dict
+        supported file types and its extensions.
+        This dictionary is overridden by "additional_types" in opts.
+    logname: str
+        log name used in logger.
+    """
+    debug: bool
+    conf_dir: Path
+    opts: dict
+    types: dict
+    logname: str
+
+
+GLOBAL_CONF = CONF
+__debug = False
 if 'XDG_CONFIG_HOME' in os.environ:
-    CONF_DIR = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
+    __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
 else:
-    CONF_DIR = Path(os.path.expanduser('~/.config'))/'pyviewer'
-if not CONF_DIR.exists():
-    os.makedirs(CONF_DIR, mode=0o755)
+    __conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
+if not __conf_dir.exists():
+    os.makedirs(__conf_dir, mode=0o755)
 
 # load config file.
 with (Path(__file__).parent/'default.json').open('r') as f:
-    JSON_OPTS = json.load(f)
-if (CONF_DIR/'setting.json').is_file():
-    with open(CONF_DIR/'setting.json') as f:
+    __json_opts = json.load(f)
+if (__conf_dir/'setting.json').is_file():
+    with open(__conf_dir/'setting.json') as f:
         load_opts = json.load(f)
         if 'debug' in load_opts:
-            DEBUG = bool(load_opts['debug'])
+            __debug = bool(load_opts['debug'])
         if 'force_default' in load_opts and load_opts['force_default']:
             load_opts = {}
         if 'additional_types' in load_opts:
             add_types = load_opts['additional_types']
-            JSON_OPTS['additional_types'] = add_types
+            __json_opts['additional_types'] = add_types
         else:
             add_types = {}
-        for key in list(JSON_OPTS.keys()) + list(add_types.keys()):
+        for key in list(__json_opts.keys()) + list(add_types.keys()):
             if key == 'additional_types':
                 continue
             if key in load_opts:
-                if key in JSON_OPTS:
+                if key in __json_opts:
                     # update values in default.json
                     for k2, v2 in load_opts[key].items():
-                        if k2 in JSON_OPTS[key]:
-                            JSON_OPTS[key][k2] = v2
+                        if k2 in __json_opts[key]:
+                            __json_opts[key][k2] = v2
                 else:
                     # create settings for new file type
-                    JSON_OPTS[key] = load_opts[key]
+                    __json_opts[key] = load_opts[key]
     del load_opts
 else:
     add_types = {}
 
 # set supported file types
-TYPE_CONFIG = {
+__type_config = {
     "hdf5": "hdf5",
     "pickle": "pkl pickle",
     "numpy": "npy npz",
@@ -65,10 +93,39 @@ TYPE_CONFIG = {
     "xpm": "xpm",
     "text": "py txt",
 }
-TYPE_CONFIG.update(add_types)
+__type_config.update(add_types)
 del add_types
 
+# logger setting
 __logname = 'PyViewerLog'
+__log_file = __conf_dir/'debug.log'
+__logger = logging.getLogger(__logname)
+if __debug:
+    __logger.setLevel(logging.DEBUG)
+    with open(__log_file, 'w') as f:
+        # clear log file
+        pass
+else:
+    __logger.setLevel(logging.CRITICAL)
+
+__st_hdlr = logging.StreamHandler()
+__st_hdlr.setLevel(logging.INFO)
+__st_format = '>> %(levelname)-9s %(message)s'
+__st_hdlr.setFormatter(logging.Formatter(__st_format))
+__fy_hdlr = logging.FileHandler(filename=__log_file, mode='a',
+                                encoding='utf-8')
+__fy_hdlr.setLevel(logging.DEBUG)
+__fy_format = '%(levelname)-9s %(asctime)s [%(filename)s:%(lineno)d]:' \
+    + ' %(message)s'
+__fy_hdlr.setFormatter(logging.Formatter(__fy_format))
+__logger.addHandler(__st_hdlr)
+__logger.addHandler(__fy_hdlr)
+
+GLOBAL_CONF.debug = __debug
+GLOBAL_CONF.conf_dir = __conf_dir
+GLOBAL_CONF.opts = __json_opts
+GLOBAL_CONF.types = __type_config
+GLOBAL_CONF.logname = __logname
 
 
 @dataclass
@@ -105,10 +162,6 @@ class Args:
 SF = Callable[..., ReturnMessage]
 
 
-def set_logger():
-    logger = logging.getLogger(__logname)
-
-
 def debug_print(msg: str) -> None:
     """
     print a message if PyViewer works in debug mode.
@@ -122,7 +175,7 @@ def debug_print(msg: str) -> None:
     -------
     None
     """
-    if DEBUG:
+    if __debug:
         print(msg)
 
 
@@ -181,12 +234,12 @@ def get_config(key1: str, key2: str) -> Any:
     Any
         Return specified configuration value. If it is not set, return None.
     """
-    assert key1 in ["config", "colors"] + list(TYPE_CONFIG.keys()), \
+    assert key1 in ["config", "colors"] + list(__type_config.keys()), \
         f'incorrect key name: {key1}'
-    if key1 not in JSON_OPTS:
+    if key1 not in __json_opts:
         # type name is not set in setting.json.
         return None
-    val1 = JSON_OPTS[key1]
+    val1 = __json_opts[key1]
     if key2 not in val1:
         return None
     else:
@@ -205,7 +258,7 @@ def show_opts() -> None:
     -------
     None
     """
-    for key, val in JSON_OPTS.items():
+    for key, val in __json_opts.items():
         if type(val) is dict:
             print_key(key)
             for k2, v2 in val.items():
@@ -249,7 +302,8 @@ def cprint(str1: str, str2: str = '',
     elif fg is None:
         fg_str = ''
     else:
-        debug_print(f'incorrect type for fg: {fg}')
+        # debug_print(f'incorrect type for fg: {fg}')
+        __logger.warning(f'incorrect type for fg: {fg}')
         fg_str = ''
     if type(bg) is str and bg in BG:
         bg_str = BG[bg]
@@ -258,7 +312,8 @@ def cprint(str1: str, str2: str = '',
     elif bg is None:
         bg_str = ''
     else:
-        debug_print(f'incorrect type for bg: {bg}')
+        # debug_print(f'incorrect type for bg: {bg}')
+        __logger.warning(f'incorrect type for bg: {bg}')
         bg_str = ''
     if len(fg_str+bg_str) != 0:
         end_str = END
@@ -288,7 +343,8 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
     """
     col_conf = get_config('colors', name)
     if name is None:
-        debug_print(f'incorrect color set name: {name}')
+        # debug_print(f'incorrect color set name: {name}')
+        __logger.warning(f'incorrect color set name: {name}')
         return None, None
     else:
         return col_conf
@@ -343,17 +399,21 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
         print('\n')
         key_name = input(inter_str)
         if key_name == 'q':
-            debug_print('quit')
+            # debug_print('quit')
+            __logger.info('quit')
             break
         elif key_name == '':
-            debug_print('continue')
+            # debug_print('continue')
+            __logger.info('continue')
             continue
         elif key_name == '..':
-            debug_print('go up')
+            # debug_print('go up')
+            __logger.info('go up')
             if str(cpath) != '.':
                 cpath = cpath.parent
         else:
-            debug_print('specify key:{}'.format(key_name))
+            # debug_print('specify key:{}'.format(key_name))
+            __logger.info(f'specify key:{key_name}')
             if key_name.endswith('/'):
                 key_name = key_name[:-1]
             if key_name in files:

@@ -1,7 +1,7 @@
 import argparse
 from typing import Callable
 
-from . import TYPE_CONFIG
+from . import GLOBAL_CONF
 
 
 def add_args_imageviewer(parser: argparse.ArgumentParser):
@@ -201,9 +201,9 @@ def help_template(filetype: str, description: str,
     str
         the help message.
     """
-    if filetype not in TYPE_CONFIG:
+    if filetype not in GLOBAL_CONF.types:
         return ''
-    ex = TYPE_CONFIG[filetype].split()
+    ex = GLOBAL_CONF.types[filetype].split()
     if ex:
         description += ' The corresponding extensions are [{}].'.format(', '.join(ex))
     parser = argparse.ArgumentParser(description=description,

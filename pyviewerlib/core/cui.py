@@ -5,8 +5,8 @@ from pathlib import Path, PurePath
 from typing import List
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from . import DEBUG, CONF_DIR, get_config, ReturnMessage, SF
-curses_debug = DEBUG
+from . import GLOBAL_CONF, get_config, ReturnMessage, SF
+curses_debug = GLOBAL_CONF.debug
 
 default_color_set = {
         'k': curses.COLOR_BLACK,
@@ -686,7 +686,7 @@ log_init = False
 def debug_log(msg):
     if not curses_debug:
         return
-    log_file = CONF_DIR/"curses_debug.log"
+    log_file = GLOBAL_CONF.conf_dir/"curses_debug.log"
     global log_init
     if not log_init:
         with open(log_file, 'w') as f:
