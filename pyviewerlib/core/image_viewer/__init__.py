@@ -7,7 +7,7 @@ from typing import Any, Union, Optional
 from importlib import import_module
 from pathlib import Path
 
-from .. import args_chk, debug_print, debug, get_config, Args, cprint
+from .. import args_chk, debug_print, DEBUG, get_config, Args, cprint
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
@@ -181,7 +181,7 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
             print(f'{img_viewer} is not executable')
             return False
         with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
-            make_bitmap(tmp.name, data, verbose=debug)
+            make_bitmap(tmp.name, data, verbose=DEBUG)
             cmds = __get_exec_cmds(img_viewer, tmp.name)
             subprocess.run(cmds)
             # wait to open file. this is for, e.g., open command on Mac OS.

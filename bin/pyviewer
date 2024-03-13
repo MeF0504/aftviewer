@@ -10,7 +10,7 @@ from importlib import import_module
 from types import FunctionType
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from pyviewerlib import debug, get_config, type_config, args_chk,\
+from pyviewerlib import get_config, TYPE_CONFIG, args_chk,\
     show_opts, get_col
 from pymeflib import update
 
@@ -22,7 +22,7 @@ def get_filetype(fpath: Path):
     if tarfile.is_tarfile(fpath):
         return 'tar'
     else:
-        for typ, exts in type_config.items():
+        for typ, exts in TYPE_CONFIG.items():
             if ext in exts.split():
                 return typ
     return None
@@ -104,7 +104,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    supported_type = list(type_config.keys()).copy()
+    supported_type = list(TYPE_CONFIG.keys()).copy()
     supported_type.remove('text')
     parser = argparse.ArgumentParser(
             description="show the constitution of a file."
@@ -128,7 +128,6 @@ if __name__ == "__main__":
         lib.add_args(parser)
     args = parser.parse_args()
 
-    args.debug = debug
     main(args)
 
 # vim: set filetype=python:

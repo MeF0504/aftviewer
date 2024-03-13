@@ -6,8 +6,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 if len(sys.argv) < 2:
     pass
 elif sys.argv[1] == 'type':
-    from pyviewerlib import type_config
-    supported_type = list(type_config.keys()).copy()
+    from pyviewerlib import TYPE_CONFIG
+    supported_type = list(TYPE_CONFIG.keys()).copy()
     supported_type.remove('text')
     print(' '.join(supported_type))
 elif sys.argv[1] == 'image_viewer':

@@ -5,53 +5,54 @@ import subprocess
 from pathlib import Path, PurePath
 from typing import Callable, Union, List, Tuple, Any
 from dataclasses import dataclass
+import logging
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer, GC, PPath
 
 
 # global variables
-debug = False
+DEBUG = False
 if 'XDG_CONFIG_HOME' in os.environ:
-    conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
+    CONF_DIR = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
 else:
-    conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
-if not conf_dir.exists():
-    os.makedirs(conf_dir, mode=0o755)
+    CONF_DIR = Path(os.path.expanduser('~/.config'))/'pyviewer'
+if not CONF_DIR.exists():
+    os.makedirs(CONF_DIR, mode=0o755)
 
 # load config file.
 with (Path(__file__).parent/'default.json').open('r') as f:
-    json_opts = json.load(f)
-if (conf_dir/'setting.json').is_file():
-    with open(conf_dir/'setting.json') as f:
+    JSON_OPTS = json.load(f)
+if (CONF_DIR/'setting.json').is_file():
+    with open(CONF_DIR/'setting.json') as f:
         load_opts = json.load(f)
         if 'debug' in load_opts:
-            debug = bool(load_opts['debug'])
+            DEBUG = bool(load_opts['debug'])
         if 'force_default' in load_opts and load_opts['force_default']:
             load_opts = {}
         if 'additional_types' in load_opts:
             add_types = load_opts['additional_types']
-            json_opts['additional_types'] = add_types
+            JSON_OPTS['additional_types'] = add_types
         else:
             add_types = {}
-        for key in list(json_opts.keys()) + list(add_types.keys()):
+        for key in list(JSON_OPTS.keys()) + list(add_types.keys()):
             if key == 'additional_types':
                 continue
             if key in load_opts:
-                if key in json_opts:
+                if key in JSON_OPTS:
                     # update values in default.json
                     for k2, v2 in load_opts[key].items():
-                        if k2 in json_opts[key]:
-                            json_opts[key][k2] = v2
+                        if k2 in JSON_OPTS[key]:
+                            JSON_OPTS[key][k2] = v2
                 else:
                     # create settings for new file type
-                    json_opts[key] = load_opts[key]
+                    JSON_OPTS[key] = load_opts[key]
     del load_opts
 else:
     add_types = {}
 
 # set supported file types
-type_config = {
+TYPE_CONFIG = {
     "hdf5": "hdf5",
     "pickle": "pkl pickle",
     "numpy": "npy npz",
@@ -64,8 +65,10 @@ type_config = {
     "xpm": "xpm",
     "text": "py txt",
 }
-type_config.update(add_types)
+TYPE_CONFIG.update(add_types)
 del add_types
+
+__logname = 'PyViewerLog'
 
 
 @dataclass
@@ -96,11 +99,14 @@ class Args:
     key: List[str]
     interactive: bool
     cui: bool
-    debug: bool
     output: str
 
 
 SF = Callable[..., ReturnMessage]
+
+
+def set_logger():
+    logger = logging.getLogger(__logname)
 
 
 def debug_print(msg: str) -> None:
@@ -116,7 +122,7 @@ def debug_print(msg: str) -> None:
     -------
     None
     """
-    if debug:
+    if DEBUG:
         print(msg)
 
 
@@ -175,12 +181,12 @@ def get_config(key1: str, key2: str) -> Any:
     Any
         Return specified configuration value. If it is not set, return None.
     """
-    assert key1 in ["config", "colors"] + list(type_config.keys()), \
+    assert key1 in ["config", "colors"] + list(TYPE_CONFIG.keys()), \
         f'incorrect key name: {key1}'
-    if key1 not in json_opts:
+    if key1 not in JSON_OPTS:
         # type name is not set in setting.json.
         return None
-    val1 = json_opts[key1]
+    val1 = JSON_OPTS[key1]
     if key2 not in val1:
         return None
     else:
@@ -199,7 +205,7 @@ def show_opts() -> None:
     -------
     None
     """
-    for key, val in json_opts.items():
+    for key, val in JSON_OPTS.items():
         if type(val) is dict:
             print_key(key)
             for k2, v2 in val.items():
