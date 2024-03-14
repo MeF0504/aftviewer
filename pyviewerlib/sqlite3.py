@@ -2,7 +2,7 @@ import os
 import sqlite3
 from functools import partial
 from pathlib import PurePath
-from logging import getLogger
+from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 try:
     import curses
 except ImportError:
@@ -36,12 +36,12 @@ def show_table(cursor, tables, table_path,
         if column == '':
             column = None
         # debug_print('table, column: {}, {}'.format(table, column))
-        logger.debug(f'table, column: {table}, {column}')
+        logger.info(f'table, column: {table}, {column}')
     else:
         table = table_path
         column = None
         # debug_print('table: {}'.format(table))
-        logger.debug(f'table: {table}')
+        logger.info(f'table: {table}')
 
     if table not in tables:
         return RM('{} not in tables'.format(table), True)
@@ -50,7 +50,7 @@ def show_table(cursor, tables, table_path,
 
     if is_csv:
         # debug_print('save CSV file')
-        logger.debug('save CSV file')
+        logger.info('save CSV file')
         res.append(f'# {table}')
     else:
         res.append(table)
@@ -154,7 +154,7 @@ def add_contents(curs):
                 sel_items = str(curs.cpath/curs.sel_cont)
             fpath = sel_items
         # debug_log(f'set {fpath}')
-        logger.debug(f'set {fpath}')
+        logger.info(f'set {fpath}')
         curs.main_shift_ud = 0
         curs.main_shift_lr = 0
         # message of waiting for opening an item
@@ -232,6 +232,10 @@ def main(fpath, args):
                                            True, True, True])
         curses_cui.add_key_maps('KEY_SUP', [clear_items, [curses_cui],
                                             '', '', True, True, True])
+        for hdlr in logger.handlers:
+            if type(hdlr) is StreamHandler:
+                hdlr.setLevel(logCRITICAL)
+                break
         try:
             curses.wrapper(curses_cui.main, fname,
                            partial(show_table, cursor, tables),

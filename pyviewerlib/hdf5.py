@@ -34,7 +34,7 @@ def show_hdf5(h5_file, cpath, **kwargs):
             fg = FG256(fgkey)
         else:
             # debug_print(f'incorrect fg color: {fgkey}')
-            logger.debug(f'incorrect fg color: {fgkey}')
+            logger.warning(f'incorrect fg color: {fgkey}')
             fg = ''
         if bgkey in BG:
             bg = BG[bgkey]
@@ -42,7 +42,7 @@ def show_hdf5(h5_file, cpath, **kwargs):
             bg = BG256(bgkey)
         else:
             # debug_print(f'incorrect bg color: {bgkey}')
-            logger.debug(f'incorrect bg color: {bgkey}')
+            logger.warning(f'incorrect bg color: {bgkey}')
             bg = ''
         end = END
     data = h5_file[cpath]

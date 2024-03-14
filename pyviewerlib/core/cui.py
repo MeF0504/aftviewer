@@ -3,7 +3,7 @@ import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
 from typing import List
-from logging import getLogger
+from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
 from . import GLOBAL_CONF, get_config, ReturnMessage, SF
@@ -744,6 +744,10 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     cpath = purepath('.')
     tv = TreeViewer('.', get_contents, purepath)
     curses_cui = CursesCUI(purepath)
+    for hdlr in logger.handlers:
+        if type(hdlr) is StreamHandler:
+            # basically do not show log messages in terminal.
+            hdlr.setLevel(logCRITICAL)
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)
     except AssertionError as e:

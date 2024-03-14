@@ -34,7 +34,7 @@ def get_item(data, cpath):
                 break
         if not tmp_data_update:
             # debug_print(f'key not found: {cpath}, {k}')
-            logger.debug(f'key not found: {cpath}, {k}')
+            logger.error(f'key not found: {cpath}, {k}')
             return None
     return tmp_data
 

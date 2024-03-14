@@ -66,8 +66,8 @@ def show_zip(zip_file, pwd, tmpdir, args, get_contents, cpath, **kwargs):
         zipinfo = zip_file.getinfo(key_name)
     except KeyError as e:
         # debug_print(e)
-        logger.debug(e)
-        return RM('Error!! cannot open {}.'.format(cpath), True)
+        logger.error(f'failed to open [{cpath}]: {e}')
+        return RM('Error!! Cannot open {}.'.format(cpath), True)
 
     if args_chk(args, 'output') and args_chk(args, 'key'):
         outpath = Path(args.output)
