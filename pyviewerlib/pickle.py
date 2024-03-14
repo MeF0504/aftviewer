@@ -2,7 +2,7 @@ import pickle
 import os
 from pathlib import PurePath
 from functools import partial
-import logging
+from logging import getLogger
 
 from . import GLOBAL_CONF, args_chk, print_key, get_config, \
     interactive_view, interactive_cui, help_template, \
@@ -10,7 +10,7 @@ from . import GLOBAL_CONF, args_chk, print_key, get_config, \
 from . import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_keys(data, key):

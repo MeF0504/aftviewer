@@ -5,7 +5,8 @@ import subprocess
 from pathlib import Path, PurePath
 from typing import Callable, Union, List, Tuple, Any
 from dataclasses import dataclass
-import logging
+from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
+    Formatter, DEBUG as logDEBUG, INFO as logINFO
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer, GC, PPath
@@ -99,27 +100,26 @@ del add_types
 # logger setting
 __logname = 'PyViewerLog'
 __log_file = __conf_dir/'debug.log'
-__logger = logging.getLogger(__logname)
+__logger = getLogger(__logname)
 # DEBUG < INFO < WARNING < ERROR < CRITICAL
 # in debug mode, INFO or larger than it is shown in stdout and
 # all log are saved in conf_dir/debug.log.
+__logger.setLevel(logDEBUG)
 if __debug:
-    __logger.setLevel(logging.DEBUG)
+    __st_hdlr = StreamHandler()
+    __st_hdlr.setLevel(logINFO)
+    __st_format = '>> %(levelname)-9s %(message)s'
+    __st_hdlr.setFormatter(Formatter(__st_format))
+    __fy_hdlr = FileHandler(filename=__log_file, mode='w', encoding='utf-8')
+    __fy_hdlr.setLevel(logDEBUG)
+    __fy_format = '%(levelname)-9s %(asctime)s [%(filename)s:%(lineno)d]:' \
+        + ' %(message)s'
+    __fy_hdlr.setFormatter(Formatter(__fy_format))
+    __logger.addHandler(__st_hdlr)
+    __logger.addHandler(__fy_hdlr)
 else:
-    __logger.setLevel(logging.CRITICAL)
-
-__st_hdlr = logging.StreamHandler()
-__st_hdlr.setLevel(logging.INFO)
-__st_format = '>> %(levelname)-9s %(message)s'
-__st_hdlr.setFormatter(logging.Formatter(__st_format))
-__fy_hdlr = logging.FileHandler(filename=__log_file, mode='w',
-                                encoding='utf-8')
-__fy_hdlr.setLevel(logging.DEBUG)
-__fy_format = '%(levelname)-9s %(asctime)s [%(filename)s:%(lineno)d]:' \
-    + ' %(message)s'
-__fy_hdlr.setFormatter(logging.Formatter(__fy_format))
-__logger.addHandler(__st_hdlr)
-__logger.addHandler(__fy_hdlr)
+    __null_hdlr = NullHandler()
+    __logger.addHandler(__null_hdlr)
 
 GLOBAL_CONF.debug = __debug
 GLOBAL_CONF.conf_dir = __conf_dir

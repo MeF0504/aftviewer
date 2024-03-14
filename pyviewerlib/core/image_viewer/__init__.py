@@ -6,13 +6,13 @@ import mimetypes
 from typing import Any, Union, Optional
 from importlib import import_module
 from pathlib import Path
-import logging
+from logging import getLogger
 
 from .. import GLOBAL_CONF, args_chk, get_config, Args, cprint
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 # image viewer
 __ImgViewer = None

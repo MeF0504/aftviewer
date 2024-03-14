@@ -1,7 +1,7 @@
 import os
 from pathlib import PurePath
 from functools import partial
-import logging
+from logging import getLogger
 
 import numpy as np
 from numpy.lib.npyio import NpzFile
@@ -13,7 +13,7 @@ from . import ReturnMessage as RM
 from .numpy import show_numpy
 from .pickle import show_func as show_pickle, get_contents as get_pickle
 set_numpy_format(np)
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_func(data, path, **kwargs):

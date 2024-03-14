@@ -3,12 +3,12 @@ import json
 import base64
 import tempfile
 from pathlib import Path
-import logging
+from logging import getLogger
 
 from . import GLOBAL_CONF, args_chk, cprint, show_image_file, \
     get_config, help_template, get_image_viewer, \
     add_args_imageviewer, add_args_output, add_args_verbose
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_output(output, args, out_obj):

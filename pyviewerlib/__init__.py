@@ -1,4 +1,4 @@
-import logging
+from logging import getLogger
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 # values
@@ -14,7 +14,7 @@ from .core.helpmsg import help_template, \
     add_args_imageviewer, add_args_encoding, add_args_output, \
     add_args_verbose, add_args_key, add_args_interactive, add_args_cui, \
     add_args_specification
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 try:
     from .core.cui import interactive_cui

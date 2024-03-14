@@ -3,11 +3,11 @@ import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
 from typing import List
-import logging
+from logging import getLogger
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
 from . import GLOBAL_CONF, get_config, ReturnMessage, SF
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 default_color_set = {
         'k': curses.COLOR_BLACK,

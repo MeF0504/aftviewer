@@ -1,7 +1,7 @@
 import os
 from functools import partial
 from pathlib import PurePosixPath
-import logging
+from logging import getLogger
 
 import h5py
 
@@ -18,7 +18,7 @@ except ImportError:
 else:
     imp_np = True
     set_numpy_format(np)
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_hdf5(h5_file, cpath, **kwargs):

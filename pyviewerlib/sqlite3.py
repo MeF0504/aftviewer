@@ -2,7 +2,7 @@ import os
 import sqlite3
 from functools import partial
 from pathlib import PurePath
-import logging
+from logging import getLogger
 try:
     import curses
 except ImportError:
@@ -23,7 +23,7 @@ except ImportError:
 else:
     is_tabulate = True
 sel_items = ''
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_table(cursor, tables, table_path,

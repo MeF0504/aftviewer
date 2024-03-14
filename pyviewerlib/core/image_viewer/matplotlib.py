@@ -1,5 +1,5 @@
 from typing import Any, Tuple
-import logging
+from logging import getLogger
 
 import matplotlib.pyplot as plt
 
@@ -11,7 +11,7 @@ except ImportError:
     get_screen = False
 else:
     get_screen = True
-logger = logging.getLogger(GLOBAL_CONF.logname)
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def clear_mpl_axes(axes):
