@@ -105,9 +105,6 @@ __logger = logging.getLogger(__logname)
 # all log are saved in conf_dir/debug.log.
 if __debug:
     __logger.setLevel(logging.DEBUG)
-    with open(__log_file, 'w') as f:
-        # clear log file
-        pass
 else:
     __logger.setLevel(logging.CRITICAL)
 
@@ -115,7 +112,7 @@ __st_hdlr = logging.StreamHandler()
 __st_hdlr.setLevel(logging.INFO)
 __st_format = '>> %(levelname)-9s %(message)s'
 __st_hdlr.setFormatter(logging.Formatter(__st_format))
-__fy_hdlr = logging.FileHandler(filename=__log_file, mode='a',
+__fy_hdlr = logging.FileHandler(filename=__log_file, mode='w',
                                 encoding='utf-8')
 __fy_hdlr.setLevel(logging.DEBUG)
 __fy_format = '%(levelname)-9s %(asctime)s [%(filename)s:%(lineno)d]:' \

@@ -14,7 +14,7 @@ from . import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
     interactive_view, help_template, add_args_specification, add_args_output
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
-from .core.cui import CursesCUI, debug_log
+from .core.cui import CursesCUI
 try:
     from tabulate import tabulate
 except ImportError:
@@ -146,13 +146,15 @@ def add_contents(curs):
         else:
             if '/' in sel_items:
                 cols = os.path.basename(sel_items).split(',')
-                debug_log(f'{cols}')
+                # debug_log(f'{cols}')
+                logger.debug(f'cols: {cols}')
                 if curs.sel_cont not in cols:
                     sel_items += f',{curs.sel_cont}'
             else:
                 sel_items = str(curs.cpath/curs.sel_cont)
             fpath = sel_items
-        debug_log(f'set {fpath}')
+        # debug_log(f'set {fpath}')
+        logger.debug(f'set {fpath}')
         curs.main_shift_ud = 0
         curs.main_shift_lr = 0
         # message of waiting for opening an item
