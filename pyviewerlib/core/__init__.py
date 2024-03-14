@@ -101,9 +101,10 @@ del add_types
 __logname = 'PyViewerLog'
 __log_file = __conf_dir/'debug.log'
 __logger = getLogger(__logname)
-# DEBUG < INFO < WARNING < ERROR < CRITICAL
-# in debug mode, INFO or larger than it is shown in stdout and
-# all log are saved in conf_dir/debug.log.
+# (NOTSET <) DEBUG < INFO < WARNING < ERROR < CRITICAL
+# see https://docs.python.org/3/library/logging.html#logging-levels
+# in debug mode, more than INFO is shown in stdout and
+# all logs (more than DEBUG to be exact) are saved in conf_dir/debug.log.
 __logger.setLevel(logDEBUG)
 if __debug:
     __st_hdlr = StreamHandler()
