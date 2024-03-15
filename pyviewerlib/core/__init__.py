@@ -414,7 +414,7 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     fg2, bg2 = get_col('interactive_contents')
     fg3, bg3 = get_col('interactive_output')
     fge, bge = get_col('msg_error')
-    tv = TreeViewer('.', get_contents)
+    tv = TreeViewer('.', get_contents, purepath=purepath, logger=__logger)
     while True:
         dirs, files = tv.get_contents(cpath)
         dirs.sort()

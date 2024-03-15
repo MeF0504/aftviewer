@@ -314,7 +314,8 @@ q\t quit
     def get_all_items(self):
         res_dirs = []
         res_files = []
-        tv = TreeViewer('.', self.tv.get_contents)
+        tv = TreeViewer('.', self.tv.get_contents,
+                        purepath=self.purepath, logger=logger)
         for cpath, dirs, files in tv:
             res_dirs += [str(cpath/d) for d in dirs]
             res_files += [str(cpath/f) for f in files]
@@ -742,7 +743,7 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     None
     """
     cpath = purepath('.')
-    tv = TreeViewer('.', get_contents, purepath)
+    tv = TreeViewer('.', get_contents, purepath=purepath, logger=logger)
     curses_cui = CursesCUI(purepath)
     for hdlr in logger.handlers:
         if type(hdlr) is StreamHandler:
