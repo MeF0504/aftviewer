@@ -16,10 +16,10 @@ from pymeflib.tree2 import TreeViewer, GC, PPath
 @dataclass
 class CONF:
     """
-    Global configuration variables.
+    Global configuration variable.
+    This variable contains following attributes.
 
-    Parameters
-    ----------
+    Attributes:
     debug: bool
         debug mode is enabled or not.
     conf_dir: pathlib.Path
