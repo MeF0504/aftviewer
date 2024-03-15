@@ -134,9 +134,10 @@ class ReturnMessage:
     """
     class for returned message.
 
-    self.message: str
+    Attributes:
+    message: str
         returned message.
-    self.error: bool
+    error: bool
         True if this message is an error.
     """
     message: str
@@ -146,13 +147,40 @@ class ReturnMessage:
 @dataclass
 class Args:
     """
-    wrapper of argument parser.
+    wrapper of argument parser. The following attributes are examples
+    that are used in some of default file types.
+    The actual arguments depends on the file type.
+    Type 'pyviewer help -t <file type>' to see the selectable arguments.
+
+    Attributes:
+    file: str
+        opened file.
+    type: str
+        file type.
+    image_viewer: str
+        Image viewer which specify the method to open an image file.
+        If image viewer is specified at both command line and setting file
+        (setting.json), command value has priority.
+    encoding: str
+        The name of the encoding used to open the file.
+    verbose: bool
+        Show the details if --verbose|-v is set.
+    key: list of keys
+        Specify the keys/pathes to show the information.
+    interactive: bool
+        Open the file with interactive mode if --interactive|-i is set.
+    cui: bool
+        Open the file with interactive-cui mode if --interactive_cui|-c is set.
+    output: str
+        Specify the output file.
+
+    Note that verbose, key, interactive, and interactive_cui options
+    are exclusive.
     """
     file: str
     type: str
     image_viewer: str
     encoding: str
-    ask_password: bool
     verbose: bool
     key: List[str]
     interactive: bool
