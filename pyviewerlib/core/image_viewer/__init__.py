@@ -138,12 +138,13 @@ def show_image_file(img_file: str, args: Args) -> bool:
     elif img_viewer in ImageViewers:
         try:
             mod = import_module(f'pyviewerlib.core.image_viewer.{img_viewer}')
-            mod.show_image_file(img_file)
+            ret = mod.show_image_file(img_file)
         except Exception as e:
             cprint(f'failed to show an image file {img_file}.',
                    file=sys.stderr, fg='r')
             cprint(f'{type(e).__name__}: {e}', file=sys.stderr, fg='r')
             return False
+        return ret
     else:
         if not chk_cmd(img_viewer, logger=logger):
             logger.error(f'{img_viewer} is not executable')
@@ -185,11 +186,12 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
     elif img_viewer in ImageViewers:
         try:
             mod = import_module(f'pyviewerlib.core.image_viewer.{img_viewer}')
-            mod.show_image_ndarray(data, name)
+            ret = mod.show_image_ndarray(data, name)
         except Exception as e:
             cprint('failed to show an image data.', file=sys.stderr, fg='r')
             cprint(f'{type(e).__name__}: {e}', file=sys.stderr, fg='r')
             return False
+        return ret
     else:
         if not chk_cmd(img_viewer):
             logger.error(f'{img_viewer} is not executable')

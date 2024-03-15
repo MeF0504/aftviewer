@@ -38,7 +38,7 @@ def get_size_dpi(shape: Tuple[int, int]) -> Tuple[Tuple[float, float], int]:
     return (w, h), dpi
 
 
-def show_image_file(img_file: str) -> None:
+def show_image_file(img_file: str) -> bool:
     img = plt.imread(img_file)
     size, dpi = get_size_dpi(img.shape)
     fig1 = plt.figure(figsize=size, dpi=dpi)
@@ -47,9 +47,10 @@ def show_image_file(img_file: str) -> None:
     clear_mpl_axes(ax11)
     plt.show()
     plt.close(fig1)
+    return True
 
 
-def show_image_ndarray(data: Any, name: str) -> None:
+def show_image_ndarray(data: Any, name: str) -> bool:
     size, dpi = get_size_dpi(data.shape)
     fig1 = plt.figure(figsize=size, dpi=dpi)
     # full display
@@ -58,3 +59,4 @@ def show_image_ndarray(data: Any, name: str) -> None:
     clear_mpl_axes(ax1)
     plt.show()
     plt.close(fig1)
+    return True
