@@ -4,7 +4,7 @@ from pathlib import PurePath
 from functools import partial
 from logging import getLogger
 
-from . import GLOBAL_CONF, args_chk, print_key, get_config, \
+from . import GLOBAL_CONF, args_chk, print_key, get_config, get_col, cprint, \
     interactive_view, interactive_cui, help_template, \
     add_args_specification, add_args_encoding
 from . import ReturnMessage as RM
@@ -14,10 +14,13 @@ logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_keys(data, key):
+    fg, bg = get_col('msg_error')
     if key:
         for k in key:
             if k in data:
                 print(data[k])
+            else:
+                cprint(f'"{k}" not in this file.', fg=fg, bg=bg)
     else:
         for k in data:
             print(k)

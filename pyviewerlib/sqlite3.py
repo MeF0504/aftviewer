@@ -176,14 +176,23 @@ def clear_items(curs):
 
 
 def init_outfile(output):
+    fg, bg = get_col('msg_error')
     if output is None:
-        return
+        return True
+    if len(output) == 0:
+        cprint('incorrect output file is set.', fg=fg, bg=bg)
+        return False
+    if os.path.isdir(output):
+        cprint(f'{output} is a directory. please specify a file.',
+               fg=fg, bg=bg)
+        return False
     dirname = os.path.dirname(output)
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
     with open(output, 'w') as f:
         f.write('')
     print(f'file is created at {output}')
+    return True
 
 
 def add_args(parser):
@@ -210,6 +219,7 @@ def main(fpath, args):
     cursor.execute("select name from sqlite_master where type='table'")
     tables = [table[0] for table in cursor.fetchall()]
     fname = os.path.basename(fpath)
+    fg, bg = get_col('msg_error')
 
     if args_chk(args, 'interactive'):
         gc = partial(get_contents_i, cursor, tables)
@@ -220,7 +230,7 @@ def main(fpath, args):
             print('failed to import curses.')
             return
         gc = partial(get_contents_c, cursor, tables)
-        tv = TreeViewer('.', gc, PurePath, logger=logger)
+        tv = TreeViewer('.', gc, purepath=PurePath, logger=logger)
         curses_cui = CursesCUI()
         curses_cui.add_key_maps('\n', [add_contents, [curses_cui], '<CR>',
                                        'open/add the item in the main window',
@@ -247,10 +257,11 @@ def main(fpath, args):
             for t in tables:
                 print(t)
             return
-        init_outfile(args.output)
+        if not init_outfile(args.output):
+            cprint('failed to created an output file.')
+            return
         for k in args.key:
             print_key(k)
-            fg, bg = get_col('msg_error')
             info = show_table(cursor, tables, k, verbose=True,
                               output=args.output)
             if not info.error:
@@ -260,7 +271,9 @@ def main(fpath, args):
                 cprint(info.message, fg=fg, bg=bg)
     else:
         if args_chk(args, 'verbose'):
-            init_outfile(args.output)
+            if not init_outfile(args.output):
+                cprint('failed to created an output file.')
+                return
         for table in tables:
             info = show_table(cursor, tables, table, verbose=args.verbose,
                               output=args.output)

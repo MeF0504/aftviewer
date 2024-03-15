@@ -45,6 +45,8 @@ def show_hdf5(h5_file, cpath, **kwargs):
             logger.warning(f'incorrect bg color: {bgkey}')
             bg = ''
         end = END
+    if cpath not in h5_file:
+        return RM(f'incorrect path: {cpath}', True)
     data = h5_file[cpath]
     res = []
     res.append('{}{}attrs{}'.format(fg, bg, end))

@@ -64,6 +64,11 @@ def main(fpath, args):
     logger.debug(f'keys: {data.keys()}')
     if args_chk(args, 'output'):
         outp = Path(args.output)
+        if outp.is_dir():
+            fge, bge = get_col('msg_error')
+            cprint(f'{args.output} is a directory. please specify a file.',
+                   fg=fge, bg=bge)
+            return
         if not outp.parent.is_dir():
             outp.parent.mkdir(parents=True)
         with open(outp, 'w') as f:
