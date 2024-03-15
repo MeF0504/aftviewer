@@ -43,19 +43,15 @@ def get_image_viewer(args: Args) -> Optional[str]:
     iv_config = get_config('config', 'image_viewer')
     iv_cui_config = get_config('config', 'image_viewer_cui')
     if args_chk(args, 'image_viewer'):
-        # debug_print('set image viewer from args')
         logger.info('set image viewer from args')
         __ImgViewer = args.image_viewer
     elif args_chk(args, 'cui') and iv_cui_config is not None:
-        # debug_print('set image viewer from config file (CUI)')
         logger.info('set image viewer from config file (CUI)')
         __ImgViewer = iv_cui_config
     elif iv_config is not None:
-        # debug_print('set image viewer from config file')
         logger.info('set image viewer from config file')
         __ImgViewer = iv_config
     else:
-        # debug_print('search available image_viewer')
         logger.info('search available image_viewer')
         for iv in ImageViewers:
             if iv == 'None':
@@ -63,14 +59,12 @@ def get_image_viewer(args: Args) -> Optional[str]:
             for p in sys.path:
                 if (Path(p)/iv).exists():
                     __ImgViewer = iv
-                    # debug_print(f' => image_viewer: {iv}')
                     logger.info(f' => image_viewer: {iv}')
                     break
             if __ImgViewer is not None:
                 # image viewer is set.
                 break
         if __ImgViewer is None:
-            # debug_print("can't find image_viewer")
             logger.warning("can't find image_viewer")
     __set_ImgViewer = True
     return __ImgViewer
@@ -85,7 +79,6 @@ def __get_exec_cmds(image_viewer, fname):
             res.append(image_viewer)
         else:
             res.append(cmd)
-    # debug_print('executed command: {}'.format(res))
     logger.debug(f'executed command: {res}')
     return res
 
@@ -99,7 +92,6 @@ def __collect_image_viewers():
         if fy.name.startswith('__'):
             continue
         iv_name = os.path.splitext(fy.name)[0]
-        # debug_print(f'add {iv_name} to ImageViewers')
         logger.debug(f'add {iv_name} to ImageViewers')
         ImageViewers.append(iv_name)
 
@@ -124,12 +116,10 @@ def show_image_file(img_file: str, args: Args) -> bool:
         Return True if the file opened successfully, otherwise False.
     """
     img_viewer = get_image_viewer(args)
-    # debug_print('img file:{img_file}, use {img_viewer}')
     logger.debug(f'img file:{img_file}, use {img_viewer}')
     if img_viewer == 'None':
         return True
     if not os.path.isfile(img_file):
-        # debug_print('image file {} in not found'.format(img_file))
         logger.error(f'image file {img_file} in not found')
         return False
     if img_viewer is None:
@@ -176,7 +166,6 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
         Return True if the image is shown successfully, otherwise False.
     """
     img_viewer = get_image_viewer(args)
-    # debug_print('data shape: {}, use {}'.format(data.shape, img_viewer))
     logger.debug(f'data shape: {data.shape}, use {img_viewer}')
     if img_viewer == 'None':
         return True

@@ -191,23 +191,6 @@ class Args:
 SF = Callable[..., ReturnMessage]
 
 
-def __will_be_removed_debug_print(msg: str) -> None:
-    """
-    print a message if PyViewer works in debug mode.
-
-    Parameters
-    ----------
-    msg: str
-        a message printed if in debug mode.
-
-    Returns
-    -------
-    None
-    """
-    if __debug:
-        print(msg)
-
-
 def args_chk(args: Args, attr: str) -> bool:
     """
     return True if a given attribute is set in args.
@@ -331,7 +314,6 @@ def cprint(str1: str, str2: str = '',
     elif fg is None:
         fg_str = ''
     else:
-        # debug_print(f'incorrect type for fg: {fg}')
         __logger.warning(f'incorrect type for fg: {fg}')
         fg_str = ''
     if type(bg) is str and bg in BG:
@@ -341,7 +323,6 @@ def cprint(str1: str, str2: str = '',
     elif bg is None:
         bg_str = ''
     else:
-        # debug_print(f'incorrect type for bg: {bg}')
         __logger.warning(f'incorrect type for bg: {bg}')
         bg_str = ''
     if len(fg_str+bg_str) != 0:
@@ -372,7 +353,6 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
     """
     col_conf = get_config('colors', name)
     if name is None:
-        # debug_print(f'incorrect color set name: {name}')
         __logger.warning(f'incorrect color set name: {name}')
         return None, None
     else:
@@ -428,20 +408,16 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
         print('\n')
         key_name = input(inter_str)
         if key_name == 'q':
-            # debug_print('quit')
             __logger.info('quit')
             break
         elif key_name == '':
-            # debug_print('continue')
             __logger.info('continue')
             continue
         elif key_name == '..':
-            # debug_print('go up')
             __logger.info('go up')
             if str(cpath) != '.':
                 cpath = cpath.parent
         else:
-            # debug_print('specify key:{}'.format(key_name))
             __logger.info(f'specify key:{key_name}')
             if key_name.endswith('/'):
                 key_name = key_name[:-1]

@@ -25,7 +25,6 @@ def show_tar(tar_file, tmpdir, args, get_contents, cpath, **kwargs):
             key_name = cpath
         tarinfo = tar_file.getmember(key_name)
     except KeyError as e:
-        # debug_print(e)
         logger.error(f'failed to open [{cpath}]: {e}')
         return RM('Error!! Cannot open {}.'.format(cpath), True)
 

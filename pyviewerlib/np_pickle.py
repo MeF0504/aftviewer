@@ -71,12 +71,10 @@ def show_help():
 
 def main(fpath, args):
     if args_chk(args, 'encoding'):
-        # debug_print('set encoding from args')
         logger.info('set encoding from args')
         encoding = args.encoding
     else:
         encoding = get_config('pickle', 'encoding')
-    # debug_print('encoding: {}'.format(encoding))
     logger.info(f'encoding: {encoding}')
 
     data = np.load(fpath, allow_pickle=True, encoding=encoding)

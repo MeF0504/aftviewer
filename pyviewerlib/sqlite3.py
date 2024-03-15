@@ -35,12 +35,10 @@ def show_table(cursor, tables, table_path,
         table, column = table_path.split('/')
         if column == '':
             column = None
-        # debug_print('table, column: {}, {}'.format(table, column))
         logger.info(f'table, column: {table}, {column}')
     else:
         table = table_path
         column = None
-        # debug_print('table: {}'.format(table))
         logger.info(f'table: {table}')
 
     if table not in tables:
@@ -49,7 +47,6 @@ def show_table(cursor, tables, table_path,
     table_info = cursor.fetchall()
 
     if is_csv:
-        # debug_print('save CSV file')
         logger.info('save CSV file')
         res.append(f'# {table}')
     else:

@@ -33,7 +33,6 @@ def get_size_dpi(shape: Tuple[int, int]) -> Tuple[Tuple[float, float], int]:
     rate = shape[0]/height
     h = shape[0]/rate/dpi
     w = shape[1]/rate/dpi
-    # debug_print(f'width: {w:.2f}, height: {h:.2f}, dpi: {dpi}')
     logger.info(f'width: {w:.2f}, height: {h:.2f}, dpi: {dpi}')
     return (w, h), dpi
 

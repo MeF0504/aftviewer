@@ -36,7 +36,6 @@ def get_item(data, cpath):
                 tmp_data_update = True
                 break
         if not tmp_data_update:
-            # debug_print(f'key not found: {cpath}, {k}')
             logger.error(f'key not found: {cpath}, {k}')
             return None
     return tmp_data
@@ -78,12 +77,10 @@ def show_help():
 
 def main(fpath, args):
     if args_chk(args, 'encoding'):
-        # debug_print('set encoding from args')
         logger.info('set encoding from args')
         encoding = args.encoding
     else:
         encoding = get_config('pickle', 'encoding')
-    # debug_print('encoding: {}'.format(encoding))
     logger.info(f'encoding: {encoding}')
     with open(fpath, 'rb') as f:
         data = pickle.load(f, encoding=encoding)

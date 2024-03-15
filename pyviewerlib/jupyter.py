@@ -60,7 +60,6 @@ def show_help():
 def main(fpath, args):
     with open(fpath, 'r') as f:
         data = json.load(f)
-    # debug_print('keys: {}'.format(data.keys()))
     logger.debug(f'keys: {data.keys()}')
     if args_chk(args, 'output'):
         outp = Path(args.output)
@@ -87,7 +86,6 @@ def main(fpath, args):
 
     if args_chk(args, 'verbose'):
         meta = data['metadata']
-        # debug_print('{}'.format(meta))
         logger.debug(f'meta data: {meta}')
         print(f'{header}kernel   : {meta["kernelspec"]["display_name"]}',
               file=outf)
@@ -98,8 +96,6 @@ def main(fpath, args):
             print(f'{header}colab : {meta["colab"]["name"]}', file=outf)
 
     for cell in data['cells']:
-        # debug_print('{}\n{}\n{}'.format(
-        #     ' ---- cell ----', cell, '---------------'))
         logger.debug(f'\n---- cell ----\n{cell}\n---------------')
         if cell['cell_type'] == 'code':
             cnt = cell['execution_count']
@@ -127,7 +123,6 @@ def main(fpath, args):
             print(file=outf)
 
         else:
-            # debug_print('not a supported type of cell: {}'.format(cell['cell_type']))
             logger.error(f'not a supported type of cell: {cell["cell_type"]}')
 
         if not (args_chk(args, 'verbose') or args_chk(args, 'output')):

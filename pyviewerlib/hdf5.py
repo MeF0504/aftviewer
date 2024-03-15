@@ -33,7 +33,6 @@ def show_hdf5(h5_file, cpath, **kwargs):
         elif type(fgkey) is int:
             fg = FG256(fgkey)
         else:
-            # debug_print(f'incorrect fg color: {fgkey}')
             logger.warning(f'incorrect fg color: {fgkey}')
             fg = ''
         if bgkey in BG:
@@ -41,7 +40,6 @@ def show_hdf5(h5_file, cpath, **kwargs):
         elif type(bgkey) is int:
             bg = BG256(bgkey)
         else:
-            # debug_print(f'incorrect bg color: {bgkey}')
             logger.warning(f'incorrect bg color: {bgkey}')
             bg = ''
         end = END
@@ -73,25 +71,21 @@ def show_hdf5(h5_file, cpath, **kwargs):
                 dmean = np.nanmean(data)
                 res.append('mean : {}'.format(dmean))
             except Exception as e:
-                # debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
                 logger.debug(f'{type(e).__name__}: {e}')
             try:
                 dmax = np.nanmax(data)
                 res.append(' max : {}'.format(dmax))
             except Exception as e:
-                # debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
                 logger.debug(f'{type(e).__name__}: {e}')
             try:
                 dmin = np.nanmin(data)
                 res.append(' min : {}'.format(dmin))
             except Exception as e:
-                # debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
                 logger.debug(f'{type(e).__name__}: {e}')
             try:
                 dstd = np.nanstd(data)
                 res.append(' std : {}'.format(dstd))
             except Exception as e:
-                # debug_print('{}: {}'.format(str(type(e)).split("'")[1], e))
                 logger.debug(f'{type(e).__name__}: {e}')
             if hasattr(data, 'shape'):
                 try:

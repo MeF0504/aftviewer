@@ -699,20 +699,6 @@ q\t quit
             self.key = self.stdscr.getkey()
 
 
-def __will_be_removed_debug_log(msg):
-    if not GLOBAL_CONF.debug:
-        return
-    log_file = GLOBAL_CONF.conf_dir/"curses_debug.log"
-    global log_init
-    if not log_init:
-        with open(log_file, 'w') as f:
-            # clear file
-            pass
-        log_init = True
-    with open(log_file, 'a') as f:
-        f.write(msg+"\n")
-
-
 def interactive_cui(fname: str, get_contents: GC, show_func: SF,
                     purepath: PPath = PurePath) -> None:
     """
