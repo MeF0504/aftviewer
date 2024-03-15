@@ -72,8 +72,7 @@ def add_args(parser):
 
 def show_help():
     helpmsg = help_template('pickle', 'show the contents of the pickled file.',
-                            sup_encoding=True,
-                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+                            add_args)
     print(helpmsg)
 
 
