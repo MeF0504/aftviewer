@@ -220,7 +220,7 @@ def main(fpath, args):
             print('failed to import curses.')
             return
         gc = partial(get_contents_c, cursor, tables)
-        tv = TreeViewer('.', gc, PurePath)
+        tv = TreeViewer('.', gc, PurePath, logger=logger)
         curses_cui = CursesCUI()
         curses_cui.add_key_maps('\n', [add_contents, [curses_cui], '<CR>',
                                        'open/add the item in the main window',

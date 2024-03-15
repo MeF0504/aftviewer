@@ -105,6 +105,6 @@ def main(fpath, args):
                     print_key(key)
                     print(' >>> {}'.format(data[key]))
             else:
-                show_tree(fname, gc)
+                show_tree(fname, gc, logger=logger)
     else:
         print(data)

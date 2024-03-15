@@ -159,7 +159,7 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         tar_file.list(verbose=True)
     else:
-        show_tree(fname, gc, purepath=PurePosixPath)
+        show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     tar_file.close()
     tmpdir.cleanup()

@@ -177,7 +177,7 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         zip_file.printdir()
     else:
-        show_tree(fname, gc, purepath=PurePosixPath)
+        show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     zip_file.close()
     tmpdir.cleanup()

@@ -42,7 +42,7 @@ class CursesCUI():
         self.is_search = False
         # called path-like class
         self.purepath = purepath
-        self.keymaps = {}
+        self.keymaps: dict[str, list] = {}
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()

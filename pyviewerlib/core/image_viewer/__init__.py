@@ -133,7 +133,7 @@ def show_image_file(img_file: str, args: Args) -> bool:
         logger.error(f'image file {img_file} in not found')
         return False
     if img_viewer is None:
-        print("I can't find any libraries to show image.")
+        logger.error("I can't find any libraries to show image.")
         return False
     elif img_viewer in ImageViewers:
         try:
@@ -145,8 +145,8 @@ def show_image_file(img_file: str, args: Args) -> bool:
             cprint(f'{type(e).__name__}: {e}', file=sys.stderr, fg='r')
             return False
     else:
-        if not chk_cmd(img_viewer):
-            print(f'{img_viewer} is not executable')
+        if not chk_cmd(img_viewer, logger=logger):
+            logger.error(f'{img_viewer} is not executable')
             return False
         cmds = __get_exec_cmds(img_viewer, img_file)
         subprocess.run(cmds)
@@ -180,7 +180,7 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
     if img_viewer == 'None':
         return True
     if img_viewer is None:
-        print("I can't find any libraries to show image.")
+        logger.error("I can't find any libraries to show image.")
         return False
     elif img_viewer in ImageViewers:
         try:
@@ -192,10 +192,10 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
             return False
     else:
         if not chk_cmd(img_viewer):
-            print(f'{img_viewer} is not executable')
+            logger.error(f'{img_viewer} is not executable')
             return False
         with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
-            make_bitmap(tmp.name, data, verbose=GLOBAL_CONF.debug)
+            make_bitmap(tmp.name, data, verbose=False, logger=logger)
             cmds = __get_exec_cmds(img_viewer, tmp.name)
             subprocess.run(cmds)
             # wait to open file. this is for, e.g., open command on Mac OS.

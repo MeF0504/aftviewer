@@ -163,6 +163,6 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         h5_file.visititems(partial(show_detail, h5_file))
     else:
-        show_tree(fname, gc, purepath=PurePosixPath)
+        show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     h5_file.close()

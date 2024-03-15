@@ -6,12 +6,13 @@ from pathlib import Path
 from logging import getLogger
 
 from . import GLOBAL_CONF, args_chk, cprint, show_image_file, \
-    get_config, help_template, get_image_viewer, \
+    get_config, get_col, help_template, get_image_viewer, \
     add_args_imageviewer, add_args_output, add_args_verbose
 logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_output(output, args, out_obj):
+    fge, bge = get_col('msg_error')
     if out_obj == sys.stdout:
         header = ''
     else:
@@ -37,7 +38,9 @@ def show_output(output, args, out_obj):
                     img_bin = base64.b64decode(img_code.encode())
                     with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
                         tmp.write(img_bin)
-                        show_image_file(tmp.name, args)
+                        ret = show_image_file(tmp.name, args)
+                        if not ret and out_obj == sys.stdout:
+                            cprint('failed to open an image.', fg=fge, bg=bge)
 
 
 def add_args(parser):
