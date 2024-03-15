@@ -5,22 +5,22 @@ __pycache__/
 *$py.class
 
 # ディレクトリの除外の後で!をしてもだめらしい
-/pyviewerlib/*
-!/pyviewerlib/core/
-!/pyviewerlib/__init__.py
-!/pyviewerlib/hdf5.py
-!/pyviewerlib/jupyter.py
-!/pyviewerlib/numpy.py
-!/pyviewerlib/np_pickle.py
-!/pyviewerlib/pickle.py
-!/pyviewerlib/raw_image.py
-!/pyviewerlib/sqlite3.py
-!/pyviewerlib/tar.py
-!/pyviewerlib/xpm.py
-!/pyviewerlib/zip.py
+/lib/viewers/*
+!/lib/viewers/core/
+!/lib/viewers/__init__.py
+!/lib/viewers/hdf5.py
+!/lib/viewers/jupyter.py
+!/lib/viewers/numpy.py
+!/lib/viewers/np_pickle.py
+!/lib/viewers/pickle.py
+!/lib/viewers/raw_image.py
+!/lib/viewers/sqlite3.py
+!/lib/viewers/tar.py
+!/lib/viewers/xpm.py
+!/lib/viewers/zip.py
 
-/pyviewerlib/core/image_viewer/*
-!pyviewerlib/core/image_viewer/__init__.py
-!pyviewerlib/core/image_viewer/matplotlib.py
-!pyviewerlib/core/image_viewer/PIL.py
-!pyviewerlib/core/image_viewer/cv2.py
+/lib/viewers/core/image_viewer/*
+!lib/viewers/core/image_viewer/__init__.py
+!lib/viewers/core/image_viewer/matplotlib.py
+!lib/viewers/core/image_viewer/PIL.py
+!lib/viewers/core/image_viewer/cv2.py
