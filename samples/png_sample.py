@@ -1,8 +1,8 @@
-from . import show_image_file, help_template
+from . import show_image_file, help_template, add_args_imageviewer
 
 
 def add_args(parser):
-    pass
+    add_args_imageviewer(parser)
 
 
 def show_help():
