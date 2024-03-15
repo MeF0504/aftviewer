@@ -7,7 +7,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # NumPy Style -> https://numpydoc.readthedocs.io/en/latest/format.html
 
 funcs = {
-        '.core': ['args_chk', 'get_config', 'cprint', 'print_key',
+        '.core': ['GLOBAL_CONF', 'Args', 'ReturnMessage',
+                  'args_chk', 'get_config', 'cprint', 'print_key',
                   'get_col', 'set_numpy_format', 'show_opts',
                   'interactive_view', 'run_system_cmd',
                   ],
@@ -26,6 +27,7 @@ for mod, funcs in funcs.items():
     for func in funcs:
         ret = import_module(mod, 'pyviewerlib')
         ret2 = eval(f'ret.{func}')
-        print('## {}'.format(ret2.__name__))
+        # print('## {}'.format(ret2.__name__))
+        print('## {}'.format(func))
         print(ret2.__doc__)
         print()
