@@ -35,7 +35,7 @@ funcs = {
 def show_items(item_dict: dict[str, list[str]]):
     for mod, items in item_dict.items():
         for item in items:
-            ret = import_module(mod, 'pyviewerlib')
+            ret = import_module(mod, 'viewers')
             ret2 = eval(f'ret.{item}')
             # print('## {}'.format(ret2.__name__))
             print(f'## {item}')

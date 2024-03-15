@@ -10,8 +10,8 @@ from importlib import import_module
 from types import FunctionType
 from logging import getLogger
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from pyviewerlib import get_config, get_col, GLOBAL_CONF, args_chk, show_opts
+sys.path.insert(0, str(Path(__file__).parent.parent/'lib'))
+from viewers import get_config, get_col, GLOBAL_CONF, args_chk, show_opts
 from pymeflib import update
 
 logger = getLogger(GLOBAL_CONF.logname)
@@ -48,9 +48,9 @@ def load_lib(args, silent):
         return None
 
     # python import style
-    lib_path = "pyviewerlib.{}".format(args.type)
+    lib_path = "viewers.{}".format(args.type)
     # file path
-    lib_path2 = Path(__file__).parent.parent/"pyviewerlib"
+    lib_path2 = Path(__file__).parent.parent/"lib/viewers"
     lib_path2 /= "{}.py".format(args.type)
     if not lib_path2.is_file():
         if not silent:
