@@ -6,7 +6,7 @@ from typing import List
 from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from . import GLOBAL_CONF, get_config, ReturnMessage, SF
+from . import GLOBAL_CONF, ReturnMessage, SF, get_config, get_col, cprint
 logger = getLogger(GLOBAL_CONF.logname)
 
 default_color_set = {
@@ -738,4 +738,6 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)
     except AssertionError as e:
-        print(e)
+        fg, bg = get_col('msg_error')
+        cprint('curses closed due to an error.', fg=fg, bg=bg)
+        cprint(f'error message: {e}', fg=fg, bg=bg)
