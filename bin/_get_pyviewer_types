@@ -6,12 +6,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 if len(sys.argv) < 2:
     pass
 elif sys.argv[1] == 'type':
-    from pyviewerlib import type_config
-    supported_type = list(type_config.keys()).copy()
+    from pyviewerlib import GLOBAL_CONF
+    supported_type = list(GLOBAL_CONF.types.keys()).copy()
     supported_type.remove('text')
     print(' '.join(supported_type))
 elif sys.argv[1] == 'image_viewer':
     from pyviewerlib import ImageViewers
     print(' '.join(ImageViewers))
 
-# vim: set filetype=python:
+# vim: filetype=python:

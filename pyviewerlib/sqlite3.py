@@ -2,6 +2,7 @@ import os
 import sqlite3
 from functools import partial
 from pathlib import PurePath
+from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 try:
     import curses
 except ImportError:
@@ -9,11 +10,11 @@ except ImportError:
 else:
     import_curses = True
 
-from . import args_chk, print_key, cprint, debug_print, get_col, \
+from . import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
     interactive_view, help_template, add_args_specification, add_args_output
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
-from .core.cui import CursesCUI, debug_log
+from .core.cui import CursesCUI
 try:
     from tabulate import tabulate
 except ImportError:
@@ -22,6 +23,7 @@ except ImportError:
 else:
     is_tabulate = True
 sel_items = ''
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_table(cursor, tables, table_path,
@@ -33,11 +35,11 @@ def show_table(cursor, tables, table_path,
         table, column = table_path.split('/')
         if column == '':
             column = None
-        debug_print('table, column: {}, {}'.format(table, column))
+        logger.info(f'table, column: {table}, {column}')
     else:
         table = table_path
         column = None
-        debug_print('table: {}'.format(table))
+        logger.info(f'table: {table}')
 
     if table not in tables:
         return RM('{} not in tables'.format(table), True)
@@ -45,7 +47,7 @@ def show_table(cursor, tables, table_path,
     table_info = cursor.fetchall()
 
     if is_csv:
-        debug_print('save CSV file')
+        logger.info('save CSV file')
         res.append(f'# {table}')
     else:
         res.append(table)
@@ -141,13 +143,15 @@ def add_contents(curs):
         else:
             if '/' in sel_items:
                 cols = os.path.basename(sel_items).split(',')
-                debug_log(f'{cols}')
+                # debug_log(f'{cols}')
+                logger.debug(f'cols: {cols}')
                 if curs.sel_cont not in cols:
                     sel_items += f',{curs.sel_cont}'
             else:
                 sel_items = str(curs.cpath/curs.sel_cont)
             fpath = sel_items
-        debug_log(f'set {fpath}')
+        # debug_log(f'set {fpath}')
+        logger.info(f'set {fpath}')
         curs.main_shift_ud = 0
         curs.main_shift_lr = 0
         # message of waiting for opening an item
@@ -169,14 +173,23 @@ def clear_items(curs):
 
 
 def init_outfile(output):
+    fg, bg = get_col('msg_error')
     if output is None:
-        return
+        return True
+    if len(output) == 0:
+        cprint('incorrect output file is set.', fg=fg, bg=bg)
+        return False
+    if os.path.isdir(output):
+        cprint(f'{output} is a directory. please specify a file.',
+               fg=fg, bg=bg)
+        return False
     dirname = os.path.dirname(output)
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
     with open(output, 'w') as f:
         f.write('')
     print(f'file is created at {output}')
+    return True
 
 
 def add_args(parser):
@@ -203,6 +216,7 @@ def main(fpath, args):
     cursor.execute("select name from sqlite_master where type='table'")
     tables = [table[0] for table in cursor.fetchall()]
     fname = os.path.basename(fpath)
+    fg, bg = get_col('msg_error')
 
     if args_chk(args, 'interactive'):
         gc = partial(get_contents_i, cursor, tables)
@@ -213,7 +227,7 @@ def main(fpath, args):
             print('failed to import curses.')
             return
         gc = partial(get_contents_c, cursor, tables)
-        tv = TreeViewer('.', gc, PurePath)
+        tv = TreeViewer('.', gc, purepath=PurePath, logger=logger)
         curses_cui = CursesCUI()
         curses_cui.add_key_maps('\n', [add_contents, [curses_cui], '<CR>',
                                        'open/add the item in the main window',
@@ -225,6 +239,10 @@ def main(fpath, args):
                                            True, True, True])
         curses_cui.add_key_maps('KEY_SUP', [clear_items, [curses_cui],
                                             '', '', True, True, True])
+        for hdlr in logger.handlers:
+            if type(hdlr) is StreamHandler:
+                hdlr.setLevel(logCRITICAL)
+                break
         try:
             curses.wrapper(curses_cui.main, fname,
                            partial(show_table, cursor, tables),
@@ -236,10 +254,11 @@ def main(fpath, args):
             for t in tables:
                 print(t)
             return
-        init_outfile(args.output)
+        if not init_outfile(args.output):
+            cprint('failed to created an output file.')
+            return
         for k in args.key:
             print_key(k)
-            fg, bg = get_col('msg_error')
             info = show_table(cursor, tables, k, verbose=True,
                               output=args.output)
             if not info.error:
@@ -249,7 +268,9 @@ def main(fpath, args):
                 cprint(info.message, fg=fg, bg=bg)
     else:
         if args_chk(args, 'verbose'):
-            init_outfile(args.output)
+            if not init_outfile(args.output):
+                cprint('failed to created an output file.')
+                return
         for table in tables:
             info = show_table(cursor, tables, table, verbose=args.verbose,
                               output=args.output)

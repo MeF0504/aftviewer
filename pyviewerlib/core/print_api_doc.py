@@ -6,9 +6,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # NumPy Style -> https://numpydoc.readthedocs.io/en/latest/format.html
 
+varis = {
+        '.core': ['GLOBAL_CONF'
+                  ],
+        }
+classes = {
+        '.core': ['Args', 'ReturnMessage',
+                  ],
+        }
+
 funcs = {
-        '.core': ['debug_print', 'args_chk', 'get_config', 'cprint',
-                  'print_key', 'get_col', 'set_numpy_format', 'show_opts',
+        '.core': ['args_chk', 'get_config', 'cprint', 'print_key',
+                  'get_col', 'set_numpy_format', 'show_opts',
                   'interactive_view', 'run_system_cmd',
                   ],
         '.core.image_viewer': ['get_image_viewer', 'is_image',
@@ -22,10 +31,27 @@ funcs = {
         '.core.cui': ['interactive_cui'],
         }
 
-for mod, funcs in funcs.items():
-    for func in funcs:
-        ret = import_module(mod, 'pyviewerlib')
-        ret2 = eval(f'ret.{func}')
-        print('## {}'.format(ret2.__name__))
-        print(ret2.__doc__)
-        print()
+
+def show_items(item_dict: dict[str, list[str]]):
+    for mod, items in item_dict.items():
+        for item in items:
+            ret = import_module(mod, 'pyviewerlib')
+            ret2 = eval(f'ret.{item}')
+            # print('## {}'.format(ret2.__name__))
+            print(f'## {item}')
+            print(ret2.__doc__)
+            print()
+
+print('')
+print('# Introduction')
+print('This page explain the API references to extend the PyViewer.')
+print('Also see [[Extension page|Extension]].')
+print('')
+print('# Variables')
+show_items(varis)
+
+print('# Classes')
+show_items(classes)
+
+print('# Functions')
+show_items(funcs)

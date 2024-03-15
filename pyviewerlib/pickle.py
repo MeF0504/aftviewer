@@ -2,20 +2,25 @@ import pickle
 import os
 from pathlib import PurePath
 from functools import partial
+from logging import getLogger
 
-from . import args_chk, print_key, debug_print, get_config, \
+from . import GLOBAL_CONF, args_chk, print_key, get_config, get_col, cprint, \
     interactive_view, interactive_cui, help_template, \
     add_args_specification, add_args_encoding
 from . import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_keys(data, key):
+    fg, bg = get_col('msg_error')
     if key:
         for k in key:
             if k in data:
                 print(data[k])
+            else:
+                cprint(f'"{k}" not in this file.', fg=fg, bg=bg)
     else:
         for k in data:
             print(k)
@@ -31,7 +36,7 @@ def get_item(data, cpath):
                 tmp_data_update = True
                 break
         if not tmp_data_update:
-            debug_print(f'key not found: {cpath}, {k}')
+            logger.error(f'key not found: {cpath}, {k}')
             return None
     return tmp_data
 
@@ -66,18 +71,17 @@ def add_args(parser):
 
 def show_help():
     helpmsg = help_template('pickle', 'show the contents of the pickled file.',
-                            sup_encoding=True,
-                            sup_v=True, sup_k=True, sup_i=True, sup_c=True)
+                            add_args)
     print(helpmsg)
 
 
 def main(fpath, args):
     if args_chk(args, 'encoding'):
-        debug_print('set encoding from args')
+        logger.info('set encoding from args')
         encoding = args.encoding
     else:
         encoding = get_config('pickle', 'encoding')
-    debug_print('encoding: {}'.format(encoding))
+    logger.info(f'encoding: {encoding}')
     with open(fpath, 'rb') as f:
         data = pickle.load(f, encoding=encoding)
     fname = os.path.basename(fpath)
@@ -100,6 +104,6 @@ def main(fpath, args):
                     print_key(key)
                     print(' >>> {}'.format(data[key]))
             else:
-                show_tree(fname, gc)
+                show_tree(fname, gc, logger=logger)
     else:
         print(data)

@@ -1,12 +1,13 @@
 import re
 import curses
 from curses.textpad import Textbox, rectangle
-from pathlib import Path, PurePath
+from pathlib import PurePath
 from typing import List
+from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from . import debug, conf_dir, get_config, ReturnMessage, SF
-curses_debug = debug
+from . import GLOBAL_CONF, ReturnMessage, SF, get_config, get_col, cprint
+logger = getLogger(GLOBAL_CONF.logname)
 
 default_color_set = {
         'k': curses.COLOR_BLACK,
@@ -41,7 +42,7 @@ class CursesCUI():
         self.is_search = False
         # called path-like class
         self.purepath = purepath
-        self.keymaps = {}
+        self.keymaps: dict[str, list] = {}
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
@@ -94,23 +95,34 @@ class CursesCUI():
             bg = default_color_set[bg]
 
         if not (type(fg) is int and fg < curses.COLORS):
-            debug_log(f'incorrect fg: {fg}')
+            # debug_log(f'incorrect fg: {fg}')
+            logger.debug(f'incorrect fg: {fg}')
             fg = curses.COLOR_WHITE
         if not (type(bg) is int and bg < curses.COLORS):
-            debug_log(f'incorrect bg: {bg}')
+            # debug_log(f'incorrect bg: {bg}')
+            logger.debug(f'incorrect bg: {bg}')
             bg = curses.COLOR_BLACK
         curses.init_pair(num, fg, bg)
 
     def set_color(self):
-        debug_log('default color;')
-        debug_log(f'black: {curses.COLOR_BLACK}')
-        debug_log(f'red: {curses.COLOR_RED}')
-        debug_log(f'green: {curses.COLOR_GREEN}')
-        debug_log(f'yellow: {curses.COLOR_YELLOW}')
-        debug_log(f'blue: {curses.COLOR_BLUE}')
-        debug_log(f'magenta: {curses.COLOR_MAGENTA}')
-        debug_log(f'cyan: {curses.COLOR_CYAN}')
-        debug_log(f'white: {curses.COLOR_WHITE}')
+        # debug_log('default color;')
+        logger.debug('default color;')
+        # debug_log(f'black: {curses.COLOR_BLACK}')
+        logger.debug(f'black: {curses.COLOR_BLACK}')
+        # debug_log(f'red: {curses.COLOR_RED}')
+        logger.debug(f'red: {curses.COLOR_RED}')
+        # debug_log(f'green: {curses.COLOR_GREEN}')
+        logger.debug(f'green: {curses.COLOR_GREEN}')
+        # debug_log(f'yellow: {curses.COLOR_YELLOW}')
+        logger.debug(f'yellow: {curses.COLOR_YELLOW}')
+        # debug_log(f'blue: {curses.COLOR_BLUE}')
+        logger.debug(f'blue: {curses.COLOR_BLUE}')
+        # debug_log(f'magenta: {curses.COLOR_MAGENTA}')
+        logger.debug(f'magenta: {curses.COLOR_MAGENTA}')
+        # debug_log(f'cyan: {curses.COLOR_CYAN}')
+        logger.debug(f'cyan: {curses.COLOR_CYAN}')
+        # debug_log(f'white: {curses.COLOR_WHITE}')
+        logger.debug(f'white: {curses.COLOR_WHITE}')
         # pwd background
         self.create_color_set(1, 'top')
         # bar background
@@ -267,10 +279,12 @@ class CursesCUI():
                       True, False, False,
                       ],
                 }
-        debug_log('set default key maps')
+        # debug_log('set default key maps')
+        logger.debug('set default key maps')
         for k in def_keymaps:
             if k not in self.keymaps:
-                debug_log(f'set key "{k}" as default')
+                # debug_log(f'set key "{k}" as default')
+                logger.debug(f'set key "{k}" as default')
                 self.keymaps[k] = def_keymaps[k]
 
     def create_help_msg(self):
@@ -300,7 +314,8 @@ q\t quit
     def get_all_items(self):
         res_dirs = []
         res_files = []
-        tv = TreeViewer('.', self.tv.get_contents)
+        tv = TreeViewer('.', self.tv.get_contents,
+                        purepath=self.purepath, logger=logger)
         for cpath, dirs, files in tv:
             res_dirs += [str(cpath/d) for d in dirs]
             res_files += [str(cpath/f) for f in files]
@@ -473,9 +488,12 @@ q\t quit
             old_files = self.files.copy()
             old_dirs = self.dirs.copy()
             dirs, files = self.get_all_items()
-            debug_log('search files')
-            debug_log('{}'.format(files))
-            debug_log('{}'.format(dirs))
+            # debug_log('search files')
+            logger.debug('search files')
+            # debug_log('{}'.format(files))
+            logger.debug(f'files: {files}')
+            # debug_log('{}'.format(dirs))
+            logger.debug(f'dirs:  {dirs}')
             self.files = []
             self.dirs = []
             for i, f in enumerate(files):
@@ -588,7 +606,7 @@ q\t quit
                     break
                 idx = i+self.main_shift_ud
                 message = self.message[idx-1]
-                if curses_debug:
+                if GLOBAL_CONF.debug:
                     message = "{:d} ".format(i+self.main_shift_ud)+message
                 message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
                 try:
@@ -636,7 +654,8 @@ q\t quit
         self.win_pwd.refresh()
 
     def add_key_maps(self, key, config):
-        debug_log(f'add key "{key}"')
+        # debug_log(f'add key "{key}"')
+        logger.debug(f'add key "{key}"')
         self.keymaps[key] = config
 
     def main(self, stdscr, fname: str,
@@ -675,26 +694,9 @@ q\t quit
                 self.update_pwd_window()
             if ups:
                 self.update_side_bar()
-            if curses_debug:
+            if GLOBAL_CONF.debug:
                 self.debug_info()
             self.key = self.stdscr.getkey()
-
-
-log_init = False
-
-
-def debug_log(msg):
-    if not curses_debug:
-        return
-    log_file = Path(conf_dir)/"curses_debug.log"
-    global log_init
-    if not log_init:
-        with open(log_file, 'w') as f:
-            # clear file
-            pass
-        log_init = True
-    with open(log_file, 'a') as f:
-        f.write(msg+"\n")
 
 
 def interactive_cui(fname: str, get_contents: GC, show_func: SF,
@@ -727,9 +729,15 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     None
     """
     cpath = purepath('.')
-    tv = TreeViewer('.', get_contents, purepath)
+    tv = TreeViewer('.', get_contents, purepath=purepath, logger=logger)
     curses_cui = CursesCUI(purepath)
+    for hdlr in logger.handlers:
+        if type(hdlr) is StreamHandler:
+            # basically do not show log messages in terminal.
+            hdlr.setLevel(logCRITICAL)
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)
     except AssertionError as e:
-        print(e)
+        fg, bg = get_col('msg_error')
+        cprint('curses closed due to an error.', fg=fg, bg=bg)
+        cprint(f'error message: {e}', fg=fg, bg=bg)

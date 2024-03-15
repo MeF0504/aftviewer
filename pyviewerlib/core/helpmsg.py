@@ -1,7 +1,7 @@
 import argparse
 from typing import Callable
 
-from . import type_config
+from . import GLOBAL_CONF
 
 
 def add_args_imageviewer(parser: argparse.ArgumentParser):
@@ -98,11 +98,11 @@ def add_args_key(parser: argparse.ArgumentParser):
     None
     """
     parser.add_argument('-k', '--key',
-                       help='specify the key name to show. ' +
-                       'If no key is specified, return the list of keys.',
-                       dest='key',
-                       nargs='*',
-                       )
+                        help='specify the key name to show. ' +
+                        'If no key is specified, return the list of keys.',
+                        dest='key',
+                        nargs='*',
+                        )
 
 
 def add_args_interactive(parser: argparse.ArgumentParser):
@@ -119,10 +119,10 @@ def add_args_interactive(parser: argparse.ArgumentParser):
     None
     """
     parser.add_argument('-i', '--interactive',
-                       help='open a file with interactive mode.',
-                       dest='interactive',
-                       action='store_true',
-                       )
+                        help='open a file with interactive mode.',
+                        dest='interactive',
+                        action='store_true',
+                        )
 
 
 def add_args_cui(parser: argparse.ArgumentParser):
@@ -139,15 +139,15 @@ def add_args_cui(parser: argparse.ArgumentParser):
     None
     """
     parser.add_argument('-c', '--interactive_cui',
-                       help='open a file with interactive CUI mode.',
-                       dest='cui',
-                       action='store_true',
-                       )
+                        help='open a file with interactive CUI mode.',
+                        dest='cui',
+                        action='store_true',
+                        )
 
 
 def add_args_specification(parser: argparse.ArgumentParser,
-                   verbose: bool, key: bool,
-                   interactive: bool, cui:bool):
+                           verbose: bool, key: bool,
+                           interactive: bool, cui: bool):
     """
     add optional arguments that are used to specify items.
 
@@ -201,11 +201,12 @@ def help_template(filetype: str, description: str,
     str
         the help message.
     """
-    if filetype not in type_config:
+    if filetype not in GLOBAL_CONF.types:
         return ''
-    ex = type_config[filetype].split()
-    if ex:
-        description += ' The corresponding extensions are [{}].'.format(', '.join(ex))
+    ex = GLOBAL_CONF.types[filetype].split()
+    if len(ex) != 0:
+        exs = ', '.join(ex)
+        description += f' The corresponding extensions are [{exs}].'
     parser = argparse.ArgumentParser(description=description,
                                      prog=f'pyviewer FILE -t {filetype}',
                                      add_help=False)

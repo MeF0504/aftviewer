@@ -3,13 +3,15 @@ import tarfile
 import tempfile
 from functools import partial
 from pathlib import Path, PurePosixPath
+from logging import getLogger
 
-from . import args_chk, print_key, cprint, debug_print, get_image_viewer, \
+from . import GLOBAL_CONF, args_chk, print_key, cprint, get_image_viewer, \
     is_image, interactive_view, interactive_cui, \
     show_image_file, run_system_cmd, get_col, help_template, ImageViewers, \
     add_args_imageviewer, add_args_output, add_args_specification
 from . import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_tar(tar_file, tmpdir, args, get_contents, cpath, **kwargs):
@@ -23,7 +25,7 @@ def show_tar(tar_file, tmpdir, args, get_contents, cpath, **kwargs):
             key_name = cpath
         tarinfo = tar_file.getmember(key_name)
     except KeyError as e:
-        debug_print(e)
+        logger.error(f'failed to open [{cpath}]: {e}')
         return RM('Error!! Cannot open {}.'.format(cpath), True)
 
     if args_chk(args, 'output') and args_chk(args, 'key'):
@@ -156,7 +158,7 @@ def main(fpath, args):
     elif args_chk(args, 'verbose'):
         tar_file.list(verbose=True)
     else:
-        show_tree(fname, gc, purepath=PurePosixPath)
+        show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     tar_file.close()
     tmpdir.cleanup()

@@ -1,8 +1,9 @@
 from typing import Any, Tuple
+from logging import getLogger
 
 import matplotlib.pyplot as plt
 
-from ... import debug_print
+from ... import GLOBAL_CONF
 
 try:
     from screeninfo import get_monitors
@@ -10,6 +11,7 @@ except ImportError:
     get_screen = False
 else:
     get_screen = True
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def clear_mpl_axes(axes):
@@ -31,11 +33,11 @@ def get_size_dpi(shape: Tuple[int, int]) -> Tuple[Tuple[float, float], int]:
     rate = shape[0]/height
     h = shape[0]/rate/dpi
     w = shape[1]/rate/dpi
-    debug_print(f'width: {w:.2f}, height: {h:.2f}, dpi: {dpi}')
+    logger.info(f'width: {w:.2f}, height: {h:.2f}, dpi: {dpi}')
     return (w, h), dpi
 
 
-def show_image_file(img_file: str) -> None:
+def show_image_file(img_file: str) -> bool:
     img = plt.imread(img_file)
     size, dpi = get_size_dpi(img.shape)
     fig1 = plt.figure(figsize=size, dpi=dpi)
@@ -44,9 +46,10 @@ def show_image_file(img_file: str) -> None:
     clear_mpl_axes(ax11)
     plt.show()
     plt.close(fig1)
+    return True
 
 
-def show_image_ndarray(data: Any, name: str) -> None:
+def show_image_ndarray(data: Any, name: str) -> bool:
     size, dpi = get_size_dpi(data.shape)
     fig1 = plt.figure(figsize=size, dpi=dpi)
     # full display
@@ -55,3 +58,4 @@ def show_image_ndarray(data: Any, name: str) -> None:
     clear_mpl_axes(ax1)
     plt.show()
     plt.close(fig1)
+    return True
