@@ -2,7 +2,7 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
-from typing import List
+from typing import List, Dict
 from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
@@ -42,7 +42,7 @@ class CursesCUI():
         self.is_search = False
         # called path-like class
         self.purepath = purepath
-        self.keymaps: dict[str, list] = {}
+        self.keymaps: Dict[str, list] = {}
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
