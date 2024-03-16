@@ -3,6 +3,7 @@
 import sys
 from importlib import import_module
 from pathlib import Path
+from typing import List, Dict
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 # NumPy Style -> https://numpydoc.readthedocs.io/en/latest/format.html
 
@@ -32,7 +33,7 @@ funcs = {
         }
 
 
-def show_items(item_dict: dict[str, list[str]]):
+def show_items(item_dict: Dict[str, List[str]]):
     for mod, items in item_dict.items():
         for item in items:
             ret = import_module(mod, 'viewers')
@@ -41,6 +42,7 @@ def show_items(item_dict: dict[str, list[str]]):
             print(f'## {item}')
             print(ret2.__doc__)
             print()
+
 
 print('')
 print('# Introduction')
