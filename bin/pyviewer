@@ -34,35 +34,26 @@ def get_filetype(fpath: Path):
     return None
 
 
-def load_lib(args, silent):
+def load_lib(args):
     if args.type is None:
-        if not silent:
-            print('This file type is not supported')
+        logger.debug('file type is None')
         return None
     elif args.type == 'text':
-        if not silent:
-            if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
-                print('vimでも使ってろ！')
-            else:
-                print("Why Don't you use vim???")
+        logger.debug('file type is text.')
         return None
 
     # python import style
-    lib_path = "viewers.{}".format(args.type)
+    lib_path = f'viewers.{args.type}'
     # file path
-    lib_path2 = Path(__file__).parent.parent/"lib/viewers"
-    lib_path2 /= "{}.py".format(args.type)
+    lib_path2 = Path(__file__).parent.parent/'lib/viewers'
+    lib_path2 /= f'{args.type}.py'
     if not lib_path2.is_file():
-        if not silent:
-            print('Library file {} is not found.'.format(lib_path2))
+        logger.error(f'Library file {lib_path2} is not found.')
         return None
     try:
         lib = import_module(lib_path)
     except ImportError as e:
-        if not silent:
-            print("Failed to load library")
-            print('lib: {}'.format(lib_path2))
-            print('error: {}'.format(e))
+        logger.error(f'Failed to load library (lib: {lib_path2}, error: {e})')
         return None
     return lib
 
@@ -85,8 +76,10 @@ def main(args):
         if not args_chk(args, 'type'):
             print('please set --type to see the details.')
             return
-        lib = load_lib(args, False)
-        if lib is not None:
+        lib = load_lib(args)
+        if lib is None:
+            print('Library file is not found.')
+        else:
             if hasattr(lib, 'show_help') and type(lib.show_help) is FunctionType:
                 lib.show_help()
             else:
@@ -104,8 +97,17 @@ def main(args):
     if not args_chk(args, 'type'):
         args.type = get_filetype(fpath)
 
-    lib = load_lib(args, False)
-    if lib is not None:
+    if args.type == 'text':
+        if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
+            print('vimでも使ってろ！')
+        else:
+            print("Why Don't you use vim???")
+        return
+
+    lib = load_lib(args)
+    if lib is None:
+        print('Library file is not found.')
+    else:
         lib.main(fpath, args)
     return
 
@@ -130,7 +132,7 @@ if __name__ == "__main__":
     tmpargs, rems = parser.parse_known_args()
     if not args_chk(tmpargs, 'type'):
         tmpargs.type = get_filetype(Path(tmpargs.file))
-    lib = load_lib(tmpargs, True)
+    lib = load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
     args = parser.parse_args()
