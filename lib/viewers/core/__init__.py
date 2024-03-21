@@ -2,8 +2,11 @@ import os
 import json
 import platform
 import subprocess
+import tarfile
+from importlib import import_module
 from pathlib import Path, PurePath
-from typing import Callable, Union, List, Tuple, Any
+from typing import Callable, Union, List, Tuple, Any, Optional
+from types import ModuleType
 from dataclasses import dataclass
 from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
     Formatter, DEBUG as logDEBUG, INFO as logINFO
@@ -513,3 +516,44 @@ def set_numpy_format(numpy: Any) -> None:
     """
     opts = get_config('numpy', 'print_option')
     numpy.set_printoptions(**opts)
+
+
+def get_filetype(fpath: Path) -> Optional[str]:
+    if not fpath.is_file():
+        __logger.debug('file does not exists')
+        return None
+    ext = fpath.suffix[1:].lower()
+    if tarfile.is_tarfile(fpath):
+        __logger.debug('set file type: tar')
+        return 'tar'
+    else:
+        for typ, exts in __type_config.items():
+            if ext in exts.split():
+                __logger.debug(f'set file type: {typ}')
+                return typ
+    __logger.debug('file type is not set.')
+    return None
+
+
+def load_lib(args: Args) -> Optional[ModuleType]:
+    if args.type is None:
+        __logger.debug('file type is None')
+        return None
+    elif args.type == 'text':
+        __logger.debug('file type is text.')
+        return None
+
+    # python import style
+    lib_path = f'viewers.{args.type}'
+    # file path
+    lib_path2 = Path(__file__).parent.parent
+    lib_path2 /= f'{args.type}.py'
+    if not lib_path2.is_file():
+        __logger.error(f'Library file {lib_path2} is not found.')
+        return None
+    try:
+        lib = import_module(lib_path)
+    except ImportError as e:
+        __logger.error(f'Failed to load library (lib: {lib_path2}, error: {e})')
+        return None
+    return lib

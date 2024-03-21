@@ -4,58 +4,16 @@
 import os
 import sys
 import argparse
-import tarfile
 from pathlib import Path
-from importlib import import_module
 from types import FunctionType
 from logging import getLogger
 
 sys.path.insert(0, str(Path(__file__).parent.parent/'lib'))
+from viewers.core import get_filetype, load_lib
 from viewers import get_config, get_col, GLOBAL_CONF, args_chk, show_opts
 from pymeflib import update
 
 logger = getLogger(GLOBAL_CONF.logname)
-
-
-def get_filetype(fpath: Path):
-    if not fpath.is_file():
-        logger.debug('file does not exists')
-        return None
-    ext = fpath.suffix[1:].lower()
-    if tarfile.is_tarfile(fpath):
-        logger.debug('set file type: tar')
-        return 'tar'
-    else:
-        for typ, exts in GLOBAL_CONF.types.items():
-            if ext in exts.split():
-                logger.debug(f'set file type: {typ}')
-                return typ
-    logger.debug('file type is not set.')
-    return None
-
-
-def load_lib(args):
-    if args.type is None:
-        logger.debug('file type is None')
-        return None
-    elif args.type == 'text':
-        logger.debug('file type is text.')
-        return None
-
-    # python import style
-    lib_path = f'viewers.{args.type}'
-    # file path
-    lib_path2 = Path(__file__).parent.parent/'lib/viewers'
-    lib_path2 /= f'{args.type}.py'
-    if not lib_path2.is_file():
-        logger.error(f'Library file {lib_path2} is not found.')
-        return None
-    try:
-        lib = import_module(lib_path)
-    except ImportError as e:
-        logger.error(f'Failed to load library (lib: {lib_path2}, error: {e})')
-        return None
-    return lib
 
 
 def main(args):
