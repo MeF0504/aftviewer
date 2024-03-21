@@ -1,9 +1,10 @@
+# test image viewer related functions.
 import sys
 import argparse
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pytest
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from viewers.core import image_viewer, __json_opts
 from viewers.core.helpmsg import add_args_imageviewer, add_args_cui
