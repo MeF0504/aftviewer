@@ -11,8 +11,8 @@ varis = {
         '.core': ['GLOBAL_CONF'
                   ],
         }
-classes = {
-        '.core': ['Args', 'ReturnMessage',
+types = {
+        '.core.types': ['Args', 'ReturnMessage',
                   ],
         }
 
@@ -52,8 +52,8 @@ print('')
 print('# Variables')
 show_items(varis)
 
-print('# Classes')
-show_items(classes)
+print('# Types')
+show_items(types)
 
 print('# Functions')
 show_items(funcs)
