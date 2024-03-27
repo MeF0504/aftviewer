@@ -1,5 +1,5 @@
 import argparse
-from typing import Callable
+from typing import Callable, Optional
 
 from . import GLOBAL_CONF
 
@@ -180,7 +180,7 @@ def add_args_specification(parser: argparse.ArgumentParser,
 
 
 def help_template(filetype: str, description: str,
-                  add_args: Callable[[argparse.ArgumentParser], None]
+                  add_args: Optional[Callable[[argparse.ArgumentParser], None]] = None
                   ) -> str:
     """
     offer a template for help messages.
@@ -192,7 +192,7 @@ def help_template(filetype: str, description: str,
         supported by the `pyviewer` command.
     description: str
         the description of the file type.
-    add_args: Callable
+    add_args: Callable or None
         A function to add optional arguments.
         This function takes one variable which type is ArgumentParser.
 
@@ -210,6 +210,7 @@ def help_template(filetype: str, description: str,
     parser = argparse.ArgumentParser(description=description,
                                      prog=f'pyviewer FILE -t {filetype}',
                                      add_help=False)
-    add_args(parser)
+    if add_args is not None:
+        add_args(parser)
 
     return parser.format_help()

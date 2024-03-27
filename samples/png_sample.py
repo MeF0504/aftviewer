@@ -6,7 +6,7 @@ def add_args(parser):
 
 
 def show_help():
-    helpmsg = help_template('png_sample', 'show a png image.')
+    helpmsg = help_template('png_sample', 'show a png image.', add_args)
     print(helpmsg)
 
 
