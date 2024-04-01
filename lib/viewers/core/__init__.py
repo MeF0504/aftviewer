@@ -15,8 +15,6 @@ from pymeflib.tree2 import TreeViewer, GC, PPath
 from .types import CONF, Args, SF
 
 
-# global variables
-GLOBAL_CONF = CONF
 __debug = False
 if 'XDG_CONFIG_HOME' in os.environ:
     __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
@@ -98,11 +96,12 @@ else:
     __null_hdlr = NullHandler()
     __logger.addHandler(__null_hdlr)
 
-GLOBAL_CONF.debug = __debug
-GLOBAL_CONF.conf_dir = __conf_dir
-GLOBAL_CONF.opts = __json_opts
-GLOBAL_CONF.types = __type_config
-GLOBAL_CONF.logname = __logname
+# global variables
+GLOBAL_CONF = CONF(__debug,
+                   __conf_dir,
+                   __json_opts,
+                   __type_config,
+                   __logname)
 
 
 def args_chk(args: Args, attr: str) -> bool:

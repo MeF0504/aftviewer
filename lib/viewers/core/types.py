@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Callable
 
 
-@dataclass
+@dataclass(frozen=True)
 class CONF:
     """
     Global configuration variable.
