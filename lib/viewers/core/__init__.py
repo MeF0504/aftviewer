@@ -296,6 +296,10 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
         The return value is the ReturnMessage. It is treated as
         an error message if ReturnMessage.error is True. Otherwise, it is
         treated as a standard message.
+    purepath: PurePath, PurePosixPath, or PureWindowsPath
+        Specify the class to treat the path-like object.
+        This is because in some case, the separator shoud be '/' not '\\'
+        even if the OS is Windows.
 
     Returns
     -------

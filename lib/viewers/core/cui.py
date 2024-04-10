@@ -486,11 +486,8 @@ q\t quit
             old_files = self.files.copy()
             old_dirs = self.dirs.copy()
             dirs, files = self.get_all_items()
-            # debug_log('search files')
             logger.debug('search files')
-            # debug_log('{}'.format(files))
             logger.debug(f'files: {files}')
-            # debug_log('{}'.format(dirs))
             logger.debug(f'dirs:  {dirs}')
             self.files = []
             self.dirs = []
@@ -721,6 +718,10 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
         The return value is the ReturnMessage. It is treated as
         an error message if ReturnMessage.error is True. Otherwise, it is
         treated as a standard message.
+    purepath: PurePath, PurePosixPath, or PureWindowsPath
+        Specify the class to treat the path-like object.
+        This is because in some case, the separator shoud be '/' not '\\'
+        even if the OS is Windows.
 
     Returns
     -------
