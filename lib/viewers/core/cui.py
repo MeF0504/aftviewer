@@ -23,8 +23,7 @@ default_color_set = {
 
 
 class CursesCUI():
-    def __init__(self, purepath: PPath = PurePath,
-                 sort_method: SortMethod = None):
+    def __init__(self, purepath: PPath = PurePath):
         # sidebar val
         self.sel_idx = 0
         self.side_shift_ud = 0
@@ -46,11 +45,6 @@ class CursesCUI():
         self.purepath = purepath
         # key maps
         self.keymaps: Dict[str, list] = {}
-        # sorting function
-        if sort_method is None:
-            self.sort_method = sorted
-        else:
-            self.sort_method = sort_method
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
@@ -155,10 +149,6 @@ class CursesCUI():
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         self.sel_cont = ''
-        if hasattr(self, 'dirs'):
-            self.dirs = self.sort_method(self.dirs)
-        if hasattr(self, 'files'):
-            self.files = self.sort_method(self.files)
 
     def set_keymap(self):
         # default key maps

@@ -90,5 +90,3 @@ class Args:
 
 
 SF = Callable[..., ReturnMessage]
-
-SortMethod = Optional[Callable[[Iterable], Iterable]]

@@ -273,8 +273,7 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
 
 
 def interactive_view(fname: str, get_contents: GC, show_func: SF,
-                     purepath: PPath = PurePath,
-                     sort_method: SortMethod = None) -> None:
+                     purepath: PPath = PurePath) -> None:
     """
     provide the interactive UI to show the contents.
 
@@ -309,14 +308,8 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     fg3, bg3 = get_col('interactive_output')
     fge, bge = get_col('msg_error')
     tv = TreeViewer('.', get_contents, purepath=purepath, logger=__logger)
-    if sort_method is None:
-        sm = sorted
-    else:
-        sm = sort_method
     while True:
-        rets = tv.get_contents(cpath)
-        dirs = sm(rets[0])
-        files = sm(rets[1])
+        dirs, files = tv.get_contents(cpath)
         cprint('current path:', ' {}/{}'.format(fname, cpath), fg=fg1, bg=bg1)
         cprint('contents in this dict:', ' ', fg=fg2, bg=bg2, end='')
         for d in dirs:
