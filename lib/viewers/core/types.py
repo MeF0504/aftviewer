@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Callable
+from typing import List, Callable, Optional, Iterable
 
 
 @dataclass(frozen=True)
@@ -90,3 +90,5 @@ class Args:
 
 
 SF = Callable[..., ReturnMessage]
+
+SortMethod = Optional[Callable[[Iterable], Iterable]]
