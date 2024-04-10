@@ -7,7 +7,7 @@ from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
 from . import GLOBAL_CONF, get_config, get_col, cprint
-from .types import ReturnMessage, SF, SortMethod
+from .types import ReturnMessage, SF
 logger = getLogger(GLOBAL_CONF.logname)
 
 default_color_set = {

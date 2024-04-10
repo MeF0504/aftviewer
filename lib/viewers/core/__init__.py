@@ -12,7 +12,7 @@ from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from .types import CONF, Args, SF, SortMethod
+from .types import CONF, Args, SF
 
 
 __debug = False
