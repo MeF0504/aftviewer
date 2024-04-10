@@ -12,7 +12,7 @@ from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from .types import CONF, Args, SF
+from .types import CONF, Args, SF, SortMethod
 
 
 __debug = False
@@ -273,7 +273,8 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
 
 
 def interactive_view(fname: str, get_contents: GC, show_func: SF,
-                     purepath: PPath = PurePath) -> None:
+                     purepath: PPath = PurePath,
+                     sort_method: SortMethod = None) -> None:
     """
     provide the interactive UI to show the contents.
 
@@ -308,10 +309,14 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     fg3, bg3 = get_col('interactive_output')
     fge, bge = get_col('msg_error')
     tv = TreeViewer('.', get_contents, purepath=purepath, logger=__logger)
+    if sort_method is None:
+        sm = sorted
+    else:
+        sm = sort_method
     while True:
-        dirs, files = tv.get_contents(cpath)
-        dirs.sort()
-        files.sort()
+        rets = tv.get_contents(cpath)
+        dirs = sm(rets[0])
+        files = sm(rets[1])
         cprint('current path:', ' {}/{}'.format(fname, cpath), fg=fg1, bg=bg1)
         cprint('contents in this dict:', ' ', fg=fg2, bg=bg2, end='')
         for d in dirs:
