@@ -118,6 +118,8 @@ def get_contents(h5_file, path):
                 dirs.append(k)
             elif isinstance(h5_file[contents], h5py.Dataset):
                 files.append(k)
+    dirs.sort()
+    files.sort()
     return dirs, files
 
 

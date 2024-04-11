@@ -7,7 +7,7 @@ from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
 from . import GLOBAL_CONF, get_config, get_col, cprint
-from .types import ReturnMessage, SF, SortMethod
+from .types import ReturnMessage, SF
 logger = getLogger(GLOBAL_CONF.logname)
 
 default_color_set = {
@@ -23,8 +23,7 @@ default_color_set = {
 
 
 class CursesCUI():
-    def __init__(self, purepath: PPath = PurePath,
-                 sort_method: SortMethod = None):
+    def __init__(self, purepath: PPath = PurePath):
         # sidebar val
         self.sel_idx = 0
         self.side_shift_ud = 0
@@ -46,11 +45,6 @@ class CursesCUI():
         self.purepath = purepath
         # key maps
         self.keymaps: Dict[str, list] = {}
-        # sorting function
-        if sort_method is None:
-            self.sort_method = sorted
-        else:
-            self.sort_method = sort_method
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
@@ -155,10 +149,6 @@ class CursesCUI():
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         self.sel_cont = ''
-        if hasattr(self, 'dirs'):
-            self.dirs = self.sort_method(self.dirs)
-        if hasattr(self, 'files'):
-            self.files = self.sort_method(self.files)
 
     def set_keymap(self):
         # default key maps
@@ -496,11 +486,8 @@ q\t quit
             old_files = self.files.copy()
             old_dirs = self.dirs.copy()
             dirs, files = self.get_all_items()
-            # debug_log('search files')
             logger.debug('search files')
-            # debug_log('{}'.format(files))
             logger.debug(f'files: {files}')
-            # debug_log('{}'.format(dirs))
             logger.debug(f'dirs:  {dirs}')
             self.files = []
             self.dirs = []
@@ -731,6 +718,10 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
         The return value is the ReturnMessage. It is treated as
         an error message if ReturnMessage.error is True. Otherwise, it is
         treated as a standard message.
+    purepath: PurePath, PurePosixPath, or PureWindowsPath
+        Specify the class to treat the path-like object.
+        This is because in some case, the separator shoud be '/' not '\\'
+        even if the OS is Windows.
 
     Returns
     -------

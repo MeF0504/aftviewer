@@ -114,7 +114,7 @@ def get_contents_i(cursor, tables, path):
 def get_contents_c(cursor, tables, path):
     if str(path) == '.':
         # at root
-        return tables, []
+        return sorted(tables), []
     else:
         files = []
         cursor.execute("pragma table_info('{}')".format(path))
@@ -122,7 +122,7 @@ def get_contents_c(cursor, tables, path):
         for tinfo in table_info:
             name = tinfo[1]
             files.append(name)
-        return [], files
+        return [], sorted(files)
 
 
 def add_contents(curs):

@@ -105,6 +105,8 @@ def get_contents(tar_file, path):
             files.append(tname)
         elif t.isdir():
             dirs.append(tname)
+    dirs.sort()
+    files.sort()
     return dirs, files
 
 

@@ -39,6 +39,8 @@ def get_contents(data, path):
                 dirs.append(k)
             else:
                 files.append(k)
+        dirs.sort()
+        files.sort()
     else:
         pdata = data[parts[0]]
         assert pdata.dtype == np.dtype('O'), f'incorrect type, {pdata.dtype}'

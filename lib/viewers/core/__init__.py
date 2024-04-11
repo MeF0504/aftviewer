@@ -12,7 +12,7 @@ from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from .types import CONF, Args, SF, SortMethod
+from .types import CONF, Args, SF
 
 
 __debug = False
@@ -273,8 +273,7 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
 
 
 def interactive_view(fname: str, get_contents: GC, show_func: SF,
-                     purepath: PPath = PurePath,
-                     sort_method: SortMethod = None) -> None:
+                     purepath: PPath = PurePath) -> None:
     """
     provide the interactive UI to show the contents.
 
@@ -297,6 +296,10 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
         The return value is the ReturnMessage. It is treated as
         an error message if ReturnMessage.error is True. Otherwise, it is
         treated as a standard message.
+    purepath: PurePath, PurePosixPath, or PureWindowsPath
+        Specify the class to treat the path-like object.
+        This is because in some case, the separator shoud be '/' not '\\'
+        even if the OS is Windows.
 
     Returns
     -------
@@ -309,14 +312,8 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     fg3, bg3 = get_col('interactive_output')
     fge, bge = get_col('msg_error')
     tv = TreeViewer('.', get_contents, purepath=purepath, logger=__logger)
-    if sort_method is None:
-        sm = sorted
-    else:
-        sm = sort_method
     while True:
-        rets = tv.get_contents(cpath)
-        dirs = sm(rets[0])
-        files = sm(rets[1])
+        dirs, files = tv.get_contents(cpath)
         cprint('current path:', ' {}/{}'.format(fname, cpath), fg=fg1, bg=bg1)
         cprint('contents in this dict:', ' ', fg=fg2, bg=bg2, end='')
         for d in dirs:
