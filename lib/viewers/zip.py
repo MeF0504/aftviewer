@@ -53,6 +53,8 @@ def get_contents(zip_file, path):
                 dirs.append(zname)
         else:
             files.append(zname)
+    dirs.sort()
+    files.sort()
     return dirs, files
 
 

@@ -60,6 +60,8 @@ def get_contents(data, path):
                 dirs.append(str(k))
             else:
                 files.append(str(k))
+    dirs.sort()
+    files.sort()
     return dirs, files
 
 
