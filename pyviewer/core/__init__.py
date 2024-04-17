@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import platform
 import subprocess
@@ -22,6 +23,8 @@ else:
     __conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
 if not __conf_dir.exists():
     os.makedirs(__conf_dir, mode=0o755)
+__add_types_conf = __conf_dir/'additional_types'
+sys.path.insert(0, str(__add_types_conf))
 
 # load config file.
 with (Path(__file__).parent/'default.json').open('r') as f:
@@ -34,11 +37,11 @@ if (__conf_dir/'setting.json').is_file():
         if 'force_default' in load_opts and load_opts['force_default']:
             load_opts = {}
         if 'additional_types' in load_opts:
-            add_types = load_opts['additional_types']
-            __json_opts['additional_types'] = add_types
+            __add_types = load_opts['additional_types']
+            __json_opts['additional_types'] = __add_types
         else:
-            add_types = {}
-        for key in list(__json_opts.keys()) + list(add_types.keys()):
+            __add_types = {}
+        for key in list(__json_opts.keys()) + list(__add_types.keys()):
             if key == 'additional_types':
                 continue
             if key in load_opts:
@@ -52,7 +55,7 @@ if (__conf_dir/'setting.json').is_file():
                     __json_opts[key] = load_opts[key]
     del load_opts
 else:
-    add_types = {}
+    __add_types = {}
 
 # set supported file types
 __type_config = {
@@ -68,8 +71,7 @@ __type_config = {
     "xpm": "xpm",
     "text": "py txt",
 }
-__type_config.update(add_types)
-del add_types
+__type_config.update(__add_types)
 
 # logger setting
 __logname = 'PyViewerLog'
@@ -455,11 +457,15 @@ def load_lib(args: Args) -> Optional[ModuleType]:
         __logger.debug('file type is text.')
         return None
 
-    # python import style
-    lib_path = f'viewers.{args.type}'
-    # file path
-    lib_path2 = Path(__file__).parent.parent
-    lib_path2 /= f'{args.type}.py'
+    # lib_path  -> python import style
+    # lib_path2 -> file path
+    if args.type in __add_types:
+        lib_path = '.'.join(__add_types_conf.parts)+f'.{args.type}'
+        lib_path2 = __add_types_conf/f'{args.type}.py'
+    else:
+        lib_path = f'pyviewer.viewers.{args.type}'
+        lib_path2 = Path(__file__).parent.parent
+        lib_path2 /= f'viewers/{args.type}.py'
     if not lib_path2.is_file():
         __logger.error(f'Library file {lib_path2} is not found.')
         return None

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyviewer"
-version = "2.0"
+version = "2.0.0"
 description = "CUI view tool made by python."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -23,6 +23,8 @@ classifiers = [
 [project.urls]
 documentation = "https://github.com/MeF0504/pyviewer/wiki"
 repository = "https://github.com/MeF0504/pyviewer"
+[project.scripts]
+pyviewer = "pyviewer.main:main"
 
 [tool.setuptools.packages.find]
 exclude = ["bin", "samples", "shell", "tmp"]

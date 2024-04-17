@@ -6,8 +6,7 @@ from pathlib import Path
 from types import FunctionType
 from logging import getLogger
 
-from pyviewer.core import get_filetype, load_lib
-from pyviewer.viewers import GLOBAL_CONF, args_chk, show_opts
+from .core import get_filetype, load_lib, GLOBAL_CONF, args_chk, show_opts
 
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -17,7 +16,7 @@ def get_args():
     supported_type.remove('text')
     parser = argparse.ArgumentParser(
             description="show the constitution of a file."
-            + " default support file types ... {', '.join(supported_type)}",
+            + f" default support file types ... {', '.join(supported_type)}",
             epilog="To see the detailed help of each type,"
             + " type 'pyviewer help -t TYPE'. "
             + " PyViewer has other subcommands,"
@@ -40,6 +39,7 @@ def get_args():
         lib.add_args(parser)
     args = parser.parse_args()
     logger.debug(f'args: {args}')
+    return args
 
 
 def main():
