@@ -14,7 +14,7 @@ from ..core.helpmsg import help_template, \
 logger = getLogger(GLOBAL_CONF.logname)
 
 try:
-    from .core.cui import interactive_cui
+    from ..core.cui import interactive_cui
 except ImportError as e:
     logger.error(e)
 

@@ -3,7 +3,7 @@ from logging import getLogger
 
 import matplotlib.pyplot as plt
 
-from ... import GLOBAL_CONF
+from .. import GLOBAL_CONF
 
 try:
     from screeninfo import get_monitors
