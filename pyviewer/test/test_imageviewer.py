@@ -1,13 +1,10 @@
 # test image viewer related functions.
-import sys
 import argparse
-from pathlib import Path
 
 import pytest
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from viewers.core import image_viewer, __json_opts
-from viewers.core.helpmsg import add_args_imageviewer, add_args_cui
+from pyviewer.core import image_viewer, __json_opts
+from pyviewer.core.helpmsg import add_args_imageviewer, add_args_cui
 
 ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), ('open')]
 

@@ -1,16 +1,13 @@
 # test functions in viewers/core/__init__.py
-import sys
 import argparse
 import warnings
-from pathlib import Path
 
 import pytest
 
 from . import chk_deps
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from viewers.core import args_chk, load_lib
-from viewers.core.helpmsg import add_args_imageviewer, add_args_encoding, \
+from pyviewer.core import args_chk, load_lib
+from pyviewer.core.helpmsg import add_args_imageviewer, add_args_encoding, \
     add_args_output, add_args_verbose, add_args_key, add_args_interactive, \
     add_args_cui
 
