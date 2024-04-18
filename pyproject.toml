@@ -26,6 +26,15 @@ repository = "https://github.com/MeF0504/pyviewer"
 [project.scripts]
 pyviewer = "pyviewer.main:main"
 _get_pyviewer_types = "pyviewer.main:get_types"
+[project.optional-dependencies]
+# https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies
+numpy = ["numpy"]
+hdf5 = ["h5py", "numpy"]
+raw_image = ["rawpy"]
+sqlite3 = ["tabulate"]
+image_viewer = ["Pillow", "matplotlib", "opencv-python"]
+all = ["numpy", "h5py", "rawpy", "tabulate", "Pillow", "matplotlib", "opencv-python"]
+debug = ["pytest"]
 
 [tool.setuptools]
 packages = ["pyviewer"]
