@@ -1,12 +1,14 @@
 #! /usr/bin/env python3
 
 import os
+import sys
 import argparse
 from pathlib import Path
 from types import FunctionType
 from logging import getLogger
 
 from .core import get_filetype, load_lib, GLOBAL_CONF, args_chk, show_opts
+from .core.image_viewer import ImageViewers
 
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -90,3 +92,14 @@ def main():
     else:
         lib.main(fpath, args)
     return
+
+
+def get_types():
+    if len(sys.argv) < 2:
+        return ""
+    elif sys.argv[1] == 'type':
+        supported_type = list(GLOBAL_CONF.types.keys()).copy()
+        supported_type.remove('text')
+        print(' '.join(supported_type))
+    elif sys.argv[1] == 'image_viewer':
+        print(' '.join(ImageViewers))
