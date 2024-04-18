@@ -37,6 +37,12 @@ all = ["numpy", "h5py", "rawpy", "tabulate", "Pillow", "matplotlib", "opencv-pyt
 debug = ["pytest"]
 
 [tool.setuptools]
-packages = ["pyviewer"]
+packages = [
+    "pyviewer",
+    "pyviewer.core",
+    "pyviewer.core.image_viewer",
+    "pyviewer.viewers",
+    "pyviewer.test",
+]
 # include non-default (non-python?) files
 include-package-data = true
