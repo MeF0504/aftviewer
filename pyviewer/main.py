@@ -62,7 +62,8 @@ def main():
         if lib is None:
             print('Library file is not found.')
         else:
-            if hasattr(lib, 'show_help') and type(lib.show_help) is FunctionType:
+            if hasattr(lib, 'show_help') and \
+               type(lib.show_help) is FunctionType:
                 lib.show_help()
             else:
                 print("this type does not support showing help.")

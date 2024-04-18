@@ -23,8 +23,6 @@ else:
     __conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
 if not __conf_dir.exists():
     os.makedirs(__conf_dir, mode=0o755)
-__add_types_conf = __conf_dir/'additional_types'
-sys.path.insert(0, str(__add_types_conf))
 
 # load config file.
 with (Path(__file__).parent/'default.json').open('r') as f:
@@ -460,8 +458,10 @@ def load_lib(args: Args) -> Optional[ModuleType]:
     # lib_path  -> python import style
     # lib_path2 -> file path
     if args.type in __add_types:
-        lib_path = '.'.join(__add_types_conf.parts)+f'.{args.type}'
-        lib_path2 = __add_types_conf/f'{args.type}.py'
+        add_types_conf = __conf_dir/'additional_types'
+        sys.path.insert(0, str(add_types_conf))
+        lib_path = f'{args.type}'
+        lib_path2 = add_types_conf/f'{args.type}.py'
     else:
         lib_path = f'pyviewer.viewers.{args.type}'
         lib_path2 = Path(__file__).parent.parent

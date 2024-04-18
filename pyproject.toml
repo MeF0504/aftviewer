@@ -38,6 +38,5 @@ debug = ["pytest"]
 
 [tool.setuptools]
 packages = ["pyviewer"]
+# include non-default (non-python?) files
 include-package-data = true
-# [tool.setuptools.package-data]
-# pyviewer = ["core/default.json"]
