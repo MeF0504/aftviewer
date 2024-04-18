@@ -25,17 +25,18 @@ Some third-party libraries are required to open some file types.
 ## Install
 
 ```bash
-python -m pip install pyviewer
+python -m pip install git+https://github.com/MeF0504/pyviewer
 ```
 or in Windows OS,
 ```bash
-py -m pip install pyviewer
+py -m pip install git+https://github.com/MeF0504/pyviewer
 ```
+
 If you want to install all modules used in PyViewer,
 ```bash
-python -m pip install "pyviewer[all]"
+python -m pip install "pyviewer[all] @ git+https://github.com/MeF0504/pyviewer"
 # or
-py -m pip install "pyviewer[all]"
+py -m pip install "pyviewer[all] @ git+https://github.com/MeF0504/pyviewer"
 ```
 
 ## Usage
