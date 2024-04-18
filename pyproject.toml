@@ -38,3 +38,6 @@ debug = ["pytest"]
 
 [tool.setuptools]
 packages = ["pyviewer"]
+include-package-data = true
+# [tool.setuptools.package-data]
+# pyviewer = ["core/default.json"]
