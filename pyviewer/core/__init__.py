@@ -440,10 +440,11 @@ def load_lib(args: Args) -> Optional[ModuleType]:
     # lib_path  -> python import style
     # lib_path2 -> file path
     if args.type in __add_types:
-        add_types_conf = __conf_dir/'additional_types'
-        sys.path.insert(0, str(add_types_conf))
-        lib_path = f'{args.type}'
-        lib_path2 = add_types_conf/f'{args.type}.py'
+        if str(__conf_dir) not in sys.path:
+            __logger.debug(f'add {str(__conf_dir)} to sys.path.')
+            sys.path.insert(0, str(__conf_dir))
+        lib_path = f'additional_types.{args.type}'
+        lib_path2 = __conf_dir/f'additional_types/{args.type}.py'
     else:
         lib_path = f'pyviewer.viewers.{args.type}'
         lib_path2 = Path(__file__).parent.parent

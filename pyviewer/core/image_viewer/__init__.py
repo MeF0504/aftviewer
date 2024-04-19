@@ -114,8 +114,11 @@ def __get_mod(img_viewer: Optional[str]):
         if (Path(__file__).parent/f'{img_viewer}.py').is_file():
             mod = import_module(f'pyviewer.core.image_viewer.{img_viewer}')
         elif add_path.is_file():
-            sys.path.insert(0, str(add_path.parent))
-            mod = import_module(img_viewer)
+            if str(GLOBAL_CONF.conf_dir) not in sys.path:
+                logger.debug(f'add {str(GLOBAL_CONF.conf_dir)}'
+                ' to sys.path (iv).')
+                sys.path.insert(0, str(GLOBAL_CONF.conf_dir))
+            mod = import_module(f'additional_ivs.{img_viewer}')
         else:
             raise OSError(f'library {img_viewer} is not found.')
     except Exception as e:
@@ -213,9 +216,13 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
         with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
             make_bitmap(tmp.name, data, verbose=False, logger=logger)
             cmds = __get_exec_cmds(img_viewer, tmp.name)
-            subprocess.run(cmds)
+            out = subprocess.run(cmds)
             # wait to open file. this is for, e.g., open command on Mac OS.
             input('Press Enter to continue')
+            if out.returncode == 0:
+                ret = True
+            else:
+                ret = False
     return ret
 
 
