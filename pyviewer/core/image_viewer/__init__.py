@@ -93,7 +93,8 @@ def __collect_image_viewers():
             continue
         iv_name = os.path.splitext(fy.name)[0]
         logger.debug(f'add {iv_name} to ImageViewers')
-        ImageViewers.append(iv_name)
+        # arbitary setting?
+        ImageViewers.insert(0, iv_name)
     add_dir = Path(GLOBAL_CONF.conf_dir/'additional_ivs')
     for fy in add_dir.glob('*'):
         if not fy.is_file():
@@ -102,7 +103,7 @@ def __collect_image_viewers():
             continue
         iv_name = os.path.splitext(fy.name)[0]
         logger.debug(f'add {iv_name} to ImageViewers from additional dir')
-        ImageViewers.append(iv_name)
+        ImageViewers.insert(0, iv_name)
 
 
 __collect_image_viewers()
