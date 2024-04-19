@@ -94,9 +94,34 @@ def __collect_image_viewers():
         iv_name = os.path.splitext(fy.name)[0]
         logger.debug(f'add {iv_name} to ImageViewers')
         ImageViewers.append(iv_name)
+    add_dir = Path(GLOBAL_CONF.conf_dir/'additional_ivs')
+    for fy in add_dir.glob('*'):
+        if not fy.is_file():
+            continue
+        if fy.name.startswith('__'):
+            continue
+        iv_name = os.path.splitext(fy.name)[0]
+        logger.debug(f'add {iv_name} to ImageViewers from additional dir')
+        ImageViewers.append(iv_name)
 
 
 __collect_image_viewers()
+
+
+def __get_mod(img_viewer: Optional[str]):
+    try:
+        add_path = GLOBAL_CONF.conf_dir/f'additional_ivs/{img_viewer}.py'
+        if (Path(__file__).parent/f'{img_viewer}.py').is_file():
+            mod = import_module(f'pyviewer.core.image_viewer.{img_viewer}')
+        elif add_path.is_file():
+            sys.path.insert(0, str(add_path.parent))
+            mod = import_module(img_viewer)
+        else:
+            raise OSError(f'library {img_viewer} is not found.')
+    except Exception as e:
+        logger.error(f'load image viewer failed({type(e).__name__}: {e})')
+        return None
+    return mod
 
 
 def show_image_file(img_file: str, args: Args) -> bool:
@@ -124,17 +149,15 @@ def show_image_file(img_file: str, args: Args) -> bool:
         return False
     if img_viewer is None:
         logger.error("I can't find any libraries to show image.")
-        return False
+        ret = False
     elif img_viewer in ImageViewers:
-        try:
-            mod = import_module(f'pyviewer.core.image_viewer.{img_viewer}')
+        mod = __get_mod(img_viewer)
+        if mod is not None:
             ret = mod.show_image_file(img_file)
-        except Exception as e:
+        else:
             cprint(f'failed to show an image file {img_file}.',
                    file=sys.stderr, fg='r')
-            logger.error(f'load image viewer failed({type(e).__name__}: {e})')
-            return False
-        return ret
+            ret = False
     else:
         if not chk_cmd(img_viewer, logger=logger):
             logger.error(f'{img_viewer} is not executable')
@@ -143,7 +166,7 @@ def show_image_file(img_file: str, args: Args) -> bool:
         subprocess.run(cmds)
         # wait to open file. this is for, e.g., open command on Mac OS.
         input('Press Enter to continue')
-    return True
+    return ret
 
 
 def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
@@ -173,14 +196,12 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
         logger.error("I can't find any libraries to show image.")
         return False
     elif img_viewer in ImageViewers:
-        try:
-            mod = import_module(f'pyviewer.core.image_viewer.{img_viewer}')
+        mod = __get_mod(img_viewer)
+        if mod is not None:
             ret = mod.show_image_ndarray(data, name)
-        except Exception as e:
+        else:
             cprint('failed to show an image data.', file=sys.stderr, fg='r')
-            cprint(f'{type(e).__name__}: {e}', file=sys.stderr, fg='r')
-            return False
-        return ret
+            ret = False
     else:
         if not chk_cmd(img_viewer):
             logger.error(f'{img_viewer} is not executable')
@@ -191,7 +212,7 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
             subprocess.run(cmds)
             # wait to open file. this is for, e.g., open command on Mac OS.
             input('Press Enter to continue')
-    return True
+    return ret
 
 
 def is_image(path: Union[str, os.PathLike]) -> bool:
