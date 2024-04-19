@@ -13,12 +13,12 @@ varis = {
         }
 types = {
         '.core.types': ['Args', 'ReturnMessage',
-                  ],
+                        ],
         }
 
 funcs = {
         '.core': ['args_chk', 'get_config', 'cprint', 'print_key',
-                  'get_col', 'set_numpy_format', 'show_opts',
+                  'get_col', 'set_numpy_format',
                   'interactive_view', 'run_system_cmd',
                   ],
         '.core.image_viewer': ['get_image_viewer', 'is_image',

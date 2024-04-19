@@ -24,10 +24,11 @@ _pyviewer_cmp()
         # select file
         compopt -o filenames
         COMPREPLY=( $(compgen -f -- "$cur") )
-        COMPREPLY+=( $(compgen -W "update" -- "$cur") )
-        COMPREPLY+=( $(compgen -W "config_list" -- "$cur") )
         COMPREPLY+=( $(compgen -W "help" -- "$cur") )
+        COMPREPLY+=( $(compgen -W "config_list" -- "$cur") )
+        COMPREPLY+=( $(compgen -W "shell_completion" -- "$cur") )
     fi
 }
 
 complete -F _pyviewer_cmp pyviewer
+# pyviewer completion end

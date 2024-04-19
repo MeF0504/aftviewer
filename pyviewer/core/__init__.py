@@ -139,6 +139,10 @@ def args_chk(args: Args, attr: str) -> bool:
         return args.cui
     elif attr == 'output':
         return args.output is not None
+    elif attr == 'bash':
+        return args.bash
+    elif attr == 'zsh':
+        return args.zsh
     else:
         return False
 
@@ -169,28 +173,6 @@ def get_config(key1: str, key2: str) -> Any:
         return None
     else:
         return val1[key2]
-
-
-def show_opts() -> None:
-    """
-    show the current configuration options.
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    None
-    """
-    for key, val in __json_opts.items():
-        if type(val) is dict:
-            print_key(key)
-            for k2, v2 in val.items():
-                print(f'  {k2}: {v2}')
-        else:
-            print_key(key)
-            print(val)
 
 
 def cprint(str1: str, str2: str = '',

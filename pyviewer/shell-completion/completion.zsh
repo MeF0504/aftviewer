@@ -26,7 +26,7 @@ _pyviewer_targets()
 _pyviewer_alters()
 {
     _values 'alters' \
-        'update' 'config_list' 'help'
+        'help' 'config_list' 'shell_completion'
 }
 
 _pyviewr_types()
@@ -40,4 +40,4 @@ _pyviewer_iv()
         $(_get_pyviewer_types 'image_viewer')
 }
 compdef _pyviewer_cmp pyviewer
-
+# pyviewer completion end

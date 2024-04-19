@@ -7,33 +7,38 @@ from pathlib import Path
 from types import FunctionType
 from logging import getLogger
 
-from .core import get_filetype, load_lib, GLOBAL_CONF, args_chk, show_opts
+from .core import get_filetype, load_lib, GLOBAL_CONF, args_chk, print_key
 from .core.image_viewer import ImageViewers
+from .core.helpmsg import add_args_shell_cmp
+from .core.types import Args
 
 logger = getLogger(GLOBAL_CONF.logname)
 
 
-def get_args():
+def get_args() -> Args:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     supported_type.remove('text')
     parser = argparse.ArgumentParser(
             description="show the constitution of a file."
-            + f" default support file types ... {', '.join(supported_type)}",
+            f" default support file types ... {', '.join(supported_type)}",
             epilog="To see the detailed help of each type,"
-            + " type 'pyviewer help -t TYPE'. "
-            + " PyViewer has other subcommands,"
-            + " 'pyviewer config_list' shows"
-            + " the current optional configuration,"
-            + " 'pyviewer set_shell_cmp' set the completion script"
-            + " for bash/zsh."
+            " type 'pyviewer help -t TYPE'. "
+            " PyViewer has other subcommands,"
+            " 'pyviewer config_list' shows"
+            " the current optional configuration,"
+            " 'pyviewer shell_completion --bash >> ~/.bashrc' or"
+            " 'pyviewer shell_completion --zsh >> ~/.zshrc'"
+            " set the completion script for bash/zsh."
             )
     parser.add_argument('file', help='input file')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type.'
-                        + ' "pyviewer help -t TYPE"'
-                        + ' will show the detailed help.',
+                        ' "pyviewer help -t TYPE"'
+                        ' will show the detailed help.',
                         choices=supported_type)
     tmpargs, rems = parser.parse_known_args()
+    if tmpargs.file == 'shell_completion':
+        add_args_shell_cmp(parser)
     if not args_chk(tmpargs, 'type'):
         tmpargs.type = get_filetype(Path(tmpargs.file))
     lib = load_lib(tmpargs)
@@ -44,14 +49,39 @@ def get_args():
     return args
 
 
-def main():
+def show_opts() -> None:
+    for key, val in GLOBAL_CONF.opts.items():
+        if type(val) is dict:
+            print_key(key)
+            for k2, v2 in val.items():
+                print(f'  {k2}: {v2}')
+        else:
+            print_key(key)
+            print(val)
+
+
+def set_shell_comp(args: Args) -> None:
+    if args_chk(args, 'bash'):
+        sh_cmp_file = Path(__file__).parent/'shell-completion/completion.bash'
+    elif args_chk(args, 'zsh'):
+        sh_cmp_file = Path(__file__).parent/'shell-completion/completion.zsh'
+    else:
+        print('Please specify shell (--bash or --zsh).')
+        return
+    with open(sh_cmp_file, 'r') as f:
+        for line in f:
+            print(line, end='')
+
+
+def main() -> None:
     args = get_args()
 
     if args.file == 'config_list':
         show_opts()
         return
 
-    if args.file == 'set_shell_cmp':
+    if args.file == 'shell_completion':
+        set_shell_comp(args)
         return
 
     if args.file == 'help':

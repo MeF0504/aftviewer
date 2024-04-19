@@ -179,6 +179,26 @@ def add_args_specification(parser: argparse.ArgumentParser,
         add_args_cui(group)
 
 
+def add_args_shell_cmp(parser: argparse.ArgumentParser):
+    """
+    add optional argument for shell completion.
+
+    Parameters
+    ----------
+    parser: ArgumentParser
+        ArgumentParser which optional arguments will be added.
+
+    Returns
+    -------
+    None
+    """
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--bash', action='store_true',
+                       help='set bash completion')
+    group.add_argument('--zsh', action='store_true',
+                       help='set zsh completion')
+
+
 def help_template(filetype: str, description: str,
                   add_args: Optional[Callable[[argparse.ArgumentParser], None]] = None
                   ) -> str:
