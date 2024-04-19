@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from functools import partial
-from pathlib import PurePath
+from pathlib import PurePosixPath
 from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 try:
     import curses
@@ -227,7 +227,7 @@ def main(fpath, args):
             print('failed to import curses.')
             return
         gc = partial(get_contents_c, cursor, tables)
-        tv = TreeViewer('.', gc, purepath=PurePath, logger=logger)
+        tv = TreeViewer('.', gc, purepath=PurePosixPath, logger=logger)
         curses_cui = CursesCUI()
         curses_cui.add_key_maps('\n', [add_contents, [curses_cui], '<CR>',
                                        'open/add the item in the main window',
@@ -246,7 +246,7 @@ def main(fpath, args):
         try:
             curses.wrapper(curses_cui.main, fname,
                            partial(show_table, cursor, tables),
-                           PurePath('.'), tv)
+                           PurePosixPath('.'), tv)
         except AssertionError as e:
             print(e)
     elif args_chk(args, 'key'):
