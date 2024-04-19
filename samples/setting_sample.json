@@ -1,6 +1,6 @@
 {
     "additional_types": {
-        "png_sample": "png PNG jpeg jpg JPG"
+        "show_image": "png jpeg jpg"
     },
     "config": {
         "image_viewer": "open",
