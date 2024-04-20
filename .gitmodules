@@ -1,3 +1,0 @@
-[submodule "pymeflib"]
-	path = lib/pymeflib
-	url = https://github.com/MeF0504/pymeflib.git

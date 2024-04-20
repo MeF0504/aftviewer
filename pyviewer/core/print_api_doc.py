@@ -13,12 +13,12 @@ varis = {
         }
 types = {
         '.core.types': ['Args', 'ReturnMessage',
-                  ],
+                        ],
         }
 
 funcs = {
         '.core': ['args_chk', 'get_config', 'cprint', 'print_key',
-                  'get_col', 'set_numpy_format', 'show_opts',
+                  'get_col', 'set_numpy_format',
                   'interactive_view', 'run_system_cmd',
                   ],
         '.core.image_viewer': ['get_image_viewer', 'is_image',
@@ -36,7 +36,7 @@ funcs = {
 def show_items(item_dict: Dict[str, List[str]]):
     for mod, items in item_dict.items():
         for item in items:
-            ret = import_module(mod, 'viewers')
+            ret = import_module(mod, 'pyviewer')
             ret2 = eval(f'ret.{item}')
             # print('## {}'.format(ret2.__name__))
             print(f'## {item}')

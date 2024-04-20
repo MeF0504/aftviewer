@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import platform
 import subprocess
@@ -34,11 +35,11 @@ if (__conf_dir/'setting.json').is_file():
         if 'force_default' in load_opts and load_opts['force_default']:
             load_opts = {}
         if 'additional_types' in load_opts:
-            add_types = load_opts['additional_types']
-            __json_opts['additional_types'] = add_types
+            __add_types = load_opts['additional_types']
+            __json_opts['additional_types'] = __add_types
         else:
-            add_types = {}
-        for key in list(__json_opts.keys()) + list(add_types.keys()):
+            __add_types = {}
+        for key in list(__json_opts.keys()) + list(__add_types.keys()):
             if key == 'additional_types':
                 continue
             if key in load_opts:
@@ -52,7 +53,7 @@ if (__conf_dir/'setting.json').is_file():
                     __json_opts[key] = load_opts[key]
     del load_opts
 else:
-    add_types = {}
+    __add_types = {}
 
 # set supported file types
 __type_config = {
@@ -68,8 +69,7 @@ __type_config = {
     "xpm": "xpm",
     "text": "py txt",
 }
-__type_config.update(add_types)
-del add_types
+__type_config.update(__add_types)
 
 # logger setting
 __logname = 'PyViewerLog'
@@ -139,6 +139,10 @@ def args_chk(args: Args, attr: str) -> bool:
         return args.cui
     elif attr == 'output':
         return args.output is not None
+    elif attr == 'bash':
+        return args.bash
+    elif attr == 'zsh':
+        return args.zsh
     else:
         return False
 
@@ -169,28 +173,6 @@ def get_config(key1: str, key2: str) -> Any:
         return None
     else:
         return val1[key2]
-
-
-def show_opts() -> None:
-    """
-    show the current configuration options.
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    -------
-    None
-    """
-    for key, val in __json_opts.items():
-        if type(val) is dict:
-            print_key(key)
-            for k2, v2 in val.items():
-                print(f'  {k2}: {v2}')
-        else:
-            print_key(key)
-            print(val)
 
 
 def cprint(str1: str, str2: str = '',
@@ -455,11 +437,18 @@ def load_lib(args: Args) -> Optional[ModuleType]:
         __logger.debug('file type is text.')
         return None
 
-    # python import style
-    lib_path = f'viewers.{args.type}'
-    # file path
-    lib_path2 = Path(__file__).parent.parent
-    lib_path2 /= f'{args.type}.py'
+    # lib_path  -> python import style
+    # lib_path2 -> file path
+    if args.type in __add_types:
+        if str(__conf_dir) not in sys.path:
+            __logger.debug(f'add {str(__conf_dir)} to sys.path.')
+            sys.path.insert(0, str(__conf_dir))
+        lib_path = f'additional_types.{args.type}'
+        lib_path2 = __conf_dir/f'additional_types/{args.type}.py'
+    else:
+        lib_path = f'pyviewer.viewers.{args.type}'
+        lib_path2 = Path(__file__).parent.parent
+        lib_path2 /= f'viewers/{args.type}.py'
     if not lib_path2.is_file():
         __logger.error(f'Library file {lib_path2} is not found.')
         return None

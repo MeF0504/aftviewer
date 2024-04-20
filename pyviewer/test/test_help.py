@@ -1,14 +1,11 @@
 # test help messages.
-import sys
 import argparse
 import warnings
-from pathlib import Path
 from types import FunctionType
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from viewers.core import load_lib
+from pyviewer.core import load_lib
 
 
 @pytest.mark.parametrize(('filetype'), [

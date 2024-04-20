@@ -25,16 +25,18 @@ Some third-party libraries are required to open some file types.
 ## Install
 
 ```bash
-curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py | python
+python -m pip install git+https://github.com/MeF0504/pyviewer
 ```
 or in Windows OS,
 ```bash
-curl.exe https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py | python
+py -m pip install git+https://github.com/MeF0504/pyviewer
 ```
-By default, this script installs pyviewer repository in `~/.config/pyviewer/src`.
-If you want to specify the install path,
+
+If you want to install all modules used in PyViewer,
 ```bash
-python -c "$(curl https://raw.githubusercontent.com/MeF0504/pyviewer/main/installer.py)" path/to/install
+python -m pip install "pyviewer[all] @ git+https://github.com/MeF0504/pyviewer"
+# or
+py -m pip install "pyviewer[all] @ git+https://github.com/MeF0504/pyviewer"
 ```
 
 ## Usage

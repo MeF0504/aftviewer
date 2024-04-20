@@ -1,0 +1,2 @@
+include pyviewer/core/default.json
+graft pyviewer/shell-completion

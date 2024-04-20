@@ -1,15 +1,11 @@
 # test arguments of all file types.
-import sys
 import argparse
 import warnings
-from pathlib import Path
 from importlib import import_module
 
 import pytest
 
 from . import chk_deps
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 # image viewer, encoding, output, verbose, key 0, key 1, key 2,
@@ -43,7 +39,7 @@ def test_args_filetypes(filetype, is_args_ok):
             ['--interactive_cui'],
             ]
     assert len(is_args_ok) == len(test_args_list)
-    lib = import_module(f'viewers.{filetype}')
+    lib = import_module(f'pyviewer.viewers.{filetype}')
     not_ok = []
     for i, test_args in enumerate(test_args_list):
         parser = argparse.ArgumentParser()
