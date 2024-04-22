@@ -6,7 +6,7 @@ _pyviewer_cmp()
     cur=${COMP_WORDS[${COMP_CWORD}]}
     prev=${COMP_WORDS[${COMP_CWORD}-1]}
 
-    local opts="-h -t -iv -o -p -v -k -i -c --encoding"
+    local opts="-h -V -t -iv -o -p -v -k -i -c --encoding"
     local types="$(_get_pyviewer_types 'type')"
     local image_viewer="$(_get_pyviewer_types 'image_viewer')"
     if [[ "${cur:0:1}" = "-" ]]; then

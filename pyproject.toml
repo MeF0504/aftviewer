@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyviewer"
-version = "3.0.1"
 description = "CUI view tool made by python."
 readme = "README.md"
 requires-python = ">=3.8"
+dynamic = ["version"]
 dependencies = [
     "pymeflib@git+https://github.com/MeF0504/pymeflib#egg=main",
 ]
@@ -46,3 +46,5 @@ packages = [
 ]
 # include non-default (non-python?) files
 include-package-data = true
+[tool.setuptools.dynamic]
+version = {attr = "pyviewer.core.VERSION"}
