@@ -4,6 +4,7 @@ _pyviewer_cmp()
 {
     _arguments \
         '(- *)'{-h,--help}'[show help]' \
+        '(- *)'{-V,--version}'[show version information]' \
         '(-t --type)'{-t,--type}'[set type]:type:_pyviewr_types' \
         '(-iv --image_viewer)'{-iv,--image_viewer}'[set image viewer]:image viewer:_pyviewer_iv' \
         '(-o --output)'{-o,--output}'[output file or directory]:output:_files' \

@@ -7,7 +7,8 @@ from pathlib import Path
 from types import FunctionType
 from logging import getLogger
 
-from .core import get_filetype, load_lib, GLOBAL_CONF, args_chk, print_key
+from .core import GLOBAL_CONF, VERSION, \
+    get_filetype, load_lib, args_chk, print_key
 from .core.image_viewer import ImageViewers
 from .core.helpmsg import add_args_shell_cmp
 from .core.types import Args
@@ -31,6 +32,8 @@ def get_args() -> Args:
             " set the completion script for bash/zsh."
             )
     parser.add_argument('file', help='input file')
+    parser.add_argument('--version', '-V', action='version',
+                        version=f'%(prog)s {VERSION}')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type.'
                         ' "pyviewer help -t TYPE"'
