@@ -59,9 +59,9 @@ options:
                         specify the file type. "pyviewer help -t TYPE" will
                         show the detailed help.
 
-PyViewer has other subcommands, 'pyviewer help -t <type>' shows detailed help,
-'pyviewer update' run PyViewer update command, 'pyviewer config_list' shows
-the current optional configuration, 'pyviewer shell_completion --bash >>
+PyViewer has some subcommands, 'pyviewer help -t <type>' shows detailed help,
+'pyviewer update' run the update command of PyViewer, 'pyviewer config_list'
+shows the current optional configuration, 'pyviewer shell_completion --bash >>
 ~/.bashrc' or 'pyviewer shell_completion --zsh >> ~/.zshrc' set the completion
 script for bash/zsh.
 ```
