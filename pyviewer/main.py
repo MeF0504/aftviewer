@@ -6,9 +6,10 @@ import argparse
 from pathlib import Path
 from types import FunctionType
 from logging import getLogger
+import subprocess
 
 from .core import GLOBAL_CONF, VERSION, \
-    get_filetype, load_lib, args_chk, print_key
+    get_filetype, load_lib, args_chk, print_key, get_col, cprint
 from .core.image_viewer import ImageViewers
 from .core.helpmsg import add_args_shell_cmp
 from .core.types import Args
@@ -21,12 +22,13 @@ def get_args() -> Args:
     supported_type.remove('text')
     parser = argparse.ArgumentParser(
             description="show the constitution of a file."
-            f" default support file types ... {', '.join(supported_type)}",
-            epilog="To see the detailed help of each type,"
-            " type 'pyviewer help -t TYPE'. "
-            " PyViewer has other subcommands,"
-            " 'pyviewer config_list' shows"
-            " the current optional configuration,"
+            f" default support file types ... {', '.join(supported_type)}"
+            " To see the detailed help of each type, "
+            " type 'pyviewer help -t <type>'.",
+            epilog=" PyViewer has other subcommands,"
+            " 'pyviewer help -t <type>' shows detailed help,"
+            " 'pyviewer update' run PyViewer update command,"
+            " 'pyviewer config_list' shows the current optional configuration,"
             " 'pyviewer shell_completion --bash >> ~/.bashrc' or"
             " 'pyviewer shell_completion --zsh >> ~/.zshrc'"
             " set the completion script for bash/zsh."
@@ -76,6 +78,34 @@ def set_shell_comp(args: Args) -> None:
             print(line, end='')
 
 
+def update() -> None:
+    py_cmd = None
+    py_version = f'{sys.version_info.major}.{sys.version_info.minor}'
+    for rel_path in [f'bin/python{py_version}',
+                     f'bin/python{sys.version_info.major}',
+                     'bin/python',
+                     f'python{py_version}.exe',
+                     f'python{sys.version_info.major}.exe',
+                     'python.exe',
+                     ]:
+        py_path = Path(sys.base_prefix)/rel_path
+        if py_path.is_file() and os.access(py_path, os.X_OK):
+            py_cmd = str(py_path)
+            logger.info(f'find python; {py_cmd}')
+            break
+    if py_cmd is None:
+        fg, bg = get_col('msg_error')
+        cprint('failed to find python command.', fg=fg, bg=bg)
+        logger.error(f'python not found in {sys.base_prefix}')
+        return
+    update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
+                  'pyviewer @ git+https://github.com/MeF0504/pyviewer'
+                  ]
+    logger.debug(f'update command: {update_cmd}')
+    out = subprocess.run(update_cmd, capture_output=False)
+    logger.debug(f'update command results; return code {out.returncode}')
+
+
 def main() -> None:
     args = get_args()
 
@@ -85,6 +115,10 @@ def main() -> None:
 
     if args.file == 'shell_completion':
         set_shell_comp(args)
+        return
+
+    if args.file == 'update':
+        update()
         return
 
     if args.file == 'help':
