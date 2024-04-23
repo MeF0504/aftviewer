@@ -27,7 +27,7 @@ _pyviewer_targets()
 _pyviewer_alters()
 {
     _values 'alters' \
-        'help' 'config_list' 'shell_completion'
+        'help' 'update' 'config_list' 'shell_completion'
 }
 
 _pyviewr_types()
