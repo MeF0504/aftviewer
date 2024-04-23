@@ -179,7 +179,7 @@ def add_args_specification(parser: argparse.ArgumentParser,
         add_args_cui(group)
 
 
-def add_args_shell_cmp(parser: argparse.ArgumentParser):
+def add_args_shell_cmp(parser: argparse.ArgumentParser) -> None:
     """
     add optional argument for shell completion.
 
@@ -197,6 +197,23 @@ def add_args_shell_cmp(parser: argparse.ArgumentParser):
                        help='set bash completion')
     group.add_argument('--zsh', action='store_true',
                        help='set zsh completion')
+
+
+def add_args_update(parser: argparse.ArgumentParser) -> None:
+    """
+    add optional argument for update subcommand.
+
+    Parameters
+    ----------
+    parser: ArgumentParser
+        ArgumentParser which optional arguments will be added.
+
+    Returns
+    -------
+    None
+    """
+    parser.add_argument('--branch', help='set branch name',
+                        default='main')
 
 
 def help_template(filetype: str, description: str,

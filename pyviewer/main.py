@@ -11,7 +11,7 @@ import subprocess
 from .core import GLOBAL_CONF, VERSION, \
     get_filetype, load_lib, args_chk, print_key, get_col, cprint
 from .core.image_viewer import ImageViewers
-from .core.helpmsg import add_args_shell_cmp
+from .core.helpmsg import add_args_shell_cmp, add_args_update
 from .core.types import Args
 
 logger = getLogger(GLOBAL_CONF.logname)
@@ -44,6 +44,8 @@ def get_args() -> Args:
     tmpargs, rems = parser.parse_known_args()
     if tmpargs.file == 'shell_completion':
         add_args_shell_cmp(parser)
+    elif tmpargs.file == 'update':
+        add_args_update(parser)
     if not args_chk(tmpargs, 'type'):
         tmpargs.type = get_filetype(Path(tmpargs.file))
     lib = load_lib(tmpargs)
@@ -78,7 +80,7 @@ def set_shell_comp(args: Args) -> None:
             print(line, end='')
 
 
-def update() -> None:
+def update(branch: str) -> None:
     py_cmd = None
     py_version = f'{sys.version_info.major}.{sys.version_info.minor}'
     for rel_path in [f'bin/python{py_version}',
@@ -99,7 +101,8 @@ def update() -> None:
         logger.error(f'python not found in {sys.base_prefix}')
         return
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
-                  'pyviewer @ git+https://github.com/MeF0504/pyviewer'
+                  'pyviewer @ '
+                  f'git+https://github.com/MeF0504/pyviewer@{branch}'
                   ]
     logger.debug(f'update command: {update_cmd}')
     out = subprocess.run(update_cmd, capture_output=False)
@@ -118,7 +121,7 @@ def main() -> None:
         return
 
     if args.file == 'update':
-        update()
+        update(args.branch)
         return
 
     if args.file == 'help':
