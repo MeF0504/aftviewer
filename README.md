@@ -41,24 +41,28 @@ py -m pip install "pyviewer[all] @ git+https://github.com/MeF0504/pyviewer"
 
 ## Usage
 ```bash
-usage: pyviewer [-h]
+usage: pyviewer [-h] [--version]
                 [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}]
                 file
 
-show the constitution of a file. default support file types ... hdf5, pickle,
-numpy, np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm
+show the constitution of a file. Supported file types ... hdf5, pickle, numpy,
+np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm. To see the detailed
+help of each type, type 'pyviewer help -t <type>'.
 
 positional arguments:
   file                  input file
 
 options:
   -h, --help            show this help message and exit
+  --version, -V         show program's version number and exit
   -t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}
                         specify the file type. "pyviewer help -t TYPE" will
                         show the detailed help.
 
-To see the detailed help of each type, type 'pyviewer help -t TYPE'. PyViewer
-has other some subcommands, 'pyviewer update' updates this command, 'pyviewer
-config_list' shows the current optional configuration.
+PyViewer has other subcommands, 'pyviewer help -t <type>' shows detailed help,
+'pyviewer update' run PyViewer update command, 'pyviewer config_list' shows
+the current optional configuration, 'pyviewer shell_completion --bash >>
+~/.bashrc' or 'pyviewer shell_completion --zsh >> ~/.zshrc' set the completion
+script for bash/zsh.
 ```
 

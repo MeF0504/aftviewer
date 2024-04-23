@@ -22,7 +22,7 @@ def get_args() -> Args:
     supported_type.remove('text')
     parser = argparse.ArgumentParser(
             description="show the constitution of a file."
-            f" default support file types ... {', '.join(supported_type)}"
+            f" Supported file types ... {', '.join(supported_type)}."
             " To see the detailed help of each type, "
             " type 'pyviewer help -t <type>'.",
             epilog=" PyViewer has other subcommands,"
