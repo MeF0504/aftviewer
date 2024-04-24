@@ -1,7 +1,10 @@
 import argparse
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
+from logging import getLogger
 
 from . import GLOBAL_CONF
+
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def add_args_imageviewer(parser: argparse.ArgumentParser):
@@ -18,13 +21,14 @@ def add_args_imageviewer(parser: argparse.ArgumentParser):
     None
     """
     parser.add_argument('-iv', '--image_viewer',
-                        help="set image viewer. " +
-                        "Supported args are " +
-                        "'None' (do not show any images), " +
-                        "'matplotlib' (use matplotlib.pyplot.imshow), " +
-                        "'PIL' (use PIL.Image.show), " +
-                        "'cv2' (use cv2.imshow), " +
-                        "and other string is treated as an external command (e.g. gosr, open).",
+                        help="set image viewer. "
+                        "Supported args are "
+                        "'None' (do not show any images), "
+                        "'matplotlib' (use matplotlib.pyplot.imshow), "
+                        "'PIL' (use PIL.Image.show), "
+                        "'cv2' (use cv2.imshow), "
+                        "and other string is treated as an external command "
+                        "(e.g. display, eog, open).",
                         type=str,
                         )
 
@@ -65,7 +69,9 @@ def add_args_output(parser: argparse.ArgumentParser):
                         type=str)
 
 
-def add_args_verbose(parser: argparse.ArgumentParser):
+def add_args_verbose(parser: Union[argparse.ArgumentParser,
+                                   argparse._MutuallyExclusiveGroup,
+                                   ]) -> None:
     """
     add optional argument --verbose.
 
@@ -84,7 +90,9 @@ def add_args_verbose(parser: argparse.ArgumentParser):
                         )
 
 
-def add_args_key(parser: argparse.ArgumentParser):
+def add_args_key(parser: Union[argparse.ArgumentParser,
+                               argparse._MutuallyExclusiveGroup,
+                               ]) -> None:
     """
     add optional argument --key.
 
@@ -98,14 +106,16 @@ def add_args_key(parser: argparse.ArgumentParser):
     None
     """
     parser.add_argument('-k', '--key',
-                        help='specify the key name to show. ' +
+                        help='specify the key name to show. '
                         'If no key is specified, return the list of keys.',
                         dest='key',
                         nargs='*',
                         )
 
 
-def add_args_interactive(parser: argparse.ArgumentParser):
+def add_args_interactive(parser: Union[argparse.ArgumentParser,
+                                       argparse._MutuallyExclusiveGroup,
+                                       ]) -> None:
     """
     add optional argument --interactive.
 
@@ -125,7 +135,9 @@ def add_args_interactive(parser: argparse.ArgumentParser):
                         )
 
 
-def add_args_cui(parser: argparse.ArgumentParser):
+def add_args_cui(parser: Union[argparse.ArgumentParser,
+                               argparse._MutuallyExclusiveGroup,
+                               ]) -> None:
     """
     add optional argument --interactive_cui.
 
@@ -217,7 +229,8 @@ def add_args_update(parser: argparse.ArgumentParser) -> None:
 
 
 def help_template(filetype: str, description: str,
-                  add_args: Optional[Callable[[argparse.ArgumentParser], None]] = None
+                  add_args: Optional[Callable[[argparse.ArgumentParser],
+                                              None]] = None
                   ) -> str:
     """
     offer a template for help messages.
@@ -239,6 +252,7 @@ def help_template(filetype: str, description: str,
         the help message.
     """
     if filetype not in GLOBAL_CONF.types:
+        logger.warning(f'not a valid type: {filetype}')
         return ''
     ex = GLOBAL_CONF.types[filetype].split()
     if len(ex) != 0:
