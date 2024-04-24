@@ -15,12 +15,13 @@ def add_args(parser):
 
 
 def show_help():
-    helpmsg = help_template('png_sample', 'show a png image.', add_args)
+    helpmsg = help_template('show_image', 'show an image file.', add_args)
     print(helpmsg)
 
 
 def main(fpath, args):
     if is_pil:
+        print('EXIF data')
         img_data = Image.open(fpath)
         img_exif = img_data.getexif()
         for key, val in img_exif.items():

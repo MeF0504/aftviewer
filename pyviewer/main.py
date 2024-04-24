@@ -24,9 +24,9 @@ def get_args() -> Args:
             description="show the constitution of a file."
             f" Supported file types ... {', '.join(supported_type)}."
             " To see the detailed help of each type, "
-            " type 'pyviewer help -t <type>'.",
+            " type 'pyviewer help -t TYPE'.",
             epilog=" PyViewer has some subcommands,"
-            " 'pyviewer help -t <type>' shows detailed help,"
+            " 'pyviewer help -t TYPE' shows detailed help,"
             " 'pyviewer update' run the update command of PyViewer,"
             " 'pyviewer config_list' shows the current optional configuration,"
             " 'pyviewer shell_completion --bash >> ~/.bashrc' or"
