@@ -47,7 +47,7 @@ usage: pyviewer [-h] [--version]
 
 show the constitution of a file. Supported file types ... hdf5, pickle, numpy,
 np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm. To see the detailed
-help of each type, type 'pyviewer help -t <type>'.
+help of each type, type 'pyviewer help -t TYPE'.
 
 positional arguments:
   file                  input file
@@ -59,7 +59,7 @@ options:
                         specify the file type. "pyviewer help -t TYPE" will
                         show the detailed help.
 
-PyViewer has some subcommands, 'pyviewer help -t <type>' shows detailed help,
+PyViewer has some subcommands, 'pyviewer help -t TYPE' shows detailed help,
 'pyviewer update' run the update command of PyViewer, 'pyviewer config_list'
 shows the current optional configuration, 'pyviewer shell_completion --bash >>
 ~/.bashrc' or 'pyviewer shell_completion --zsh >> ~/.zshrc' set the completion
