@@ -4,10 +4,10 @@ from pathlib import PurePath
 from functools import partial
 from logging import getLogger
 
-from . import GLOBAL_CONF, args_chk, print_key, get_config, get_col, cprint, \
+from .. import GLOBAL_CONF, args_chk, print_key, get_config, get_col, cprint, \
     interactive_view, interactive_cui, help_template, \
     add_args_specification, add_args_encoding
-from . import ReturnMessage as RM
+from .. import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
 logger = getLogger(GLOBAL_CONF.logname)

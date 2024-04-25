@@ -1,6 +1,6 @@
 import os
 
-from . import show_image_ndarray, help_template, add_args_imageviewer
+from .. import show_image_ndarray, help_template, add_args_imageviewer
 from pymeflib.xpm_loader import XPMLoader
 
 

@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from logging import getLogger
 
-from . import GLOBAL_CONF, args_chk, cprint, show_image_file, \
+from .. import GLOBAL_CONF, args_chk, cprint, show_image_file, \
     get_config, get_col, help_template, get_image_viewer, \
     add_args_imageviewer, add_args_output, add_args_verbose
 logger = getLogger(GLOBAL_CONF.logname)

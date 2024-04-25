@@ -24,8 +24,8 @@ classifiers = [
 documentation = "https://github.com/MeF0504/pyviewer/wiki"
 repository = "https://github.com/MeF0504/pyviewer"
 [project.scripts]
-pyviewer = "pyviewer.main:main"
-_get_pyviewer_types = "pyviewer.main:get_types"
+pyviewer = "pyviewer.cli:main"
+_get_pyviewer_types = "pyviewer.cli:get_types"
 [project.optional-dependencies]
 # https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies
 numpy = ["numpy"]
@@ -41,6 +41,7 @@ packages = [
     "pyviewer",
     "pyviewer.core",
     "pyviewer.core.image_viewer",
+    "pyviewer.cli",
     "pyviewer.viewers",
     "pyviewer.test",
 ]

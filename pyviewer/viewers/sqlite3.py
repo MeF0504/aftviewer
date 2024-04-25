@@ -10,9 +10,9 @@ except ImportError:
 else:
     import_curses = True
 
-from . import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
+from .. import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
     interactive_view, help_template, add_args_specification, add_args_output
-from . import ReturnMessage as RM
+from .. import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
 from ..core.cui import CursesCUI
 try:

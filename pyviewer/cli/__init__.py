@@ -8,11 +8,11 @@ from types import FunctionType
 from logging import getLogger
 import subprocess
 
-from .core import GLOBAL_CONF, VERSION, \
+from ..core import GLOBAL_CONF, VERSION, \
     get_filetype, load_lib, args_chk, print_key, get_col, cprint
-from .core.image_viewer import ImageViewers
-from .core.helpmsg import add_args_shell_cmp, add_args_update
-from .core.types import Args
+from ..core.image_viewer import ImageViewers
+from ..core.helpmsg import add_args_shell_cmp, add_args_update
+from ..core.types import Args
 
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -21,6 +21,7 @@ def get_args() -> Args:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     supported_type.remove('text')
     parser = argparse.ArgumentParser(
+            prog='pyviewer',
             description="show the constitution of a file."
             f" Supported file types ... {', '.join(supported_type)}."
             " To see the detailed help of each type, "
@@ -156,10 +157,13 @@ def main() -> None:
         else:
             print("Why Don't you use vim???")
         return
+    elif args.type is None:
+        print('This is not a supported file type.')
+        return
 
     lib = load_lib(args)
     if lib is None:
-        print('Library file is not found.')
+        print(f'The library file for "{args.type}" is not found.')
     else:
         lib.main(fpath, args)
     return
