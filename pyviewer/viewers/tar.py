@@ -5,11 +5,11 @@ from functools import partial
 from pathlib import Path, PurePosixPath
 from logging import getLogger
 
-from . import GLOBAL_CONF, args_chk, print_key, cprint, get_image_viewer, \
+from .. import GLOBAL_CONF, args_chk, print_key, cprint, get_image_viewer, \
     is_image, interactive_view, interactive_cui, \
     show_image_file, run_system_cmd, get_col, help_template, ImageViewers, \
     add_args_imageviewer, add_args_output, add_args_specification
-from . import ReturnMessage as RM
+from .. import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 logger = getLogger(GLOBAL_CONF.logname)
 

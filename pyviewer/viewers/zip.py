@@ -6,11 +6,11 @@ from getpass import getpass
 from pathlib import Path, PurePosixPath
 from logging import getLogger
 
-from . import GLOBAL_CONF, args_chk, is_image, print_key, cprint, get_col, \
+from .. import GLOBAL_CONF, args_chk, is_image, print_key, cprint, get_col, \
     interactive_view, interactive_cui, show_image_file, get_image_viewer, \
     run_system_cmd, help_template, ImageViewers, \
     add_args_imageviewer, add_args_output, add_args_specification
-from . import ReturnMessage as RM
+from .. import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, show_tree
 logger = getLogger(GLOBAL_CONF.logname)
 

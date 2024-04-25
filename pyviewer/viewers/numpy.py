@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from . import args_chk, print_key, set_numpy_format, help_template, \
+from .. import args_chk, print_key, set_numpy_format, help_template, \
     add_args_specification
 set_numpy_format(np)
 

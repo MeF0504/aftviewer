@@ -5,10 +5,10 @@ from logging import getLogger
 
 import h5py
 
-from . import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
+from .. import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
     FG, BG, FG256, BG256, END, set_numpy_format, get_config, \
     interactive_view, interactive_cui, help_template, add_args_specification
-from . import ReturnMessage as RM
+from .. import ReturnMessage as RM
 from pymeflib.tree2 import show_tree
 
 try:

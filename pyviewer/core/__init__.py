@@ -16,7 +16,6 @@ from pymeflib.tree2 import TreeViewer, GC, PPath
 from .types import CONF, Args, SF
 
 
-VERSION = "3.1.2"
 __debug = False
 if 'XDG_CONFIG_HOME' in os.environ:
     __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
