@@ -8,8 +8,9 @@ from types import FunctionType
 from logging import getLogger
 import subprocess
 
-from ..core import GLOBAL_CONF, VERSION, \
+from ..core import GLOBAL_CONF, \
     get_filetype, load_lib, args_chk, print_key, get_col, cprint
+from ..core.__version__ import VERSION
 from ..core.image_viewer import ImageViewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args

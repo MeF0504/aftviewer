@@ -48,4 +48,4 @@ packages = [
 # include non-default (non-python?) files
 include-package-data = true
 [tool.setuptools.dynamic]
-version = {attr = "pyviewer.core.VERSION"}
+version = {attr = "pyviewer.core.__version__.VERSION"}
