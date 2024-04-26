@@ -70,10 +70,11 @@ def show_opts() -> None:
 
 
 def set_shell_comp(args: Args) -> None:
+    base_dir = Path(__file__).parent.parent
     if args_chk(args, 'bash'):
-        sh_cmp_file = Path(__file__).parent/'shell-completion/completion.bash'
+        sh_cmp_file = base_dir/'shell-completion/completion.bash'
     elif args_chk(args, 'zsh'):
-        sh_cmp_file = Path(__file__).parent/'shell-completion/completion.zsh'
+        sh_cmp_file = base_dir/'shell-completion/completion.zsh'
     else:
         print('Please specify shell (--bash or --zsh).')
         return
