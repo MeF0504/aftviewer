@@ -5,13 +5,16 @@ from functools import partial
 from getpass import getpass
 from pathlib import Path, PurePosixPath
 from logging import getLogger
+from typing import Optional
 
-from .. import GLOBAL_CONF, args_chk, is_image, print_key, cprint, get_col, \
-    interactive_view, interactive_cui, show_image_file, get_image_viewer, \
-    run_system_cmd, help_template, ImageViewers, \
-    add_args_imageviewer, add_args_output, add_args_specification
+from .. import (
+        GLOBAL_CONF, Args, args_chk, is_image, print_key, cprint, get_col,
+        interactive_view, interactive_cui, show_image_file, get_image_viewer,
+        run_system_cmd, help_template, ImageViewers,
+        add_args_imageviewer, add_args_output, add_args_specification
+        )
 from .. import ReturnMessage as RM
-from pymeflib.tree2 import branch_str, show_tree
+from pymeflib.tree2 import GC, branch_str, show_tree
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -58,7 +61,9 @@ def get_contents(zip_file, path):
     return dirs, files
 
 
-def show_zip(zip_file, pwd, tmpdir, args, get_contents, cpath, **kwargs):
+def show_zip(zip_file: zipfile.ZipFile, pwd: Optional[bytes],
+             tmpdir: Optional[tempfile.TemporaryDirectory],
+             args: Args, get_contents: GC, cpath: str, **kwargs):
     res = []
     img_viewer = get_image_viewer(args)
     try:
@@ -77,6 +82,7 @@ def show_zip(zip_file, pwd, tmpdir, args, get_contents, cpath, **kwargs):
         zip_file.extract(zipinfo, path=outpath, pwd=pwd)
         return RM(f'file is saved to {outpath/cpath}', False)
 
+    assert tmpdir is not None, "something strange; tmpdir is not set."
     if zipinfo.is_dir():
         # directory
         res.append('{}'.format(key_name))
@@ -143,7 +149,14 @@ def main(fpath, args):
         print('{} is not a zip file.'.format(fpath))
         return
     zip_file = zipfile.ZipFile(fpath, 'r')
-    tmpdir = tempfile.TemporaryDirectory()
+    need_tmp = (args_chk(args, 'key') and not args_chk(args, 'output')) or \
+        args_chk(args, 'interactive') or args_chk(args, 'cui')
+    if need_tmp:
+        tmpdir = tempfile.TemporaryDirectory()
+        logger.debug(f'set tmp dir: {tmpdir.name}')
+    else:
+        tmpdir = None
+        logger.debug('do not set tmp dir')
     fname = os.path.basename(fpath)
     gc = partial(get_contents, zip_file)
     if args.ask_password:
@@ -181,4 +194,6 @@ def main(fpath, args):
         show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     zip_file.close()
-    tmpdir.cleanup()
+    if need_tmp:
+        tmpdir.cleanup()
+        logger.debug('close tmpdir')
