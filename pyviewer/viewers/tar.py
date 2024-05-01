@@ -35,9 +35,14 @@ def show_tar(tar_file: tarfile.TarFile,
 
     if args_chk(args, 'output') and args_chk(args, 'key'):
         outpath = Path(args.output)
+        logger.info(f'out key: {cpath}')
         if not outpath.parent.is_dir():
             outpath.parent.mkdir(parents=True)
-        tar_file.extractall(path=outpath, members=[tarinfo])
+        for item in tar_file.getmembers():
+            logger.debug(f'checking;; {item.name}')
+            if item.name.startswith(cpath):
+                logger.info(f'  find; {item.name}')
+                tar_file.extract(item, path=outpath)
         return RM(f'file is saved to {outpath/cpath}', False)
 
     assert tmpdir is not None, "something strange; tmpdir is not set."

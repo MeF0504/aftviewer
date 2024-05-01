@@ -77,9 +77,14 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: Optional[bytes],
 
     if args_chk(args, 'output') and args_chk(args, 'key'):
         outpath = Path(args.output)
+        logger.info(f'out key: {cpath}')
         if not outpath.parent.is_dir():
             outpath.parent.mkdir(parents=True)
-        zip_file.extract(zipinfo, path=outpath, pwd=pwd)
+        for item in zip_file.namelist():
+            logger.debug(f'checking;; {item}')
+            if item.startswith(cpath):
+                logger.info(f'  find; {item}')
+                zip_file.extract(zip_file.getinfo(item), path=outpath, pwd=pwd)
         return RM(f'file is saved to {outpath/cpath}', False)
 
     assert tmpdir is not None, "something strange; tmpdir is not set."
