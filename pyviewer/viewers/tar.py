@@ -4,17 +4,22 @@ import tempfile
 from functools import partial
 from pathlib import Path, PurePosixPath
 from logging import getLogger
+from typing import Optional
 
-from .. import GLOBAL_CONF, args_chk, print_key, cprint, get_image_viewer, \
-    is_image, interactive_view, interactive_cui, \
-    show_image_file, run_system_cmd, get_col, help_template, ImageViewers, \
-    add_args_imageviewer, add_args_output, add_args_specification
+from .. import (
+        GLOBAL_CONF, Args, args_chk, print_key, cprint, get_image_viewer,
+        is_image, interactive_view, interactive_cui,
+        show_image_file, run_system_cmd, get_col, help_template, ImageViewers,
+        add_args_imageviewer, add_args_output, add_args_specification
+        )
 from .. import ReturnMessage as RM
-from pymeflib.tree2 import branch_str, show_tree
+from pymeflib.tree2 import GC, branch_str, show_tree
 logger = getLogger(GLOBAL_CONF.logname)
 
 
-def show_tar(tar_file, tmpdir, args, get_contents, cpath, **kwargs):
+def show_tar(tar_file: tarfile.TarFile,
+             tmpdir: Optional[tempfile.TemporaryDirectory],
+             args: Args, get_contents: GC, cpath: str, **kwargs):
     res = []
     img_viewer = get_image_viewer(args)
     # check cpath
@@ -30,15 +35,21 @@ def show_tar(tar_file, tmpdir, args, get_contents, cpath, **kwargs):
 
     if args_chk(args, 'output') and args_chk(args, 'key'):
         outpath = Path(args.output)
+        logger.info(f'out key: {cpath}')
         if not outpath.parent.is_dir():
             outpath.parent.mkdir(parents=True)
-        tar_file.extractall(path=outpath, members=[tarinfo])
+        for item in tar_file.getmembers():
+            logger.debug(f'checking;; {item.name}')
+            if item.name.startswith(cpath):
+                logger.info(f'  find; {item.name}')
+                tar_file.extract(item, path=outpath)
         return RM(f'file is saved to {outpath/cpath}', False)
 
+    assert tmpdir is not None, "something strange; tmpdir is not set."
     if tarinfo.isfile():
         # file
         if 'system' in kwargs and kwargs['system']:
-            tar_file.extractall(path=tmpdir.name, members=[tarinfo])
+            tar_file.extract(tarinfo, path=tmpdir.name)
             tmpfile = os.path.join(tmpdir.name, cpath)
             ret = run_system_cmd(tmpfile)
             if ret:
@@ -52,7 +63,7 @@ def show_tar(tar_file, tmpdir, args, get_contents, cpath, **kwargs):
                 ava_iv = ImageViewers
                 if img_viewer not in ava_iv:
                     return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
-            tar_file.extractall(path=tmpdir.name, members=[tarinfo])
+            tar_file.extract(tarinfo, path=tmpdir.name)
             tmpfile = os.path.join(tmpdir.name, cpath)
             ret = show_image_file(tmpfile, args)
             if not ret:
@@ -131,7 +142,14 @@ def main(fpath, args):
         print('{} is not a tar file.'.format(fpath))
         return
     tar_file = tarfile.open(fpath, 'r:*')
-    tmpdir = tempfile.TemporaryDirectory()
+    need_tmp = (args_chk(args, 'key') and not args_chk(args, 'output')) or \
+        args_chk(args, 'interactive') or args_chk(args, 'cui')
+    if need_tmp:
+        tmpdir = tempfile.TemporaryDirectory()
+        logger.debug(f'set tmp dir: {tmpdir.name}')
+    else:
+        tmpdir = None
+        logger.debug('do not set tmp dir')
     fname = os.path.basename(fpath)
     gc = partial(get_contents, tar_file)
     sf = partial(show_tar, tar_file, tmpdir, args, gc)
@@ -163,4 +181,6 @@ def main(fpath, args):
         show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     tar_file.close()
-    tmpdir.cleanup()
+    if need_tmp:
+        tmpdir.cleanup()
+        logger.debug('close tmpdir')

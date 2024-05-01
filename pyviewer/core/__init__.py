@@ -95,6 +95,7 @@ if __debug:
 else:
     __null_hdlr = NullHandler()
     __logger.addHandler(__null_hdlr)
+__logger.debug(f'src: {__file__}')
 
 # global variables
 GLOBAL_CONF = CONF(__debug,
