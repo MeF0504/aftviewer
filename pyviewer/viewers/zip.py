@@ -82,7 +82,7 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: Optional[bytes],
             outpath.parent.mkdir(parents=True)
         for item in zip_file.namelist():
             logger.debug(f'checking;; {item}')
-            if item.startswith(cpath):
+            if cpath in [str(x) for x in PurePosixPath(item).parents]:
                 logger.info(f'  find; {item}')
                 zip_file.extract(zip_file.getinfo(item), path=outpath, pwd=pwd)
         return RM(f'file is saved to {outpath/cpath}', False)

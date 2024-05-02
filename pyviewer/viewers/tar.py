@@ -40,7 +40,7 @@ def show_tar(tar_file: tarfile.TarFile,
             outpath.parent.mkdir(parents=True)
         for item in tar_file.getmembers():
             logger.debug(f'checking;; {item.name}')
-            if item.name.startswith(cpath):
+            if cpath in [str(x) for x in PurePosixPath(item.name).parents]:
                 logger.info(f'  find; {item.name}')
                 tar_file.extract(item, path=outpath)
         return RM(f'file is saved to {outpath/cpath}', False)
@@ -92,22 +92,24 @@ def show_tar(tar_file: tarfile.TarFile,
     return RM('\n'.join(res), False)
 
 
-def get_contents(tar_file, path):
-    path = str(path)
-    if path == '.':
+def get_contents(tar_file: tarfile.TarFile, path: PurePosixPath):
+    cpath = str(path)
+    if cpath == '.':
         lenpath = 0
     else:
-        lenpath = len(path)+1
+        lenpath = len(cpath)+1
     files = []
     dirs = []
     for t in tar_file.getmembers():
-        if lenpath != 0:
-            if t.name == path:
+        tpath = PurePosixPath(t.name)
+        if lenpath != 0:  # not root
+            if t.name == cpath:
                 continue
-            if not t.name.startswith(path):
+            if path not in tpath.parents:
                 continue
         tname = t.name[lenpath:]
         if '/' in tname:
+            # @ root dir, count "directoly added"(?) files.
             # in some case, directories are not listed?
             tmp_dir = tname.split('/')[0]
             if tmp_dir not in dirs:
