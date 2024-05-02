@@ -40,7 +40,7 @@ def show_tar(tar_file: tarfile.TarFile,
             outpath.parent.mkdir(parents=True)
         for item in tar_file.getmembers():
             logger.debug(f'checking;; {item.name}')
-            if item.name.startswith(cpath):
+            if cpath in [str(x) for x in PurePosixPath(item.name).parents]:
                 logger.info(f'  find; {item.name}')
                 tar_file.extract(item, path=outpath)
         return RM(f'file is saved to {outpath/cpath}', False)
