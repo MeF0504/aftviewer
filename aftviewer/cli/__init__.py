@@ -20,7 +20,6 @@ logger = getLogger(GLOBAL_CONF.logname)
 
 def get_args() -> Args:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
-    supported_type.remove('text')
     parser = argparse.ArgumentParser(
             prog='aftviewer',
             description="show the constitution of a file."
@@ -176,7 +175,6 @@ def get_types():
         return ""
     elif sys.argv[1] == 'type':
         supported_type = list(GLOBAL_CONF.types.keys()).copy()
-        supported_type.remove('text')
         print(' '.join(supported_type))
     elif sys.argv[1] == 'image_viewer':
         print(' '.join(ImageViewers))
