@@ -6,8 +6,8 @@ import pytest
 
 from . import chk_deps
 
-from pyviewer.core import args_chk, load_lib
-from pyviewer.core.helpmsg import add_args_imageviewer, add_args_encoding, \
+from aftviewer.core import args_chk, load_lib
+from aftviewer.core.helpmsg import add_args_imageviewer, add_args_encoding, \
     add_args_output, add_args_verbose, add_args_key, add_args_interactive, \
     add_args_cui
 

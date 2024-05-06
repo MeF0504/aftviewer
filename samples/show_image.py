@@ -6,7 +6,7 @@ except ImportError as e:
 else:
     is_pil = True
 
-from pyviewer import show_image_file, help_template, \
+from aftviewer import show_image_file, help_template, \
     add_args_imageviewer
 
 

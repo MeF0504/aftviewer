@@ -1,12 +1,12 @@
-# PyViewer
+# Any File Type Viewer
 
-CUI view tool made by Python.
+is a CUI/TUI tool to view any type of files made by Python.
 
-See the [wiki page](https://github.com/MeF0504/pyviewer/wiki) for the details.
+See the [wiki page](https://github.com/MeF0504/aftviewer/wiki) for the details.
 
 ## Requirements
 
-Basically, PyViewer works for supported [Python](https://www.python.org/) versions
+Basically, AFTViewer works for supported [Python](https://www.python.org/) versions
 without any third-party libraries.
 
 Some third-party libraries are required to open some file types.
@@ -25,29 +25,29 @@ Some third-party libraries are required to open some file types.
 ## Install
 
 ```bash
-python -m pip install git+https://github.com/MeF0504/pyviewer
+python -m pip install git+https://github.com/MeF0504/aftviewer
 ```
 or in Windows OS,
 ```bash
-py -m pip install git+https://github.com/MeF0504/pyviewer
+py -m pip install git+https://github.com/MeF0504/aftviewer
 ```
 
-If you want to install all modules used in PyViewer,
+If you want to install all modules used in AFTViewer,
 ```bash
-python -m pip install "pyviewer[all] @ git+https://github.com/MeF0504/pyviewer"
+python -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
 # or
-py -m pip install "pyviewer[all] @ git+https://github.com/MeF0504/pyviewer"
+py -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
 ```
 
 ## Usage
 ```bash
-usage: pyviewer [-h] [--version]
-                [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}]
-                file
+usage: aftviewer [-h] [--version]
+                 [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}]
+                 file
 
 show the constitution of a file. Supported file types ... hdf5, pickle, numpy,
 np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm. To see the detailed
-help of each type, type 'pyviewer help -t TYPE'.
+help of each type, type 'aftviewer help -t TYPE'.
 
 positional arguments:
   file                  input file
@@ -56,13 +56,13 @@ options:
   -h, --help            show this help message and exit
   --version, -V         show program's version number and exit
   -t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}
-                        specify the file type. "pyviewer help -t TYPE" will
+                        specify the file type. "aftviewer help -t TYPE" will
                         show the detailed help.
 
-PyViewer has some subcommands, 'pyviewer help -t TYPE' shows detailed help,
-'pyviewer update' run the update command of PyViewer, 'pyviewer config_list'
-shows the current optional configuration, 'pyviewer shell_completion --bash >>
-~/.bashrc' or 'pyviewer shell_completion --zsh >> ~/.zshrc' set the completion
-script for bash/zsh.
+aftviewer has some subcommands, 'aftviewer help -t TYPE' shows detailed help,
+'aftviewer update' run the update command of AFTViewer, 'aftviewer
+config_list' shows the current optional configuration, 'aftviewer
+shell_completion --bash >> ~/.bashrc' or 'aftviewer shell_completion --zsh >>
+~/.zshrc' set the completion script for bash/zsh.
 ```
 

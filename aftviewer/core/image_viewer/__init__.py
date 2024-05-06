@@ -113,7 +113,7 @@ def __get_mod(img_viewer: Optional[str]):
     try:
         add_path = GLOBAL_CONF.conf_dir/f'additional_ivs/{img_viewer}.py'
         if (Path(__file__).parent/f'{img_viewer}.py').is_file():
-            mod = import_module(f'pyviewer.core.image_viewer.{img_viewer}')
+            mod = import_module(f'aftviewer.core.image_viewer.{img_viewer}')
         elif add_path.is_file():
             if str(GLOBAL_CONF.conf_dir) not in sys.path:
                 logger.debug(f'add {str(GLOBAL_CONF.conf_dir)}'

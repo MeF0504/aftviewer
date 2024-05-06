@@ -5,7 +5,7 @@ from types import FunctionType
 
 import pytest
 
-from pyviewer.core import load_lib
+from aftviewer.core import load_lib
 
 
 @pytest.mark.parametrize(('filetype'), [

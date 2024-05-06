@@ -39,7 +39,7 @@ def test_args_filetypes(filetype, is_args_ok):
             ['--interactive_cui'],
             ]
     assert len(is_args_ok) == len(test_args_list)
-    lib = import_module(f'pyviewer.viewers.{filetype}')
+    lib = import_module(f'aftviewer.viewers.{filetype}')
     not_ok = []
     for i, test_args in enumerate(test_args_list):
         parser = argparse.ArgumentParser()

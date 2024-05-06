@@ -3,7 +3,7 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyviewer"
+name = "aftviewer"
 description = "CUI view tool made by python."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -21,11 +21,11 @@ classifiers = [
     "Private :: Do Not Upload",
 ]
 [project.urls]
-documentation = "https://github.com/MeF0504/pyviewer/wiki"
-repository = "https://github.com/MeF0504/pyviewer"
+documentation = "https://github.com/MeF0504/aftviewer/wiki"
+repository = "https://github.com/MeF0504/aftviewer"
 [project.scripts]
-pyviewer = "pyviewer.cli:main"
-_get_pyviewer_types = "pyviewer.cli:get_types"
+aftviewer = "aftviewer.cli:main"
+_get_aftviewer_types = "aftviewer.cli:get_types"
 [project.optional-dependencies]
 # https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies
 numpy = ["numpy"]
@@ -38,14 +38,14 @@ debug = ["pytest"]
 
 [tool.setuptools]
 packages = [
-    "pyviewer",
-    "pyviewer.core",
-    "pyviewer.core.image_viewer",
-    "pyviewer.cli",
-    "pyviewer.viewers",
-    "pyviewer.test",
+    "aftviewer",
+    "aftviewer.core",
+    "aftviewer.core.image_viewer",
+    "aftviewer.cli",
+    "aftviewer.viewers",
+    "aftviewer.test",
 ]
 # include non-default (non-python?) files
 include-package-data = true
 [tool.setuptools.dynamic]
-version = {attr = "pyviewer.core.__version__.VERSION"}
+version = {attr = "aftviewer.core.__version__.VERSION"}
