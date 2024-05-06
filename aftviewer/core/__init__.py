@@ -1,10 +1,12 @@
 import os
 import sys
+import shutil
 import json
 import platform
 import subprocess
 import tarfile
 import mimetypes
+import pprint
 from importlib import import_module
 from pathlib import Path, PurePath
 from typing import Union, Tuple, Any, Optional
@@ -296,14 +298,18 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     fge, bge = get_col('msg_error')
     tv = TreeViewer('.', get_contents, purepath=purepath, logger=__logger)
     while True:
+        term_size = shutil.get_terminal_size()
+        print('='*(term_size.columns-5))
         dirs, files = tv.get_contents(cpath)
         cprint('current path:', ' {}/{}'.format(fname, cpath), fg=fg1, bg=bg1)
-        cprint('contents in this dict:', ' ', fg=fg2, bg=bg2, end='')
-        for d in dirs:
-            print('{}/, '.format(d), end='')
-        for f in files:
-            print('{}, '.format(f), end='')
-        print('\n')
+        cprint('contents in this dict:', ' ', fg=fg2, bg=bg2)
+        dir_txt = pprint.pformat([f'{d}/' for d in dirs], compact=True)
+        file_txt = pprint.pformat(files, compact=True)
+        if len(dirs) != 0:
+            # remove [], ''
+            print(' '+dir_txt.replace("'", '')[1:-1], end=', ')
+        print(' '+file_txt.replace("'", '')[1:-1])
+        print('')
         key_name = input(inter_str)
         if key_name == 'q':
             __logger.info('quit')
