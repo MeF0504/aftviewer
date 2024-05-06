@@ -239,7 +239,7 @@ def help_template(filetype: str, description: str,
     ----------
     filetype: str
         The file type of help message. This file type is required to be
-        supported by the `pyviewer` command.
+        supported by the `aftviewer` command.
     description: str
         the description of the file type.
     add_args: Callable or None
@@ -259,7 +259,7 @@ def help_template(filetype: str, description: str,
         exs = ', '.join(ex)
         description += f' The corresponding extensions are [{exs}].'
     parser = argparse.ArgumentParser(description=description,
-                                     prog=f'pyviewer FILE -t {filetype}',
+                                     prog=f'aftviewer FILE -t {filetype}',
                                      add_help=False)
     if add_args is not None:
         add_args(parser)

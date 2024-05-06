@@ -14,7 +14,7 @@ class CONF:
         debug mode is enabled or not.
     conf_dir: pathlib.Path
         configuration directory.
-        default: "$XDG_CONFIG_HOME/pyviewer" or "~/.config/pyviewer"
+        default: "$XDG_CONFIG_HOME/aftviewer" or "~/.config/aftviewer"
     opts: dict
         behavior options. This values are overridden by conf_dir/setting.json.
     types: dict
@@ -51,7 +51,7 @@ class Args:
     wrapper of argument parser. The following attributes are examples
     that are used in some of default file types.
     The actual arguments depends on the file type.
-    Type 'pyviewer help -t <file type>' to see the selectable arguments.
+    Type 'aftviewer help -t <file type>' to see the selectable arguments.
 
     Attributes:
     file: str

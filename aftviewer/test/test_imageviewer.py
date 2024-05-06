@@ -3,8 +3,8 @@ import argparse
 
 import pytest
 
-from pyviewer.core import image_viewer, __json_opts
-from pyviewer.core.helpmsg import add_args_imageviewer, add_args_cui
+from aftviewer.core import image_viewer, __json_opts
+from aftviewer.core.helpmsg import add_args_imageviewer, add_args_cui
 
 ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), ('open')]
 

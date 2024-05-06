@@ -1,2 +1,2 @@
-include pyviewer/core/default.json
-graft pyviewer/shell-completion
+include aftviewer/core/default.json
+graft aftviewer/shell-completion

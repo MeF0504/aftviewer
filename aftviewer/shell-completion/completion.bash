@@ -1,14 +1,14 @@
-# pyviewer completion setting for bash
+# aftviewer completion setting for bash
 
-_pyviewer_cmp()
+_aftviewer_cmp()
 {
     local cur prev
     cur=${COMP_WORDS[${COMP_CWORD}]}
     prev=${COMP_WORDS[${COMP_CWORD}-1]}
 
     local opts="-h -V -t -iv -o -p -v -k -i -c --encoding"
-    local types="$(_get_pyviewer_types 'type')"
-    local image_viewer="$(_get_pyviewer_types 'image_viewer')"
+    local types="$(_get_aftviewer_types 'type')"
+    local image_viewer="$(_get_aftviewer_types 'image_viewer')"
     if [[ "${cur:0:1}" = "-" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
     elif [[ "${prev}" = "-h" ]]; then
@@ -31,5 +31,5 @@ _pyviewer_cmp()
     fi
 }
 
-complete -F _pyviewer_cmp pyviewer
-# pyviewer completion end
+complete -F _aftviewer_cmp aftviewer
+# aftviewer completion end

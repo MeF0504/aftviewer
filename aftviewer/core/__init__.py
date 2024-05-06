@@ -18,9 +18,9 @@ from .types import CONF, Args, SF
 
 __debug = False
 if 'XDG_CONFIG_HOME' in os.environ:
-    __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'pyviewer'
+    __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'aftviewer'
 else:
-    __conf_dir = Path(os.path.expanduser('~/.config'))/'pyviewer'
+    __conf_dir = Path(os.path.expanduser('~/.config'))/'aftviewer'
 if not __conf_dir.exists():
     os.makedirs(__conf_dir, mode=0o755)
 
@@ -72,7 +72,7 @@ __type_config = {
 __type_config.update(__add_types)
 
 # logger setting
-__logname = 'PyViewerLog'
+__logname = 'AFTViewerLog'
 __log_file = __conf_dir/'debug.log'
 __logger = getLogger(__logname)
 # (NOTSET <) DEBUG < INFO < WARNING < ERROR < CRITICAL
@@ -447,7 +447,7 @@ def load_lib(args: Args) -> Optional[ModuleType]:
         lib_path = f'additional_types.{args.type}'
         lib_path2 = __conf_dir/f'additional_types/{args.type}.py'
     else:
-        lib_path = f'pyviewer.viewers.{args.type}'
+        lib_path = f'aftviewer.viewers.{args.type}'
         lib_path2 = Path(__file__).parent.parent
         lib_path2 /= f'viewers/{args.type}.py'
     if not lib_path2.is_file():

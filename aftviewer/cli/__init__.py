@@ -22,17 +22,17 @@ def get_args() -> Args:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     supported_type.remove('text')
     parser = argparse.ArgumentParser(
-            prog='pyviewer',
+            prog='aftviewer',
             description="show the constitution of a file."
             f" Supported file types ... {', '.join(supported_type)}."
             " To see the detailed help of each type, "
-            " type 'pyviewer help -t TYPE'.",
-            epilog=" PyViewer has some subcommands,"
-            " 'pyviewer help -t TYPE' shows detailed help,"
-            " 'pyviewer update' run the update command of PyViewer,"
-            " 'pyviewer config_list' shows the current optional configuration,"
-            " 'pyviewer shell_completion --bash >> ~/.bashrc' or"
-            " 'pyviewer shell_completion --zsh >> ~/.zshrc'"
+            " type 'aftviewer help -t TYPE'.",
+            epilog=" AFTViewer has some subcommands,"
+            " 'aftviewer help -t TYPE' shows detailed help,"
+            " 'aftviewer update' run the update command of AFTViewer,"
+            " 'aftviewer config_list' shows the current optional configuration,"
+            " 'aftviewer shell_completion --bash >> ~/.bashrc' or"
+            " 'aftviewer shell_completion --zsh >> ~/.zshrc'"
             " set the completion script for bash/zsh."
             )
     parser.add_argument('file', help='input file')
@@ -40,7 +40,7 @@ def get_args() -> Args:
                         version=f'%(prog)s {VERSION}')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type.'
-                        ' "pyviewer help -t TYPE"'
+                        ' "aftviewer help -t TYPE"'
                         ' will show the detailed help.',
                         choices=supported_type)
     tmpargs, rems = parser.parse_known_args()
@@ -104,8 +104,8 @@ def update(branch: str) -> None:
         logger.error(f'python not found in {sys.base_prefix}')
         return
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
-                  'pyviewer @ '
-                  f'git+https://github.com/MeF0504/pyviewer@{branch}'
+                  'aftviewer @ '
+                  f'git+https://github.com/MeF0504/aftviewer@{branch}'
                   ]
     logger.debug(f'update command: {update_cmd}')
     out = subprocess.run(update_cmd, capture_output=False)
