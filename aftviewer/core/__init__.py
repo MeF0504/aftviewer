@@ -4,6 +4,7 @@ import json
 import platform
 import subprocess
 import tarfile
+import mimetypes
 from importlib import import_module
 from pathlib import Path, PurePath
 from typing import Union, Tuple, Any, Optional
@@ -67,7 +68,6 @@ __type_config = {
     "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
     "jupyter": "ipynb",
     "xpm": "xpm",
-    "text": "py txt",
 }
 __type_config.update(__add_types)
 
@@ -426,6 +426,10 @@ def get_filetype(fpath: Path) -> Optional[str]:
             if ext in exts.split():
                 __logger.debug(f'set file type: {typ}')
                 return typ
+        mt = mimetypes.guess_type(fpath)[0]
+        __logger.info(f'get mimetype: {mt}')
+        if mt is not None and mt.split('/')[0] == 'text':
+            return 'text'
     __logger.debug('file type is not set.')
     return None
 
