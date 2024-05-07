@@ -9,8 +9,8 @@ from typing import Optional
 
 from .. import (
         GLOBAL_CONF, Args, args_chk, is_image, print_key, cprint, get_col,
-        interactive_view, interactive_cui, show_image_file, get_image_viewer,
-        run_system_cmd, help_template, ImageViewers,
+        interactive_view, interactive_cui, show_image_file,
+        run_system_cmd, help_template,
         add_args_imageviewer, add_args_output, add_args_specification
         )
 from .. import ReturnMessage as RM
@@ -65,7 +65,6 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: Optional[bytes],
              tmpdir: Optional[tempfile.TemporaryDirectory],
              args: Args, get_contents: GC, cpath: str, **kwargs):
     res = []
-    img_viewer = get_image_viewer(args)
     try:
         key_name = str(cpath)
         if key_name+'/' in zip_file.namelist():
@@ -108,16 +107,16 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: Optional[bytes],
             else:
                 return RM('Failed to open {}.'.format(cpath), True)
         elif is_image(key_name):
-            if img_viewer == 'None':
-                return RM('image viewer is None', False)
-            if 'cui' in kwargs and kwargs['cui']:
-                ava_iv = ImageViewers
-                if img_viewer not in ava_iv:
-                    return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
             zip_file.extract(zipinfo, path=tmpdir.name, pwd=pwd)
             tmpfile = os.path.join(tmpdir.name, cpath)
             ret = show_image_file(tmpfile, args)
-            if not ret:
+            if ret is None:
+                msg = 'image viewer not found.'
+                if args_chk(args, 'cui'):
+                    msg += '\nNOTE: external command is not supported' + \
+                        ' in CUI mode.'
+                return RM(msg, True)
+            elif not ret:
                 return RM('Failed to show image.', True)
 
         # text file?
