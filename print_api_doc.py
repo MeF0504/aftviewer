@@ -21,7 +21,7 @@ funcs = {
                   'get_col', 'set_numpy_format',
                   'interactive_view', 'run_system_cmd',
                   ],
-        '.core.image_viewer': ['get_image_viewer', 'is_image',
+        '.core.image_viewer': ['is_image',
                                'show_image_file', 'show_image_ndarray',
                                ],
         '.core.helpmsg': ['help_template', 'add_args_imageviewer',

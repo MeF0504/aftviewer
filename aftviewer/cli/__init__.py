@@ -11,7 +11,7 @@ import subprocess
 from ..core import GLOBAL_CONF, \
     get_filetype, load_lib, args_chk, print_key, get_col, cprint
 from ..core.__version__ import VERSION
-from ..core.image_viewer import ImageViewers
+from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args
 
@@ -177,4 +177,4 @@ def get_types():
         supported_type = list(GLOBAL_CONF.types.keys()).copy()
         print(' '.join(supported_type))
     elif sys.argv[1] == 'image_viewer':
-        print(' '.join(ImageViewers))
+        print(' '.join(__collect_image_viewers()))
