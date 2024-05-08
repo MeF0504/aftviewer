@@ -1,6 +1,7 @@
 # test image viewer related functions.
 import argparse
 import warnings
+import platform
 from types import ModuleType
 
 import pytest
@@ -8,15 +9,28 @@ import pytest
 from aftviewer.core import image_viewer, __json_opts
 from aftviewer.core.helpmsg import add_args_imageviewer, add_args_cui
 
-ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), ('open')]
+uname = platform.system()
+if uname == 'Darwin':
+    cmd = 'open'
+elif uname == 'Windows':
+    cmd = 'start'
+elif uname == 'Linux':
+    cmd = 'display'
+else:
+    cmd = None
+
+ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), (cmd)]
 
 
 @pytest.mark.parametrize(('iv'), ivs)
 def test_get_image_viewer_args(iv):
     # args specified case
+    if cmd is None:
+        warnings.warn(f'not supported OS [{uname}]. skip.')
+        return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    if iv != 'open' and iv not in image_viewers:
+    if iv != cmd and iv not in image_viewers:
         warnings.warn(f'image viewer {iv} not in ({image_viewers})')
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='input file')
@@ -38,9 +52,12 @@ def test_get_image_viewer_args(iv):
 @pytest.mark.parametrize(('iv'), ivs)
 def test_get_image_viewer_cui(iv):
     # cui config case
+    if cmd is None:
+        warnings.warn(f'not supported OS [{uname}]. skip.')
+        return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    if iv != 'open' and iv not in image_viewers:
+    if iv != cmd and iv not in image_viewers:
         warnings.warn(f'image viewer {iv} not in ({image_viewers})')
     __json_opts['config']['image_viewer_cui'] = iv
     parser = argparse.ArgumentParser()
@@ -66,9 +83,12 @@ def test_get_image_viewer_cui(iv):
 @pytest.mark.parametrize(('iv'), ivs)
 def test_get_image_viewer_conf(iv):
     # config case
+    if cmd is None:
+        warnings.warn(f'not supported OS [{uname}]. skip.')
+        return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    if iv != 'open' and iv not in image_viewers:
+    if iv != cmd and iv not in image_viewers:
         warnings.warn(f'image viewer {iv} not in ({image_viewers})')
     __json_opts['config']['image_viewer'] = iv
     parser = argparse.ArgumentParser()
