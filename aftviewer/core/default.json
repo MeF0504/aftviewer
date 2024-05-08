@@ -10,7 +10,6 @@
     },
     "colors": {
         "msg_error": ["r", null],
-        "msg_update": ["y", null],
         "msg_key_name": ["k", "y"],
         "interactive_path": [null, "c"],
         "interactive_contents": [null, "g"],
