@@ -5,9 +5,9 @@ import tempfile
 from pathlib import Path
 from logging import getLogger
 
-from .. import GLOBAL_CONF, args_chk, cprint, show_image_file, \
-    get_config, get_col, help_template, get_image_viewer, \
-    add_args_imageviewer, add_args_output, add_args_verbose
+from .. import (GLOBAL_CONF, args_chk, cprint, show_image_file,
+                get_config, get_col, help_template,
+                add_args_imageviewer, add_args_output, add_args_verbose)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -29,17 +29,16 @@ def show_output(output, args, out_obj):
                     print(f'{header}{text}', end='', file=out_obj)
                 print(file=out_obj)
             elif out_type == 'image/png':
-                img_viewer = get_image_viewer(args)
-                if img_viewer == 'None':
+                img_code = out_data['image/png']
+                img_bin = base64.b64decode(img_code.encode())
+                with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
+                    tmp.write(img_bin)
+                    ret = show_image_file(tmp.name, args)
                     if out_obj == sys.stdout:
-                        print('image viewer is None')
-                else:
-                    img_code = out_data['image/png']
-                    img_bin = base64.b64decode(img_code.encode())
-                    with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
-                        tmp.write(img_bin)
-                        ret = show_image_file(tmp.name, args)
-                        if not ret and out_obj == sys.stdout:
+                        if ret is None:
+                            cprint('image viewer is not found.',
+                                   fg=fge, bg=bge)
+                        elif not ret:
                             cprint('failed to open an image.', fg=fge, bg=bge)
 
 

@@ -3,71 +3,22 @@ import sys
 import tempfile
 import subprocess
 import mimetypes
-from typing import Any, Union, Optional
+from typing import Any, List, Union, Optional
+from types import ModuleType
 from importlib import import_module
 from pathlib import Path
 from logging import getLogger
 
-from .. import GLOBAL_CONF, args_chk, get_config, Args, cprint
+from .. import GLOBAL_CONF, args_chk, get_config, Args
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
 logger = getLogger(GLOBAL_CONF.logname)
 
 # image viewer
-__ImgViewer = None
+# not set, module in this package, or external command.
+__ImgViewer: Union[None, ModuleType, str] = None
 __set_ImgViewer = False
-ImageViewers = ['None']
-
-
-def get_image_viewer(args: Args) -> Optional[str]:
-    """
-    get the image viewer following the arguments from the command line and
-    configuration options.
-
-    Parameters
-    ----------
-    args: Args
-        The arguments given by the command line.
-
-    Returns
-    -------
-    Optional[str]
-        the name of image viewer.
-    """
-    global __ImgViewer, __set_ImgViewer
-    if __set_ImgViewer:
-        # already set
-        return __ImgViewer
-
-    iv_config = get_config('config', 'image_viewer')
-    iv_cui_config = get_config('config', 'image_viewer_cui')
-    if args_chk(args, 'image_viewer'):
-        logger.info('set image viewer from args')
-        __ImgViewer = args.image_viewer
-    elif args_chk(args, 'cui') and iv_cui_config is not None:
-        logger.info('set image viewer from config file (CUI)')
-        __ImgViewer = iv_cui_config
-    elif iv_config is not None:
-        logger.info('set image viewer from config file')
-        __ImgViewer = iv_config
-    else:
-        logger.info('search available image_viewer')
-        for iv in ImageViewers:
-            if iv == 'None':
-                continue
-            for p in sys.path:
-                if (Path(p)/iv).exists():
-                    __ImgViewer = iv
-                    logger.info(f' => image_viewer: {iv}')
-                    break
-            if __ImgViewer is not None:
-                # image viewer is set.
-                break
-        if __ImgViewer is None:
-            logger.warning("can't find image_viewer")
-    __set_ImgViewer = True
-    return __ImgViewer
 
 
 def __get_exec_cmds(image_viewer, fname):
@@ -83,8 +34,8 @@ def __get_exec_cmds(image_viewer, fname):
     return res
 
 
-def __collect_image_viewers():
-    global ImageViewers
+def __collect_image_viewers() -> List[str]:
+    img_viewers = ['None']
     file_dir = Path(__file__).parent
     for fy in file_dir.glob('*'):
         if not fy.is_file():
@@ -92,9 +43,9 @@ def __collect_image_viewers():
         if fy.name.startswith('__'):
             continue
         iv_name = os.path.splitext(fy.name)[0]
-        logger.debug(f'add {iv_name} to ImageViewers')
+        logger.debug(f'add {iv_name} to img_viewers')
         # arbitary setting?
-        ImageViewers.insert(0, iv_name)
+        img_viewers.insert(0, iv_name)
     add_dir = Path(GLOBAL_CONF.conf_dir/'additional_ivs')
     for fy in add_dir.glob('*'):
         if not fy.is_file():
@@ -102,14 +53,13 @@ def __collect_image_viewers():
         if fy.name.startswith('__'):
             continue
         iv_name = os.path.splitext(fy.name)[0]
-        logger.debug(f'add {iv_name} to ImageViewers from additional dir')
-        ImageViewers.insert(0, iv_name)
+        logger.debug(f'add {iv_name} to img_viewers from additional dir')
+        img_viewers.insert(0, iv_name)
+
+    return img_viewers
 
 
-__collect_image_viewers()
-
-
-def __get_mod(img_viewer: Optional[str]):
+def __get_mod(img_viewer: Optional[str]) -> Union[None, ModuleType]:
     try:
         add_path = GLOBAL_CONF.conf_dir/f'additional_ivs/{img_viewer}.py'
         if (Path(__file__).parent/f'{img_viewer}.py').is_file():
@@ -117,7 +67,7 @@ def __get_mod(img_viewer: Optional[str]):
         elif add_path.is_file():
             if str(GLOBAL_CONF.conf_dir) not in sys.path:
                 logger.debug(f'add {str(GLOBAL_CONF.conf_dir)}'
-                ' to sys.path (iv).')
+                             ' to sys.path (iv).')
                 sys.path.insert(0, str(GLOBAL_CONF.conf_dir))
             mod = import_module(f'additional_ivs.{img_viewer}')
         else:
@@ -128,7 +78,58 @@ def __get_mod(img_viewer: Optional[str]):
     return mod
 
 
-def show_image_file(img_file: str, args: Args) -> bool:
+def __set_image_viewer(args: Args) -> None:
+    global __ImgViewer, __set_ImgViewer
+    img_viewers = __collect_image_viewers()
+    iv_config = get_config('config', 'image_viewer')
+    iv_cui_config = get_config('config', 'image_viewer_cui')
+
+    tmp_iv = None
+    if args_chk(args, 'image_viewer'):
+        logger.info('set image viewer from args')
+        tmp_iv = args.image_viewer
+    elif args_chk(args, 'cui') and iv_cui_config is not None:
+        logger.info('set image viewer from config file (CUI)')
+        tmp_iv = iv_cui_config
+    elif iv_config is not None:
+        logger.info('set image viewer from config file')
+        tmp_iv = iv_config
+    else:
+        logger.info('search available image_viewer')
+        for iv in img_viewers:
+            logger.debug(f'iv: {iv}')
+            if iv == 'None':
+                __ImgViewer = iv
+                break
+            else:
+                mod = __get_mod(iv)
+                if mod is not None:
+                    logger.info(f'find image_viewer: {iv}')
+                    __ImgViewer = mod
+                    break
+    if tmp_iv is None:
+        # image viewer is already searched.
+        pass
+    elif tmp_iv in img_viewers:
+        if tmp_iv == 'None':
+            __ImgViewer = 'None'
+        else:
+            __ImgViewer = __get_mod(tmp_iv)
+    else:
+        # external command
+        if args_chk(args, 'cui'):
+            logger.error('external command is not supported in CUI mode.')
+            __ImgViewer = None
+        elif not chk_cmd(tmp_iv, logger=logger):
+            logger.error(f'command {tmp_iv} is not executable')
+            __ImgViewer = None
+        else:
+            __ImgViewer = tmp_iv
+    __set_ImgViewer = True
+    logger.debug(f'image viewer: {__ImgViewer} (None?:{__ImgViewer is None})')
+
+
+def show_image_file(img_file: str, args: Args) -> Union[None, bool]:
     """
     show an image file with the image viewer.
 
@@ -141,43 +142,50 @@ def show_image_file(img_file: str, args: Args) -> bool:
 
     Returns
     -------
-    bool
-        Return True if the file opened successfully, otherwise False.
+    True, False, or None
+        Return True if the file opened successfully and
+        False if opening file failed.
+        If a module to open the image is not found, return None.
     """
-    img_viewer = get_image_viewer(args)
-    logger.debug(f'img file:{img_file}, use {img_viewer}')
-    if img_viewer == 'None':
-        return True
+    global __set_ImgViewer, __ImgViewer
+    logger.debug(f'img file: {img_file}')
     if not os.path.isfile(img_file):
         logger.error(f'image file {img_file} in not found')
         return False
-    if img_viewer is None:
+
+    if not __set_ImgViewer:
+        __set_image_viewer(args)
+
+    if __ImgViewer is None:
         logger.error("I can't find any libraries to show image.")
-        ret = False
-    elif img_viewer in ImageViewers:
-        mod = __get_mod(img_viewer)
-        if mod is not None:
-            ret = mod.show_image_file(img_file)
+        ret = None
+    elif __ImgViewer == 'None':
+        logger.info('image viewer is None.')
+        ret = True
+    elif type(__ImgViewer) is ModuleType:
+        if hasattr(__ImgViewer, 'show_image_file'):
+            ret = __ImgViewer.show_image_file(img_file)
         else:
-            cprint(f'failed to show an image file {img_file}.',
-                   file=sys.stderr, fg='r')
-            ret = False
-    else:
-        if not chk_cmd(img_viewer, logger=logger):
-            logger.error(f'{img_viewer} is not executable')
-            return False
-        cmds = __get_exec_cmds(img_viewer, img_file)
-        out = subprocess.run(cmds)
-        # wait to open file. this is for, e.g., open command on Mac OS.
-        input('Press Enter to continue')
-        if out.returncode == 0:
-            ret = True
+            logger.error('show_image_file function is not found'
+                         f'({__ImgViewer}).')
+            ret = None
+    elif type(__ImgViewer) is str:
+        if chk_cmd(__ImgViewer, logger=logger):
+            cmds = __get_exec_cmds(__ImgViewer, img_file)
+            out = subprocess.run(cmds)
+            # wait to open file. this is for, e.g., open command on Mac OS.
+            input('Press Enter to continue')
+            if out.returncode == 0:
+                ret = True
+            else:
+                ret = False
         else:
+            logger.error(f'{__ImgViewer} is not executable')
             ret = False
     return ret
 
 
-def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
+def show_image_ndarray(data: Any, name: str, args: Args) -> Union[None, bool]:
     """
     show a given ndArray as an image with the image viewer.
 
@@ -194,36 +202,44 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> bool:
     Returns
     -------
     bool
-        Return True if the image is shown successfully, otherwise False.
+        Return True if the file opened successfully and
+        False if opening file failed.
+        If a module to open the image is not found, return None.
     """
-    img_viewer = get_image_viewer(args)
-    logger.debug(f'data shape: {data.shape}, use {img_viewer}')
-    if img_viewer == 'None':
-        return True
-    if img_viewer is None:
+    global __set_ImgViewer, __ImgViewer
+    logger.debug(f'data shape: {data.shape}')
+
+    if not __set_ImgViewer:
+        __set_image_viewer(args)
+
+    if __ImgViewer is None:
         logger.error("I can't find any libraries to show image.")
-        return False
-    elif img_viewer in ImageViewers:
-        mod = __get_mod(img_viewer)
-        if mod is not None:
-            ret = mod.show_image_ndarray(data, name)
+        ret = None
+    elif __ImgViewer == 'None':
+        logger.info('image viewer is None.')
+        ret = True
+    elif type(__ImgViewer) is ModuleType:
+        if hasattr(__ImgViewer, 'show_image_ndarray'):
+            ret = __ImgViewer.show_image_ndarray(data, name)
         else:
-            cprint('failed to show an image data.', file=sys.stderr, fg='r')
+            logger.error('show_image_ndarray function is not found'
+                         f'({__ImgViewer}).')
+            ret = None
+    elif type(__ImgViewer) is str:
+        if chk_cmd(__ImgViewer, logger=logger):
+            with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
+                make_bitmap(tmp.name, data, verbose=False, logger=logger)
+                cmds = __get_exec_cmds(__ImgViewer, tmp.name)
+                out = subprocess.run(cmds)
+                # wait to open file. this is for, e.g., open command on Mac OS.
+                input('Press Enter to continue')
+                if out.returncode == 0:
+                    ret = True
+                else:
+                    ret = False
+        else:
+            logger.error(f'{__ImgViewer} is not executable')
             ret = False
-    else:
-        if not chk_cmd(img_viewer):
-            logger.error(f'{img_viewer} is not executable')
-            return False
-        with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
-            make_bitmap(tmp.name, data, verbose=False, logger=logger)
-            cmds = __get_exec_cmds(img_viewer, tmp.name)
-            out = subprocess.run(cmds)
-            # wait to open file. this is for, e.g., open command on Mac OS.
-            input('Press Enter to continue')
-            if out.returncode == 0:
-                ret = True
-            else:
-                ret = False
     return ret
 
 

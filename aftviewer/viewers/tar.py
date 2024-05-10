@@ -7,9 +7,9 @@ from logging import getLogger
 from typing import Optional
 
 from .. import (
-        GLOBAL_CONF, Args, args_chk, print_key, cprint, get_image_viewer,
+        GLOBAL_CONF, Args, args_chk, print_key, cprint,
         is_image, interactive_view, interactive_cui,
-        show_image_file, run_system_cmd, get_col, help_template, ImageViewers,
+        show_image_file, run_system_cmd, get_col, help_template,
         add_args_imageviewer, add_args_output, add_args_specification
         )
 from .. import ReturnMessage as RM
@@ -21,7 +21,6 @@ def show_tar(tar_file: tarfile.TarFile,
              tmpdir: Optional[tempfile.TemporaryDirectory],
              args: Args, get_contents: GC, cpath: str, **kwargs):
     res = []
-    img_viewer = get_image_viewer(args)
     # check cpath
     try:
         if cpath.endswith('/'):
@@ -57,16 +56,16 @@ def show_tar(tar_file: tarfile.TarFile,
             else:
                 return RM('Failed to open {}.'.format(cpath), True)
         elif is_image(key_name):
-            if img_viewer == 'None':
-                return RM('image viewer is None', False)
-            if 'cui' in kwargs and kwargs['cui']:
-                ava_iv = ImageViewers
-                if img_viewer not in ava_iv:
-                    return RM('Only {} are supported as an Image viewer in CUI mode. current: "{}"'.format(', '.join(ava_iv), img_viewer), True)
             tar_file.extract(tarinfo, path=tmpdir.name)
             tmpfile = os.path.join(tmpdir.name, cpath)
             ret = show_image_file(tmpfile, args)
-            if not ret:
+            if ret is None:
+                msg = 'image viewer not found.'
+                if args_chk(args, 'cui'):
+                    msg += '\nNOTE: external command is not supported' + \
+                        ' in CUI mode.'
+                return RM(msg, True)
+            elif not ret:
                 return RM('Failed to show image.', True)
 
         else:

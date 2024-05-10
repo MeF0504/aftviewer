@@ -82,21 +82,29 @@ __logger = getLogger(__logname)
 # in debug mode, more than INFO is shown in stdout and
 # all logs (more than DEBUG to be exact) are saved in conf_dir/debug.log.
 __logger.setLevel(logDEBUG)
-if __debug:
-    __st_hdlr = StreamHandler()
-    __st_hdlr.setLevel(logINFO)
-    __st_format = '>> %(levelname)-9s %(message)s'
-    __st_hdlr.setFormatter(Formatter(__st_format))
-    __fy_hdlr = FileHandler(filename=__log_file, mode='w', encoding='utf-8')
-    __fy_hdlr.setLevel(logDEBUG)
-    __fy_format = '%(levelname)-9s %(asctime)s [%(filename)s:%(lineno)d]:' \
-        + ' %(message)s'
-    __fy_hdlr.setFormatter(Formatter(__fy_format))
-    __logger.addHandler(__st_hdlr)
-    __logger.addHandler(__fy_hdlr)
-else:
-    __null_hdlr = NullHandler()
-    __logger.addHandler(__null_hdlr)
+
+
+def __set_logger():
+    global __logger, __debug, __log_file
+    if __debug:
+        st_hdlr = StreamHandler()
+        st_hdlr.setLevel(logINFO)
+        st_format = '>> %(levelname)-9s %(message)s'
+        st_hdlr.setFormatter(Formatter(st_format))
+        fy_hdlr = FileHandler(filename=__log_file, mode='w', encoding='utf-8')
+        fy_hdlr.setLevel(logDEBUG)
+        fy_format = '%(levelname)-9s %(asctime)s ' + \
+            '[%(filename)s:%(funcName)s(%(lineno)d)]:' + \
+            ' %(message)s'
+        fy_hdlr.setFormatter(Formatter(fy_format))
+        __logger.addHandler(st_hdlr)
+        __logger.addHandler(fy_hdlr)
+    else:
+        null_hdlr = NullHandler()
+        __logger.addHandler(null_hdlr)
+
+
+__set_logger()
 __logger.debug(f'src: {__file__}')
 
 # global variables
