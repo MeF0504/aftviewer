@@ -70,6 +70,7 @@ __type_config = {
     "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
     "jupyter": "ipynb",
     "xpm": "xpm",
+    "stl": "stl",
 }
 __type_config.update(__add_types)
 

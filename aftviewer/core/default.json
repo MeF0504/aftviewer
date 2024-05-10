@@ -35,6 +35,11 @@
     },
     "hdf5": {
         "type_color": ["k", "w"]
+    },
+    "stl": {
+        "viewer": null,
+        "facecolors": "c",
+        "edgecolors": "k"
     }
 }
 
