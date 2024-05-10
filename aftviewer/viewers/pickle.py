@@ -1,5 +1,6 @@
 import pickle
 import os
+import pprint
 from pathlib import PurePath
 from functools import partial
 from logging import getLogger
@@ -11,6 +12,7 @@ from .. import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
 logger = getLogger(GLOBAL_CONF.logname)
+pargs = get_config('config', 'pp_kwargs')
 
 
 def show_keys(data, key):
@@ -18,7 +20,8 @@ def show_keys(data, key):
     if key:
         for k in key:
             if k in data:
-                print(data[k])
+                print_key(str(k))
+                pprint.pprint(data[k], **pargs)
             else:
                 cprint(f'"{k}" not in this file.', fg=fg, bg=bg)
     else:
@@ -45,7 +48,8 @@ def show_func(data, cpath, **kwargs):
     tmp_data = get_item(data, cpath)
     if tmp_data is None:
         return RM(f'Error! no key {cpath}', False)
-    return RM('{}'.format(tmp_data), False)
+    res = pprint.pformat(tmp_data, **pargs)
+    return RM(res, False)
 
 
 def get_contents(data, path):
@@ -102,10 +106,8 @@ def main(fpath, args):
                     tmp_keys = sorted(data.keys())
                 except TypeError:
                     tmp_keys = data.keys()
-                for key in tmp_keys:
-                    print_key(key)
-                    print(' >>> {}'.format(data[key]))
+                show_keys(data, tmp_keys)
             else:
                 show_tree(fname, gc, logger=logger)
     else:
-        print(data)
+        pprint.pprint(data, **pargs)
