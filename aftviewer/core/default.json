@@ -6,7 +6,8 @@
         "image_viewer_cui": null,
         "iv_exec_cmd": ["%c", "%s"],
         "system_cmd": null,
-        "system_cmd_args": ["%c", "%s"]
+        "system_cmd_args": ["%c", "%s"],
+        "pp_kwargs": {"compact": true}
     },
     "colors": {
         "msg_error": ["r", null],

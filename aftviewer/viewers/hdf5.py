@@ -1,4 +1,5 @@
 import os
+import pprint
 from functools import partial
 from pathlib import PurePosixPath
 from logging import getLogger
@@ -19,6 +20,7 @@ else:
     imp_np = True
     set_numpy_format(np)
 logger = getLogger(GLOBAL_CONF.logname)
+pargs = get_config('config', 'pp_kwargs')
 
 
 def show_hdf5(h5_file, cpath, **kwargs):
@@ -47,50 +49,46 @@ def show_hdf5(h5_file, cpath, **kwargs):
         return RM(f'incorrect path: {cpath}', True)
     data = h5_file[cpath]
     res = []
-    res.append('{}{}attrs{}'.format(fg, bg, end))
+    res.append(f'{fg}{bg}attrs{end}')
     for attr in data.attrs:
-        res.append('{}: {}'.format(attr, data.attrs[attr]))
+        res.append(f'{attr}: {data.attrs[attr]}')
     if isinstance(data, h5py.Group):
-        res.append('{}{}contents{}'.format(fg, bg, end))
+        res.append(f'{fg}{bg}contents{end}')
         for k in data.keys():
             res.append(k)
     elif isinstance(data, h5py.Dataset):
-        res.append('{}{}value{}'.format(fg, bg, end))
+        res.append(f'{fg}{bg}value{end}')
         data = data[()]
-        res.append('{}'.format(data))
+        res.append(pprint.pformat(data, **pargs))
         if hasattr(data, 'shape'):
-            res.append('shape: {}'.format(data.shape))
+            res.append(f'shape: {data.shape}')
             is_array = True
         elif hasattr(data, '__len__'):
-            res.append('len: {}'.format(len(data)))
+            res.append(f'len: {len(data)}')
             is_array = True
         else:
             is_array = False
         if imp_np and is_array and (len(data) != 0):
             try:
-                dmean = np.nanmean(data)
-                res.append('mean : {}'.format(dmean))
+                res.append(f'mean : {np.nanmean(data)}')
             except Exception as e:
                 logger.debug(f'{type(e).__name__}: {e}')
             try:
-                dmax = np.nanmax(data)
-                res.append(' max : {}'.format(dmax))
+                res.append(f' max : {np.nanmax(data)}')
             except Exception as e:
                 logger.debug(f'{type(e).__name__}: {e}')
             try:
-                dmin = np.nanmin(data)
-                res.append(' min : {}'.format(dmin))
+                res.append(f' min : {np.nanmin(data)}')
             except Exception as e:
                 logger.debug(f'{type(e).__name__}: {e}')
             try:
-                dstd = np.nanstd(data)
-                res.append(' std : {}'.format(dstd))
+                res.append(f' std : {np.nanstd(data)}')
             except Exception as e:
                 logger.debug(f'{type(e).__name__}: {e}')
             if hasattr(data, 'shape'):
                 try:
                     nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
-                    res.append('nan rate: {:.1f}%'.format(nan_rate*100))
+                    res.append(f'nan rate: {nan_rate*100:.1f}%')
                 except Exception:
                     pass
     return RM('\n'.join(res), False)
@@ -99,7 +97,7 @@ def show_hdf5(h5_file, cpath, **kwargs):
 def show_detail(h5_file, name, obj):
     if isinstance(obj, h5py.Dataset):
         print_key(name)
-        print("{}".format(h5_file[name][()]))
+        pprint.pprint(h5_file[name][()], **pargs)
 
 
 def show_names(name, obj):
@@ -113,7 +111,7 @@ def get_contents(h5_file, path):
     data = h5_file[str(path)]
     if isinstance(data, h5py.Group):
         for k in data.keys():
-            contents = '{}/{}'.format(path, k)
+            contents = f'{path}/{k}'
             if isinstance(h5_file[contents], h5py.Group):
                 dirs.append(k)
             elif isinstance(h5_file[contents], h5py.Dataset):
