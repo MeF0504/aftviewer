@@ -13,7 +13,7 @@ uname = platform.system()
 if uname == 'Darwin':
     cmd = 'open'
 elif uname == 'Windows':
-    cmd = 'start'
+    cmd = 'dir'
 elif uname == 'Linux':
     cmd = 'display'
 else:
