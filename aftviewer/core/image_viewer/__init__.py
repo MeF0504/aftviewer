@@ -116,8 +116,12 @@ def __set_image_viewer(args: Args) -> None:
         else:
             __ImgViewer = __get_mod(tmp_iv)
     else:
+        # external command
         if args_chk(args, 'cui'):
             logger.error('external command is not supported in CUI mode.')
+            __ImgViewer = None
+        elif not chk_cmd(tmp_iv, logger=logger):
+            logger.error(f'command {tmp_iv} is not executable')
             __ImgViewer = None
         else:
             __ImgViewer = tmp_iv

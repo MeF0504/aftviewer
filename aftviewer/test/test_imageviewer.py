@@ -19,7 +19,7 @@ elif uname == 'Linux':
 else:
     cmd = None
 
-ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), (cmd)]
+ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), (cmd), ('not a command')]
 
 
 @pytest.mark.parametrize(('iv'), ivs)
@@ -30,8 +30,6 @@ def test_get_image_viewer_args(iv):
         return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    if iv != cmd and iv not in image_viewers:
-        warnings.warn(f'image viewer {iv} not in ({image_viewers})')
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
@@ -45,6 +43,8 @@ def test_get_image_viewer_args(iv):
         assert type(image_viewer.__ImgViewer) is ModuleType, msg
         assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
         assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
+    elif iv == 'not a command':
+        assert image_viewer.__ImgViewer is None, msg
     else:
         assert image_viewer.__ImgViewer == iv, msg
 
@@ -57,8 +57,6 @@ def test_get_image_viewer_cui(iv):
         return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    if iv != cmd and iv not in image_viewers:
-        warnings.warn(f'image viewer {iv} not in ({image_viewers})')
     __json_opts['config']['image_viewer_cui'] = iv
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='input file')
@@ -74,6 +72,8 @@ def test_get_image_viewer_cui(iv):
         assert type(image_viewer.__ImgViewer) is ModuleType, msg
         assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
         assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
+    elif iv == 'not a command':
+        assert image_viewer.__ImgViewer is None, msg
     else:
         assert image_viewer.__ImgViewer is None, msg
 
@@ -88,8 +88,6 @@ def test_get_image_viewer_conf(iv):
         return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    if iv != cmd and iv not in image_viewers:
-        warnings.warn(f'image viewer {iv} not in ({image_viewers})')
     __json_opts['config']['image_viewer'] = iv
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='input file')
@@ -104,6 +102,8 @@ def test_get_image_viewer_conf(iv):
         assert type(image_viewer.__ImgViewer) is ModuleType, msg
         assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
         assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
+    elif iv == 'not a command':
+        assert image_viewer.__ImgViewer is None, msg
     else:
         assert image_viewer.__ImgViewer == iv, msg
 
