@@ -3,10 +3,23 @@ from pathlib import Path
 from logging import getLogger
 
 from stl import mesh
+# stl depends on numpy.
+import numpy as np
 
+from pymeflib.color import convert_color_name
 from aftviewer import GLOBAL_CONF, Args, help_template, get_config
 
 logger = getLogger(GLOBAL_CONF.logname)
+
+
+def plotly_stl2mesh3d(mesh_data: mesh.Mesh):
+    p, q, r = mesh_data.vectors.shape
+    vertices, ixr = np.unique(mesh_data.vectors.reshape(p*q, r),
+                              return_inverse=True, axis=0)
+    mI = np.take(ixr, [3*k+0 for k in range(p)])
+    mJ = np.take(ixr, [3*k+1 for k in range(p)])
+    mK = np.take(ixr, [3*k+2 for k in range(p)])
+    return vertices, mI, mJ, mK
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
@@ -55,6 +68,30 @@ def main(fpath: Path, args: Args):
         ax11.auto_scale_xyz(scale, scale, scale)
 
         plt.show()
+    elif viewer == 'plotly':
+        # https://chart-studio.plotly.com/~empet/15276/converting-a-stl-mesh-to-plotly-gomes/#/
+        import plotly.graph_objects as go
+        vertices, mI, mJ, mK = plotly_stl2mesh3d(mesh_data)
+        x, y, z = vertices.T
+        if type(fcol) is str:
+            c_fcol = convert_color_name(fcol, 'full')
+            if c_fcol is not None:
+                fcol = c_fcol
+        colorscale = [[0, fcol], [1, fcol]]
+
+        mesh3D = go.Mesh3d(x=x, y=y, z=z, i=mI, j=mJ, k=mK,
+                           flatshading=True,
+                           colorscale=colorscale,
+                           intensity=z, name=fpath.name,
+                           showscale=False)
+        layout = go.Layout(paper_bgcolor='rgb(230, 230, 230)',
+                           title_text=fpath.name,
+                           font_color='black',
+                           scene=dict(aspectmode='data'),
+                           scene_camera=dict(eye=dict(x=1.25, y=-1.25, z=1)),
+                           )
+        fig1 = go.Figure(data=[mesh3D], layout=layout)
+        fig1.show()
     elif viewer is None:
         print('viewer is not set.')
     else:
