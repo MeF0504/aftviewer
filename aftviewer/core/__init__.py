@@ -9,14 +9,14 @@ import mimetypes
 import pprint
 from importlib import import_module
 from pathlib import Path, PurePath
-from typing import Union, Tuple, Any, Optional
+from typing import Tuple, Any, Optional
 from types import ModuleType
 from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
     Formatter, DEBUG as logDEBUG, INFO as logINFO
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from .types import CONF, Args, SF
+from .types import CONF, Args, SF, COLType
 
 
 __debug = False
@@ -188,8 +188,8 @@ def get_config(key1: str, key2: str) -> Any:
 
 
 def cprint(str1: str, str2: str = '',
-           fg: Union[str, int, None] = None,
-           bg: Union[str, int, None] = None,
+           fg: COLType = None,
+           bg: COLType = None,
            **kwargs) -> None:
     """
     print message in color.
@@ -200,12 +200,12 @@ def cprint(str1: str, str2: str = '',
         The message to be printed in color.
     str2: str
         The message to be printed after str1 without color.
-    fg: Union[str, int, None]
+    fg: str, int, or None
         The key of the foreground color. Possible values are
             'k': black, 'r': red, 'g': green, 'y': yellow,
             'b': blue, 'c': cyan, 'm': magenta, 'w': white,
             0-255: The color id corresponding to the 256 terminal colors.
-    bg: Union[str, int, None]
+    bg: str, int, or None
         The key of the background color. Possible values are the same as fg.
     **kwargs:
         Keyword arguments passed to the print function.
@@ -240,8 +240,8 @@ def cprint(str1: str, str2: str = '',
     print(print_str, **kwargs)
 
 
-def get_col(name: str) -> Tuple[Union[str, int, None],
-                                Union[str, int, None]]:
+def get_col(name: str) -> Tuple[COLType,
+                                COLType]:
     """
     get the color id of a given name.
 
@@ -253,9 +253,9 @@ def get_col(name: str) -> Tuple[Union[str, int, None],
 
     Returns
     -------
-    Union[str, int, None]
+    str, int, or None
         foreground color id. If the name is incorrect, return None.
-    Union[str, int, None]
+    str, int, or None
         foreground color id. If the name is incorrect, return None.
     """
     col_conf = get_config('colors', name)
