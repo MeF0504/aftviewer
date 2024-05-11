@@ -16,7 +16,10 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
 
 def show_help() -> None:
-    helpmsg = help_template('stl', 'description.', add_args)
+    helpmsg = help_template('stl', 'display the stl 3D model.'
+                            ' Viewers currently supported to display'
+                            ' the models are'
+                            ' "matplotlib" and "plotly".', add_args)
     print(helpmsg)
 
 
