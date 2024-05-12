@@ -23,6 +23,7 @@ from . import chk_deps
      [True, False, False, False, False, False, False, False, False]),
     ('xpm', [True, False, False, False, False, False, False, False, False]),
     ('stl', [False, False, False, False, False, False, False, False, False]),
+    ('fits', [True, False, False, False, True, True, True, False, False]),
     ])
 def test_args_filetypes(filetype, is_args_ok):
     if not chk_deps(filetype):
