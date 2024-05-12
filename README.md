@@ -6,21 +6,26 @@ See the [wiki page](https://github.com/MeF0504/aftviewer/wiki) for the details.
 
 ## Requirements
 
-Basically, AFTViewer works for supported [Python](https://www.python.org/) versions
-without any third-party libraries.
+The basic process of this software is designed to work with standard libraries of recent [Python3](https://www.python.org/).  
+To show some kinds of files, external libraries are required.
 
-Some third-party libraries are required to open some file types.
+e.g.)
 - [numpy](https://numpy.org/) for numpy, xpm, np_pickle
 - [h5py](https://docs.h5py.org/) for hdf5
 - [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
+- [numpy-stl](https://pypi.org/project/numpy-stl/) for stl.
 
-### Optional Requirements
-
+The following libraries are not always necessary but are useful if available.
 - [numpy](https://numpy.org/) for hdf5
 - [tabulate](https://pypi.org/project/tabulate/) for sqlite3
-- [PIL (Pillow)](https://pillow.readthedocs.io/), [matplotlib](https://matplotlib.org/) or [OpenCV](https://pypi.org/project/opencv-python/) to show a image.
-    - Shell commands (e.g. "open" in macOS) are also available.  
-      In this case, a bit map file (.bmp) should be supported.
+- [Matplotlib](https://matplotlib.org/) or [Plotly](https://plotly.com/python/) for stl to display 3-D model.
+
+To show images, imaging-related libraries
+(Currently supporting libraries are
+[PIL (Pillow)](https://pillow.readthedocs.io/),
+[Matplotlib](https://matplotlib.org/),
+or [OpenCV](https://pypi.org/project/opencv-python/))
+or shell commands (e.g. "open" in macOS) with supporting bitmap (.bmp) files are required.
 
 ## Install
 
