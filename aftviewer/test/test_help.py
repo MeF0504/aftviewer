@@ -20,6 +20,7 @@ from aftviewer.core import load_lib
     ('raw_image'),
     ('xpm'),
     ('stl'),
+    ('fits'),
     ])
 def test_help_message(filetype):
     parser = argparse.ArgumentParser()
