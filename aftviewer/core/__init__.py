@@ -71,6 +71,7 @@ __type_config = {
     "jupyter": "ipynb",
     "xpm": "xpm",
     "stl": "stl",
+    "fits": "fits fit",
 }
 __type_config.update(__add_types)
 
