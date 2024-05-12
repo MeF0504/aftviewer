@@ -22,6 +22,7 @@ from . import chk_deps
     ('raw_image',
      [True, False, False, False, False, False, False, False, False]),
     ('xpm', [True, False, False, False, False, False, False, False, False]),
+    ('stl', [False, False, False, False, False, False, False, False, False]),
     ])
 def test_args_filetypes(filetype, is_args_ok):
     if not chk_deps(filetype):

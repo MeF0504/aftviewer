@@ -58,6 +58,7 @@ def test_args_chk(attr, arg_list, expected):
     ('numpy'),
     ('raw_image'),
     ('xpm'),
+    ('stl'),
     ])
 def test_loadlib(filetype):
     if not chk_deps(filetype):
