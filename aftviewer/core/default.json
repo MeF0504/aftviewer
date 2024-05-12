@@ -38,8 +38,8 @@
     },
     "stl": {
         "viewer": null,
-        "facecolors": "c",
-        "edgecolors": "k"
+        "facecolors": null,
+        "edgecolors": "black"
     }
 }
 

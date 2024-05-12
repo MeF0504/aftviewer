@@ -1,15 +1,41 @@
 import argparse
+import re
 from pathlib import Path
 from logging import getLogger
+from typing import Optional
 
 from stl import mesh
 # stl depends on numpy.
 import numpy as np
 
-from pymeflib.color import convert_color_name
-from aftviewer import GLOBAL_CONF, Args, help_template, get_config
+from aftviewer import (GLOBAL_CONF, Args, help_template, get_config,
+                       cprint, get_col)
 
 logger = getLogger(GLOBAL_CONF.logname)
+
+
+def check_color(col):
+    colors = ['black', 'white', 'red', 'green', 'blue',
+              'cyan', 'magenta', 'yellow', 'gray']
+    fg, bg = get_col('msg_error')
+    if type(col) is str:
+        if re.match('^#[0-9a-f]{6}$', col) is not None:
+            # color code
+            return True
+        elif col in colors:
+            # color name
+            return True
+        else:
+            logger.warning(f'incorrect color setting: {col}')
+            cprint(f'incorrect color setting: {col}', fg=fg, bg=bg)
+            return False
+    elif col is None:
+        return True
+    else:
+        logger.warning(f'incorrect color setting type: {col}')
+        cprint('incorrect color setting type.', fg=fg, bg=bg)
+        return False
+    return False
 
 
 def plotly_stl2mesh3d(mesh_data: mesh.Mesh):
@@ -47,8 +73,12 @@ def main(fpath: Path, args: Args):
 
     mesh_data = mesh.Mesh.from_file(str(fpath))
     logger.debug(f'mesh shape: {mesh_data.vectors.shape}')
-    ecol = get_config('stl', 'edgecolors')
-    fcol = get_config('stl', 'facecolors')
+    ecol: Optional[str] = get_config('stl', 'edgecolors')
+    fcol: Optional[str] = get_config('stl', 'facecolors')
+    if not check_color(ecol):
+        ecol = None
+    if not check_color(fcol):
+        fcol = None
 
     if viewer == 'matplotlib':
         # https://github.com/WoLpH/numpy-stl/?tab=readme-ov-file#plotting-using-matplotlib-is-equally-easy
@@ -73,10 +103,8 @@ def main(fpath: Path, args: Args):
         import plotly.graph_objects as go
         vertices, mI, mJ, mK = plotly_stl2mesh3d(mesh_data)
         x, y, z = vertices.T
-        if type(fcol) is str:
-            c_fcol = convert_color_name(fcol, 'full')
-            if c_fcol is not None:
-                fcol = c_fcol
+        if fcol is None:
+            fcol = '#a0a0a0'
         colorscale = [[0, fcol], [1, fcol]]
 
         mesh3D = go.Mesh3d(x=x, y=y, z=z, i=mI, j=mJ, k=mK,
