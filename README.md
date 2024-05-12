@@ -14,6 +14,7 @@ e.g.)
 - [h5py](https://docs.h5py.org/) for hdf5
 - [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
 - [numpy-stl](https://pypi.org/project/numpy-stl/) for stl.
+- [Astropy](https://www.astropy.org/) for fits.
 
 The following libraries are not always necessary but are useful if available.
 - [numpy](https://numpy.org/) for hdf5
@@ -47,12 +48,12 @@ py -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
 ## Usage
 ```bash
 usage: aftviewer [-h] [--version]
-                 [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}]
+                 [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm,stl,fits}]
                  file
 
 show the constitution of a file. Supported file types ... hdf5, pickle, numpy,
-np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm. To see the detailed
-help of each type, type 'aftviewer help -t TYPE'.
+np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm, stl, fits. To see the
+detailed help of each type, type 'aftviewer help -t TYPE'.
 
 positional arguments:
   file                  input file
@@ -60,11 +61,11 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   --version, -V         show program's version number and exit
-  -t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}, --type {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm}
+  -t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm,stl,fits}, --type {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm,stl,fits}
                         specify the file type. "aftviewer help -t TYPE" will
                         show the detailed help.
 
-aftviewer has some subcommands, 'aftviewer help -t TYPE' shows detailed help,
+AFTViewer has some subcommands, 'aftviewer help -t TYPE' shows detailed help,
 'aftviewer update' run the update command of AFTViewer, 'aftviewer
 config_list' shows the current optional configuration, 'aftviewer
 shell_completion --bash >> ~/.bashrc' or 'aftviewer shell_completion --zsh >>
