@@ -15,6 +15,7 @@
         "interactive_path": [null, "c"],
         "interactive_contents": [null, "g"],
         "interactive_output": [null, "r"],
+        "cui_main": ["w", "k"],
         "cui_top": ["w", "g"],
         "cui_left": ["w", "b"],
         "cui_error": ["r", "k"],

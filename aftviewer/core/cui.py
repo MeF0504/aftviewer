@@ -93,8 +93,12 @@ class CursesCUI():
         fg, bg = get_config('colors', f'cui_{name}')
         if fg in default_color_set:
             fg = default_color_set[fg]
+        elif fg is None:
+            fg = -1
         if bg in default_color_set:
             bg = default_color_set[bg]
+        elif bg is None:
+            bg = -1
 
         if not (type(fg) is int and fg < curses.COLORS):
             logger.debug(f'incorrect fg: {fg}')
@@ -114,20 +118,25 @@ class CursesCUI():
         logger.debug(f'magenta: {curses.COLOR_MAGENTA}')
         logger.debug(f'cyan: {curses.COLOR_CYAN}')
         logger.debug(f'white: {curses.COLOR_WHITE}')
-        # pwd background
-        self.create_color_set(1, 'top')
-        # bar background
-        self.create_color_set(2, 'left')
-        # error
-        self.create_color_set(3, 'error')
+        logger.debug(f'use default colors')
+        curses.use_default_colors()
+        # main window
+        self.create_color_set(1, 'main')
+        # pwd window
+        self.create_color_set(2, 'top')
+        # bar window
+        self.create_color_set(3, 'left')
+        # error message
+        self.create_color_set(4, 'error')
         # file info
-        self.create_color_set(4, 'file_info')
+        self.create_color_set(5, 'file_info')
         # dir index
-        self.create_color_set(5, 'dir_index')
+        self.create_color_set(6, 'dir_index')
         # file index
-        self.create_color_set(6, 'file_index')
-        self.win_pwd.bkgd(' ', curses.color_pair(1))
-        self.win_side.bkgd(' ', curses.color_pair(2))
+        self.create_color_set(7, 'file_index')
+        self.win_main.bkgd(' ', curses.color_pair(1))
+        self.win_pwd.bkgd(' ', curses.color_pair(2))
+        self.win_side.bkgd(' ', curses.color_pair(3))
 
     def init_var(self):
         self.sel_idx = 0
@@ -552,10 +561,10 @@ q\t quit
             cont = self.contents[i+self.side_shift_ud]
             cidx = '{:2d} '.format(i+self.side_shift_ud)
             if cont in self.dirs:
-                self.win_side.addstr(i, 0, cidx, curses.color_pair(5))
+                self.win_side.addstr(i, 0, cidx, curses.color_pair(6))
                 attr = curses.A_BOLD
             elif cont in self.files:
-                self.win_side.addstr(i, 0, cidx, curses.color_pair(6))
+                self.win_side.addstr(i, 0, cidx, curses.color_pair(7))
                 attr = curses.A_NORMAL
             cont = cont[self.side_shift_lr:
                         self.side_shift_lr+self.win_w-len(cidx)-1]
@@ -580,7 +589,7 @@ q\t quit
                                          self.main_shift_lr+1,
                                          self.search_cmt,
                                          ),
-                                     curses.color_pair(4))
+                                     curses.color_pair(5))
         if not self.info.error:
             # show contents
             for i in range(1, main_h):
@@ -595,10 +604,10 @@ q\t quit
                     self.win_main.addstr(i, 0, message)
                 except Exception as e:
                     self.win_main.addstr(i, 0, "!! {}".format(e),
-                                         curses.color_pair(3))
+                                         curses.color_pair(4))
         else:
             # show error
-            self.win_main.addstr(1, 0, self.info.message, curses.color_pair(3))
+            self.win_main.addstr(1, 0, self.info.message, curses.color_pair(4))
         self.search_cmt = ''
         self.win_main.refresh()
 
