@@ -97,33 +97,22 @@ class CursesCUI():
             bg = default_color_set[bg]
 
         if not (type(fg) is int and fg < curses.COLORS):
-            # debug_log(f'incorrect fg: {fg}')
             logger.debug(f'incorrect fg: {fg}')
             fg = curses.COLOR_WHITE
         if not (type(bg) is int and bg < curses.COLORS):
-            # debug_log(f'incorrect bg: {bg}')
             logger.debug(f'incorrect bg: {bg}')
             bg = curses.COLOR_BLACK
         curses.init_pair(num, fg, bg)
 
     def set_color(self):
-        # debug_log('default color;')
         logger.debug('default color;')
-        # debug_log(f'black: {curses.COLOR_BLACK}')
         logger.debug(f'black: {curses.COLOR_BLACK}')
-        # debug_log(f'red: {curses.COLOR_RED}')
         logger.debug(f'red: {curses.COLOR_RED}')
-        # debug_log(f'green: {curses.COLOR_GREEN}')
         logger.debug(f'green: {curses.COLOR_GREEN}')
-        # debug_log(f'yellow: {curses.COLOR_YELLOW}')
         logger.debug(f'yellow: {curses.COLOR_YELLOW}')
-        # debug_log(f'blue: {curses.COLOR_BLUE}')
         logger.debug(f'blue: {curses.COLOR_BLUE}')
-        # debug_log(f'magenta: {curses.COLOR_MAGENTA}')
         logger.debug(f'magenta: {curses.COLOR_MAGENTA}')
-        # debug_log(f'cyan: {curses.COLOR_CYAN}')
         logger.debug(f'cyan: {curses.COLOR_CYAN}')
-        # debug_log(f'white: {curses.COLOR_WHITE}')
         logger.debug(f'white: {curses.COLOR_WHITE}')
         # pwd background
         self.create_color_set(1, 'top')
@@ -277,11 +266,9 @@ class CursesCUI():
                       True, False, False,
                       ],
                 }
-        # debug_log('set default key maps')
         logger.debug('set default key maps')
         for k in def_keymaps:
             if k not in self.keymaps:
-                # debug_log(f'set key "{k}" as default')
                 logger.debug(f'set key "{k}" as default')
                 self.keymaps[k] = def_keymaps[k]
 
@@ -649,7 +636,6 @@ q\t quit
         self.win_pwd.refresh()
 
     def add_key_maps(self, key, config):
-        # debug_log(f'add key "{key}"')
         logger.debug(f'add key "{key}"')
         self.keymaps[key] = config
 
