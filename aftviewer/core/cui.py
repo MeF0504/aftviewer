@@ -93,52 +93,50 @@ class CursesCUI():
         fg, bg = get_config('colors', f'cui_{name}')
         if fg in default_color_set:
             fg = default_color_set[fg]
+        elif fg is None:
+            fg = -1
         if bg in default_color_set:
             bg = default_color_set[bg]
+        elif bg is None:
+            bg = -1
 
         if not (type(fg) is int and fg < curses.COLORS):
-            # debug_log(f'incorrect fg: {fg}')
             logger.debug(f'incorrect fg: {fg}')
             fg = curses.COLOR_WHITE
         if not (type(bg) is int and bg < curses.COLORS):
-            # debug_log(f'incorrect bg: {bg}')
             logger.debug(f'incorrect bg: {bg}')
             bg = curses.COLOR_BLACK
         curses.init_pair(num, fg, bg)
 
     def set_color(self):
-        # debug_log('default color;')
         logger.debug('default color;')
-        # debug_log(f'black: {curses.COLOR_BLACK}')
         logger.debug(f'black: {curses.COLOR_BLACK}')
-        # debug_log(f'red: {curses.COLOR_RED}')
         logger.debug(f'red: {curses.COLOR_RED}')
-        # debug_log(f'green: {curses.COLOR_GREEN}')
         logger.debug(f'green: {curses.COLOR_GREEN}')
-        # debug_log(f'yellow: {curses.COLOR_YELLOW}')
         logger.debug(f'yellow: {curses.COLOR_YELLOW}')
-        # debug_log(f'blue: {curses.COLOR_BLUE}')
         logger.debug(f'blue: {curses.COLOR_BLUE}')
-        # debug_log(f'magenta: {curses.COLOR_MAGENTA}')
         logger.debug(f'magenta: {curses.COLOR_MAGENTA}')
-        # debug_log(f'cyan: {curses.COLOR_CYAN}')
         logger.debug(f'cyan: {curses.COLOR_CYAN}')
-        # debug_log(f'white: {curses.COLOR_WHITE}')
         logger.debug(f'white: {curses.COLOR_WHITE}')
-        # pwd background
-        self.create_color_set(1, 'top')
-        # bar background
-        self.create_color_set(2, 'left')
-        # error
-        self.create_color_set(3, 'error')
+        logger.debug('use default colors')
+        curses.use_default_colors()
+        # main window
+        self.create_color_set(1, 'main')
+        # pwd window
+        self.create_color_set(2, 'top')
+        # bar window
+        self.create_color_set(3, 'left')
+        # error message
+        self.create_color_set(4, 'error')
         # file info
-        self.create_color_set(4, 'file_info')
+        self.create_color_set(5, 'file_info')
         # dir index
-        self.create_color_set(5, 'dir_index')
+        self.create_color_set(6, 'dir_index')
         # file index
-        self.create_color_set(6, 'file_index')
-        self.win_pwd.bkgd(' ', curses.color_pair(1))
-        self.win_side.bkgd(' ', curses.color_pair(2))
+        self.create_color_set(7, 'file_index')
+        self.win_main.bkgd(' ', curses.color_pair(1))
+        self.win_pwd.bkgd(' ', curses.color_pair(2))
+        self.win_side.bkgd(' ', curses.color_pair(3))
 
     def init_var(self):
         self.sel_idx = 0
@@ -222,7 +220,8 @@ class CursesCUI():
                               True, True, True,
                               ],
                 "KEY_SDOWN": [self.select_item, [True], "S-↓",
-                              'open the items in the system command if supported',
+                              'open the items in the system command'
+                              ' if supported',
                               True, True, False,
                               ],
                 'KEY_SF': [self.select_item, [True], '', '',
@@ -262,11 +261,11 @@ class CursesCUI():
                       ],
                 'f': [self.file_search, [], 'f',
                       'search file names',
-                      True, False, False,
+                      True, False, True,
                       ],
                 '/': [self.into_search_mode, [], '/',
                       'start the search mode',
-                      True, False, True,
+                      True, False, False,
                       ],
                 'n': [self.jump_search_word_next, [], 'n',
                       'jump to the next search word',
@@ -277,13 +276,19 @@ class CursesCUI():
                       True, False, False,
                       ],
                 }
-        # debug_log('set default key maps')
         logger.debug('set default key maps')
         for k in def_keymaps:
             if k not in self.keymaps:
-                # debug_log(f'set key "{k}" as default')
                 logger.debug(f'set key "{k}" as default')
                 self.keymaps[k] = def_keymaps[k]
+        if GLOBAL_CONF.debug:
+            if 'O' in self.keymaps:
+                logger.warning('debug keymap is already in use.')
+            else:
+                self.keymaps['O'] = [self.debug_log, [], 'O',
+                                     'save info into log file.',
+                                     False, False, False,
+                                     ]
 
     def create_help_msg(self):
         help_msg = '''
@@ -565,10 +570,10 @@ q\t quit
             cont = self.contents[i+self.side_shift_ud]
             cidx = '{:2d} '.format(i+self.side_shift_ud)
             if cont in self.dirs:
-                self.win_side.addstr(i, 0, cidx, curses.color_pair(5))
+                self.win_side.addstr(i, 0, cidx, curses.color_pair(6))
                 attr = curses.A_BOLD
             elif cont in self.files:
-                self.win_side.addstr(i, 0, cidx, curses.color_pair(6))
+                self.win_side.addstr(i, 0, cidx, curses.color_pair(7))
                 attr = curses.A_NORMAL
             cont = cont[self.side_shift_lr:
                         self.side_shift_lr+self.win_w-len(cidx)-1]
@@ -593,25 +598,26 @@ q\t quit
                                          self.main_shift_lr+1,
                                          self.search_cmt,
                                          ),
-                                     curses.color_pair(4))
-        if not self.info.error:
-            # show contents
-            for i in range(1, main_h):
-                if i-1+self.main_shift_ud >= len(self.message):
-                    break
-                idx = i+self.main_shift_ud
-                message = self.message[idx-1]
-                if GLOBAL_CONF.debug:
-                    message = "{:d} ".format(i+self.main_shift_ud)+message
-                message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
-                try:
-                    self.win_main.addstr(i, 0, message)
-                except Exception as e:
-                    self.win_main.addstr(i, 0, "!! {}".format(e),
-                                         curses.color_pair(3))
+                                     curses.color_pair(5))
+        if self.info.error:
+            main_col = curses.color_pair(4)
         else:
-            # show error
-            self.win_main.addstr(1, 0, self.info.message, curses.color_pair(3))
+            main_col = curses.color_pair(1)
+        # show contents
+        lw = len(str(len(self.message)))
+        for i in range(1, main_h):
+            if i-1+self.main_shift_ud >= len(self.message):
+                break
+            idx = i+self.main_shift_ud
+            message = self.message[idx-1]
+            if get_config('config', 'cui_linenumber'):
+                message = f"{i+self.main_shift_ud:{lw}d} "+message
+            message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
+            try:
+                self.win_main.addstr(i, 0, message, main_col)
+            except Exception as e:
+                self.win_main.addstr(i, 0, "!! {}".format(e),
+                                     curses.color_pair(4))
         self.search_cmt = ''
         self.win_main.refresh()
 
@@ -621,6 +627,24 @@ q\t quit
         self.win_pwd.addstr(1, 5, 'current path: {}'.format(str(self.cpath)))
         self.win_pwd.addstr(2, 1, self.exp)
         self.win_pwd.refresh()
+
+    def debug_log(self):
+        log_str = f'''
+===== LOG INFO =====
+win size: {self.winx}x{self.winy}, toph:{self.win_h}, sidew:{self.win_w}
+=== side bar ===
+selected index: {self.sel_idx}
+scrool (updown x leftright): {self.side_shift_ud}x{self.side_shift_lr}
+selected contents: {self.sel_cont}
+=== top window ===
+=== main window ===
+scrool (updown x leftright): {self.main_shift_ud}x{self.main_shift_lr}
+=== search mode ===
+is_search: {self.is_search}
+search_word:  {self.search_word}
+search_word2: {self.search_word2}
+==========='''
+        logger.debug(log_str)
 
     def debug_info(self):
         side_h = self.winy-self.win_h
@@ -639,17 +663,9 @@ q\t quit
                             self.sel_idx, len(self.message),
                            self.main_shift_ud, self.main_shift_lr))
         self.win_pwd.addstr(2, int(self.winx*2/3), ' '*(int(self.winx/3)-1))
-        if self.search_word:
-            sw = self.search_word
-        else:
-            sw = self.search_word2
-        sw = sw[:int(self.winx/3)-1-6]
-        self.win_pwd.addstr(2, int(self.winx*2/3),
-                            'srch: {}'.format(sw))
         self.win_pwd.refresh()
 
     def add_key_maps(self, key, config):
-        # debug_log(f'add key "{key}"')
         logger.debug(f'add key "{key}"')
         self.keymaps[key] = config
 
