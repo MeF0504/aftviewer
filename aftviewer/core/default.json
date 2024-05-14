@@ -7,7 +7,8 @@
         "iv_exec_cmd": ["%c", "%s"],
         "system_cmd": null,
         "system_cmd_args": ["%c", "%s"],
-        "pp_kwargs": {"compact": true}
+        "pp_kwargs": {"compact": true},
+        "cui_linenumber": false
     },
     "colors": {
         "msg_error": ["r", null],

@@ -118,7 +118,7 @@ class CursesCUI():
         logger.debug(f'magenta: {curses.COLOR_MAGENTA}')
         logger.debug(f'cyan: {curses.COLOR_CYAN}')
         logger.debug(f'white: {curses.COLOR_WHITE}')
-        logger.debug(f'use default colors')
+        logger.debug('use default colors')
         curses.use_default_colors()
         # main window
         self.create_color_set(1, 'main')
@@ -591,24 +591,25 @@ q\t quit
                                          self.search_cmt,
                                          ),
                                      curses.color_pair(5))
-        if not self.info.error:
-            # show contents
-            for i in range(1, main_h):
-                if i-1+self.main_shift_ud >= len(self.message):
-                    break
-                idx = i+self.main_shift_ud
-                message = self.message[idx-1]
-                if GLOBAL_CONF.debug:
-                    message = "{:d} ".format(i+self.main_shift_ud)+message
-                message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
-                try:
-                    self.win_main.addstr(i, 0, message)
-                except Exception as e:
-                    self.win_main.addstr(i, 0, "!! {}".format(e),
-                                         curses.color_pair(4))
+        if self.info.error:
+            main_col = curses.color_pair(4)
         else:
-            # show error
-            self.win_main.addstr(1, 0, self.info.message, curses.color_pair(4))
+            main_col = curses.color_pair(1)
+        # show contents
+        lw = len(str(len(self.message)))
+        for i in range(1, main_h):
+            if i-1+self.main_shift_ud >= len(self.message):
+                break
+            idx = i+self.main_shift_ud
+            message = self.message[idx-1]
+            if get_config('config', 'cui_linenumber'):
+                message = f"{i+self.main_shift_ud:{lw}d} "+message
+            message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
+            try:
+                self.win_main.addstr(i, 0, message, main_col)
+            except Exception as e:
+                self.win_main.addstr(i, 0, "!! {}".format(e),
+                                     curses.color_pair(4))
         self.search_cmt = ''
         self.win_main.refresh()
 
