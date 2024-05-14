@@ -7,8 +7,7 @@
         "iv_exec_cmd": ["%c", "%s"],
         "system_cmd": null,
         "system_cmd_args": ["%c", "%s"],
-        "pp_kwargs": {"compact": true},
-        "cui_linenumber": false
+        "pp_kwargs": {"compact": true}
     },
     "colors": {
         "msg_error": ["r", null],
@@ -16,7 +15,6 @@
         "interactive_path": [null, "c"],
         "interactive_contents": [null, "g"],
         "interactive_output": [null, "r"],
-        "cui_main": ["w", "k"],
         "cui_top": ["w", "g"],
         "cui_left": ["w", "b"],
         "cui_error": ["r", "k"],
