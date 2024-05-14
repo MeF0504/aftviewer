@@ -281,6 +281,14 @@ class CursesCUI():
             if k not in self.keymaps:
                 logger.debug(f'set key "{k}" as default')
                 self.keymaps[k] = def_keymaps[k]
+        if GLOBAL_CONF.debug:
+            if 'O' in self.keymaps:
+                logger.warning('debug keymap is already in use.')
+            else:
+                self.keymaps['O'] = [self.debug_log, [], 'O',
+                                     'save info into log file.',
+                                     False, False, False,
+                                     ]
 
     def create_help_msg(self):
         help_msg = '''
@@ -620,6 +628,24 @@ q\t quit
         self.win_pwd.addstr(2, 1, self.exp)
         self.win_pwd.refresh()
 
+    def debug_log(self):
+        log_str = f'''
+===== LOG INFO =====
+win size: {self.winx}x{self.winy}, toph:{self.win_h}, sidew:{self.win_w}
+=== side bar ===
+selected index: {self.sel_idx}
+scrool (updown x leftright): {self.side_shift_ud}x{self.side_shift_lr}
+selected contents: {self.sel_cont}
+=== top window ===
+=== main window ===
+scrool (updown x leftright): {self.main_shift_ud}x{self.main_shift_lr}
+=== search mode ===
+is_search: {self.is_search}
+search_word:  {self.search_word}
+search_word2: {self.search_word2}
+==========='''
+        logger.debug(log_str)
+
     def debug_info(self):
         side_h = self.winy-self.win_h
         main_h = self.winy-self.win_h
@@ -637,13 +663,6 @@ q\t quit
                             self.sel_idx, len(self.message),
                            self.main_shift_ud, self.main_shift_lr))
         self.win_pwd.addstr(2, int(self.winx*2/3), ' '*(int(self.winx/3)-1))
-        if self.search_word:
-            sw = self.search_word
-        else:
-            sw = self.search_word2
-        sw = sw[:int(self.winx/3)-1-6]
-        self.win_pwd.addstr(2, int(self.winx*2/3),
-                            'srch: {}'.format(sw))
         self.win_pwd.refresh()
 
     def add_key_maps(self, key, config):
