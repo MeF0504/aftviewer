@@ -15,6 +15,8 @@ logger = getLogger(GLOBAL_CONF.logname)
 def add_args(parser: argparse.ArgumentParser) -> None:
     add_args_imageviewer(parser)
     add_args_key(parser)
+    parser.add_argument('--header', help='display the header info.',
+                        action='store_true')
     parser.add_argument('--log_scale', help='scale color in log.',
                         action='store_true')
 
@@ -41,6 +43,10 @@ def main(fpath: Path, args: Args):
             idx = int(args.key[0])
     else:
         idx = 0
+    if hasattr(args, 'header') and args.header:
+        with fits.open(fpath) as hdul:
+            print(repr(hdul[idx].header))
+        return
 
     fg, bg = get_col('msg_error')
     with fits.open(fpath) as hdul:
