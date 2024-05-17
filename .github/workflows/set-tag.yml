@@ -8,7 +8,7 @@ jobs:
   set-tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: action/checkout@v4
+      - uses: actions/checkout@v4
       - name: set tag
         run: |
           cat aftviewer/core/__version__.py | awk -F '"' '{print "v"$2}' > TAG_NAME
