@@ -1,0 +1,16 @@
+name: set-tag
+run-name: set version tag when merged to main branch.
+on:
+  push:
+    branches:
+      - "main"
+jobs:
+  set-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: action/checkout@v4
+      - name: set tag
+        run: |
+          cat aftviewer/core/__version__.py | awk -F '"' '{print "v"$2}' > TAG_NAME
+          git tag $(cat TAG_NAME)
+          git push origin $(cat TAG_NAME)

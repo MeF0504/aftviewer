@@ -1,0 +1,24 @@
+name: check-version-update
+run-name: check version file is updated.
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
+jobs:
+  check-version-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/checkout@v4
+      - name: check version file is edited
+        shell: bash
+        run: |
+          if [[ $(echo $(git diff origin/main HEAD -- aftviewer/core/__version__.py | wc -l)) -le 1 ]]; then
+            exit 1
+          else
+            exit 0
+          fi

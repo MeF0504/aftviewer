@@ -5,8 +5,11 @@ from pathlib import Path
 def chk_deps(filetype: str) -> bool:
     deps = {
             'numpy': ['numpy'],
+            'np_pickle': ['numpy'],
             'raw_image': ['rawpy'],
             'hdf5': ['h5py'],
+            'stl': ['stl'],
+            'fits': ['astropy'],
             }
     if filetype not in deps:
         return True

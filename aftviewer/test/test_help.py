@@ -6,6 +6,7 @@ from types import FunctionType
 import pytest
 
 from aftviewer.core import load_lib
+from . import chk_deps
 
 
 @pytest.mark.parametrize(('filetype'), [
@@ -23,6 +24,9 @@ from aftviewer.core import load_lib
     ('fits'),
     ])
 def test_help_message(filetype):
+    if not chk_deps(filetype):
+        warnings.warn(f'skip cheking {filetype}')
+        return
     parser = argparse.ArgumentParser()
     args = parser.parse_args([])
     args.file = 'help'
