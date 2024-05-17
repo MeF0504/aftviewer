@@ -7,10 +7,7 @@ name = "aftviewer"
 description = "CUI view tool made by python."
 readme = "README.md"
 requires-python = ">=3.8"
-dynamic = ["version"]
-dependencies = [
-    "pymeflib@git+https://github.com/MeF0504/pymeflib#egg=main",
-]
+dynamic = ["version", "dependencies"]
 license = {file = "LICENSE"}
 authors = [{name = "MeF0504"}]
 # https://pypi.org/classifiers/
@@ -51,3 +48,4 @@ packages = [
 include-package-data = true
 [tool.setuptools.dynamic]
 version = {attr = "aftviewer.core.__version__.VERSION"}
+dependencies = {file = ["requirements.txt"]}
