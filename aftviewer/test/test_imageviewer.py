@@ -36,7 +36,7 @@ def test_get_image_viewer_args(iv):
     add_args_imageviewer(parser)
     args = parser.parse_args(['test', '-iv', iv])
     image_viewer.__set_image_viewer(args)
-    msg = f'{iv}, {image_viewer.__ImgViewer}'
+    msg = f'image viewer check, {iv}, {image_viewer.__ImgViewer}'
     if iv == 'None':
         assert image_viewer.__ImgViewer == 'None', msg
     elif iv in image_viewers:
@@ -65,7 +65,7 @@ def test_get_image_viewer_cui(iv):
     add_args_cui(parser)
     args = parser.parse_args(['test', '-c'])
     image_viewer.__set_image_viewer(args)
-    msg = f'{iv}, {image_viewer.__ImgViewer}'
+    msg = f'image viewer check, {iv}, {image_viewer.__ImgViewer}'
     if iv == 'None':
         assert image_viewer.__ImgViewer == 'None', msg
     elif iv in image_viewers:
@@ -95,7 +95,7 @@ def test_get_image_viewer_conf(iv):
     add_args_imageviewer(parser)
     args = parser.parse_args(['test'])
     image_viewer.__set_image_viewer(args)
-    msg = f'{iv}, {image_viewer.__ImgViewer}'
+    msg = f'image viewer check, {iv}, {image_viewer.__ImgViewer}'
     if iv == 'None':
         assert image_viewer.__ImgViewer == 'None', msg
     elif iv in image_viewers:
