@@ -5,6 +5,9 @@ on:
     branches:
       - '**'
       - '!main'
+    paths:
+      - 'aftviewer/**'
+      - '!aftviewer/core/__version__.py'
 jobs:
   run-test:
     runs-on: ubuntu-latest
