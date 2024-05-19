@@ -8,8 +8,7 @@ from stl import mesh
 # stl depends on numpy.
 import numpy as np
 
-from aftviewer import (GLOBAL_CONF, Args, help_template, get_config,
-                       cprint, get_col)
+from .. import GLOBAL_CONF, Args, help_template, get_config, print_error
 
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -17,7 +16,6 @@ logger = getLogger(GLOBAL_CONF.logname)
 def check_color(col):
     colors = ['black', 'white', 'red', 'green', 'blue',
               'cyan', 'magenta', 'yellow', 'gray']
-    fg, bg = get_col('msg_error')
     if type(col) is str:
         if re.match('^#[0-9a-f]{6}$', col) is not None:
             # color code
@@ -27,13 +25,13 @@ def check_color(col):
             return True
         else:
             logger.warning(f'incorrect color setting: {col}')
-            cprint(f'incorrect color setting: {col}', fg=fg, bg=bg)
+            print_error(f'incorrect color setting: {col}')
             return False
     elif col is None:
         return True
     else:
         logger.warning(f'incorrect color setting type: {col}')
-        cprint('incorrect color setting type.', fg=fg, bg=bg)
+        print_error('incorrect color setting type.')
         return False
     return False
 

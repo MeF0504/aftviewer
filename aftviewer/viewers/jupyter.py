@@ -5,14 +5,13 @@ import tempfile
 from pathlib import Path
 from logging import getLogger
 
-from .. import (GLOBAL_CONF, args_chk, cprint, show_image_file,
-                get_config, get_col, help_template,
+from .. import (GLOBAL_CONF, args_chk, cprint, show_image_file, print_error,
+                get_config, help_template,
                 add_args_imageviewer, add_args_output, add_args_verbose)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_output(output, args, out_obj):
-    fge, bge = get_col('msg_error')
     if out_obj == sys.stdout:
         header = ''
     else:
@@ -36,10 +35,9 @@ def show_output(output, args, out_obj):
                     ret = show_image_file(tmp.name, args)
                     if out_obj == sys.stdout:
                         if ret is None:
-                            cprint('image viewer is not found.',
-                                   fg=fge, bg=bge)
+                            print_error('image viewer is not found.')
                         elif not ret:
-                            cprint('failed to open an image.', fg=fge, bg=bge)
+                            print_error('failed to open an image.')
 
 
 def add_args(parser):
@@ -63,9 +61,7 @@ def main(fpath, args):
     if args_chk(args, 'output'):
         outp = Path(args.output)
         if outp.is_dir():
-            fge, bge = get_col('msg_error')
-            cprint(f'{args.output} is a directory. please specify a file.',
-                   fg=fge, bg=bge)
+            print_error(f'{args.output} is a directory. please specify a file.')
             return
         if not outp.parent.is_dir():
             outp.parent.mkdir(parents=True)

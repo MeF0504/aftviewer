@@ -17,9 +17,9 @@ types = {
         }
 
 funcs = {
-        '.core': ['args_chk', 'get_config', 'cprint', 'print_key',
-                  'get_col', 'set_numpy_format',
-                  'interactive_view', 'run_system_cmd',
+        '.core': ['args_chk', 'get_config', 'get_col',
+                  'cprint', 'print_key', 'print_error', 'print_warning',
+                  'set_numpy_format', 'interactive_view', 'run_system_cmd',
                   ],
         '.core.image_viewer': ['is_image',
                                'show_image_file', 'show_image_ndarray',

@@ -5,9 +5,10 @@ from pathlib import PurePath
 from functools import partial
 from logging import getLogger
 
-from .. import GLOBAL_CONF, args_chk, print_key, get_config, get_col, cprint, \
-    interactive_view, interactive_cui, help_template, \
-    add_args_specification, add_args_encoding
+from .. import (GLOBAL_CONF, args_chk, print_key, get_config, print_error,
+                interactive_view, interactive_cui, help_template,
+                add_args_specification, add_args_encoding
+                )
 from .. import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
@@ -16,14 +17,13 @@ pargs = get_config('config', 'pp_kwargs')
 
 
 def show_keys(data, key):
-    fg, bg = get_col('msg_error')
     if key:
         for k in key:
             if k in data:
                 print_key(str(k))
                 pprint.pprint(data[k], **pargs)
             else:
-                cprint(f'"{k}" not in this file.', fg=fg, bg=bg)
+                print_error(f'"{k}" not in this file.')
     else:
         for k in data:
             print(k)

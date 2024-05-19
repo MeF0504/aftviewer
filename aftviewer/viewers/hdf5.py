@@ -6,9 +6,11 @@ from logging import getLogger
 
 import h5py
 
-from .. import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
-    FG, BG, FG256, BG256, END, set_numpy_format, get_config, \
-    interactive_view, interactive_cui, help_template, add_args_specification
+from .. import (GLOBAL_CONF, args_chk, print_key, print_error,
+                FG, BG, FG256, BG256, END, set_numpy_format, get_config,
+                interactive_view, interactive_cui,
+                help_template, add_args_specification
+                )
 from .. import ReturnMessage as RM
 from pymeflib.tree2 import show_tree
 
@@ -144,7 +146,6 @@ def main(fpath, args):
     elif args_chk(args, 'cui'):
         interactive_cui(fpath, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
-        fg, bg = get_col('msg_error')
         if args.key:
             for k in args.key:
                 print_key(k)
@@ -153,7 +154,7 @@ def main(fpath, args):
                     print(info.message)
                     print()
                 else:
-                    cprint(info.message, fg=fg, bg=bg)
+                    print_error(info.message)
         else:
             h5_file.visititems(show_names)
     elif args_chk(args, 'verbose'):

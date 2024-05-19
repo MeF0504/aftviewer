@@ -6,12 +6,11 @@ from pathlib import Path, PurePosixPath
 from logging import getLogger
 from typing import Optional
 
-from .. import (
-        GLOBAL_CONF, Args, args_chk, print_key, cprint,
-        is_image, interactive_view, interactive_cui,
-        show_image_file, run_system_cmd, get_col, help_template,
-        add_args_imageviewer, add_args_output, add_args_specification
-        )
+from .. import (GLOBAL_CONF, Args, args_chk, print_key, print_error,
+                is_image, interactive_view, interactive_cui,
+                show_image_file, run_system_cmd, help_template,
+                add_args_imageviewer, add_args_output, add_args_specification
+                )
 from .. import ReturnMessage as RM
 from pymeflib.tree2 import GC, branch_str, show_tree
 logger = getLogger(GLOBAL_CONF.logname)
@@ -165,7 +164,6 @@ def main(fpath, args):
     elif args_chk(args, 'cui'):
         interactive_cui(fpath, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
-        fg, bg = get_col('msg_error')
         if len(args.key) == 0:
             tar_file.list(verbose=False)
         for k in args.key:
@@ -175,7 +173,7 @@ def main(fpath, args):
                 print(info.message)
                 print()
             else:
-                cprint(info.message, fg=fg, bg=bg)
+                print_error(info.message)
     elif args_chk(args, 'verbose'):
         tar_file.list(verbose=True)
     else:

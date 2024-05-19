@@ -7,12 +7,11 @@ from pathlib import Path, PurePosixPath
 from logging import getLogger
 from typing import Optional
 
-from .. import (
-        GLOBAL_CONF, Args, args_chk, is_image, print_key, cprint, get_col,
-        interactive_view, interactive_cui, show_image_file,
-        run_system_cmd, help_template,
-        add_args_imageviewer, add_args_output, add_args_specification
-        )
+from .. import (GLOBAL_CONF, Args, args_chk, is_image, print_key, print_error,
+                interactive_view, interactive_cui, show_image_file,
+                run_system_cmd, help_template,
+                add_args_imageviewer, add_args_output, add_args_specification
+                )
 from .. import ReturnMessage as RM
 from pymeflib.tree2 import GC, branch_str, show_tree
 logger = getLogger(GLOBAL_CONF.logname)
@@ -183,7 +182,6 @@ def main(fpath, args):
             for fy in zip_file.namelist():
                 print(fy)
             return
-        fg, bg = get_col('msg_error')
         for k in args.key:
             print_key(k)
             info = show_zip(zip_file, pwd, tmpdir, args, gc, k)
@@ -191,7 +189,7 @@ def main(fpath, args):
                 print(info.message)
                 print()
             else:
-                cprint(info.message, fg=fg, bg=bg)
+                print_error(info.message)
     elif args_chk(args, 'verbose'):
         zip_file.printdir()
     else:
