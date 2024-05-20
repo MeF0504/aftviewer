@@ -6,7 +6,7 @@ from typing import List, Dict
 from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from . import GLOBAL_CONF, get_config, get_col, cprint
+from . import GLOBAL_CONF, get_config, print_error
 from .types import ReturnMessage, SF
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -753,6 +753,5 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)
     except AssertionError as e:
-        fg, bg = get_col('msg_error')
-        cprint('curses closed due to an error.', fg=fg, bg=bg)
-        cprint(f'error message: {e}', fg=fg, bg=bg)
+        print_error('curses closed due to an error.')
+        print_error(f'error message: {e}')

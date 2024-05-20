@@ -8,8 +8,9 @@ from types import FunctionType
 from logging import getLogger
 import subprocess
 
-from ..core import GLOBAL_CONF, \
-    get_filetype, load_lib, args_chk, print_key, get_col, cprint
+from ..core import (GLOBAL_CONF,
+                    get_filetype, load_lib, args_chk, print_key, print_error
+                    )
 from ..core.__version__ import VERSION
 from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
@@ -98,8 +99,7 @@ def update(branch: str) -> None:
             logger.info(f'find python; {py_cmd}')
             break
     if py_cmd is None:
-        fg, bg = get_col('msg_error')
-        cprint('failed to find python command.', fg=fg, bg=bg)
+        print_error('failed to find python command.')
         logger.error(f'python not found in {sys.base_prefix}')
         return
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',

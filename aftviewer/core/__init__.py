@@ -305,7 +305,6 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     fg1, bg1 = get_col('interactive_path')
     fg2, bg2 = get_col('interactive_contents')
     fg3, bg3 = get_col('interactive_output')
-    fge, bge = get_col('msg_error')
     tv = TreeViewer('.', get_contents, purepath=purepath, logger=__logger)
     while True:
         term_size = shutil.get_terminal_size()
@@ -341,12 +340,45 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
                 if not info.error:
                     print(info.message)
                 else:
-                    cprint(info.message, fg=fge, bg=bge)
+                    print_error(info.message)
             elif key_name in dirs:
                 cpath /= key_name
             else:
-                cprint('"{}" is not a correct name'.format(key_name),
-                       '', fg=fge, bg=bge)
+                print_error(f'"{key_name}" is not a correct name')
+
+
+def print_error(msg: str) -> None:
+    """
+    print error message.
+
+    Parameters
+    ----------
+    msg: string
+        error message.
+
+    Returns
+    -------
+    None
+    """
+    fg, bg = get_col('msg_error')
+    cprint(msg, fg=fg, bg=bg)
+
+
+def print_warning(msg: str) -> None:
+    """
+    print warning message.
+
+    Parameters
+    ----------
+    msg: string
+        warning message.
+
+    Returns
+    -------
+    None
+    """
+    fg, bg = get_col('msg_warn')
+    cprint(msg, fg=fg, bg=bg)
 
 
 def print_key(key_name: str) -> None:

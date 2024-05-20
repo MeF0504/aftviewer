@@ -10,8 +10,10 @@ except ImportError:
 else:
     import_curses = True
 
-from .. import GLOBAL_CONF, args_chk, print_key, cprint, get_col, \
-    interactive_view, help_template, add_args_specification, add_args_output
+from .. import (GLOBAL_CONF, args_chk, print_key, cprint, print_error,
+                interactive_view,
+                help_template, add_args_specification, add_args_output
+                )
 from .. import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
 from ..core.cui import CursesCUI
@@ -173,15 +175,13 @@ def clear_items(curs):
 
 
 def init_outfile(output):
-    fg, bg = get_col('msg_error')
     if output is None:
         return True
     if len(output) == 0:
-        cprint('incorrect output file is set.', fg=fg, bg=bg)
+        print_error('incorrect output file is set.')
         return False
     if os.path.isdir(output):
-        cprint(f'{output} is a directory. please specify a file.',
-               fg=fg, bg=bg)
+        print_error(f'{output} is a directory. please specify a file.')
         return False
     dirname = os.path.dirname(output)
     if not os.path.isdir(dirname):
@@ -216,7 +216,6 @@ def main(fpath, args):
     cursor.execute("select name from sqlite_master where type='table'")
     tables = [table[0] for table in cursor.fetchall()]
     fname = os.path.basename(fpath)
-    fg, bg = get_col('msg_error')
 
     if args_chk(args, 'interactive'):
         gc = partial(get_contents_i, cursor, tables)
@@ -265,7 +264,7 @@ def main(fpath, args):
                 print(info.message)
                 print()
             else:
-                cprint(info.message, fg=fg, bg=bg)
+                print_error(info.message)
     else:
         if args_chk(args, 'verbose'):
             if not init_outfile(args.output):

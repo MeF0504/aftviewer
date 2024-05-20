@@ -6,9 +6,8 @@ from astropy.io import fits
 # astropy requires NumPy!
 import numpy as np
 
-from aftviewer import (GLOBAL_CONF, Args, args_chk, cprint,
-                       get_col, show_image_ndarray,
-                       help_template, add_args_imageviewer, add_args_key)
+from .. import (GLOBAL_CONF, Args, args_chk, show_image_ndarray, print_error,
+                help_template, add_args_imageviewer, add_args_key)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -48,20 +47,17 @@ def main(fpath: Path, args: Args):
             print(repr(hdul[idx].header))
         return
 
-    fg, bg = get_col('msg_error')
     with fits.open(fpath) as hdul:
         if idx >= len(hdul):
-            cprint(f'key index {idx} > num of HDU (max: {len(hdul)-1})',
-                   fg=fg, bg=bg)
+            print_error(f'key index {idx} > num of HDU (max: {len(hdul)-1})')
             return
         data = hdul[idx].data
 
     if not hasattr(data, 'shape'):
-        cprint(f'data type may not correct: {type(data)}', fg=fg, bg=bg)
+        print_error(f'data type may not correct: {type(data)}')
         return
     if len(data.shape) != 2:
-        cprint(f'This function assumes 2D image. this is {data.shape}.',
-               fg=fg, bg=bg)
+        print_error(f'This function assumes 2D image. this is {data.shape}.')
         return
     logger.debug(f'min value: {np.nanmin(data)}')
     data -= np.nanmin(data)

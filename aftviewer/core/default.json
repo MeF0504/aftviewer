@@ -12,6 +12,7 @@
     },
     "colors": {
         "msg_error": ["r", null],
+        "msg_warn": ["y", null],
         "msg_key_name": ["k", "y"],
         "interactive_path": [null, "c"],
         "interactive_contents": [null, "g"],
