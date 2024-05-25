@@ -47,9 +47,7 @@ py -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
 
 ## Usage
 ```bash
-usage: aftviewer [-h] [--version]
-                 [-t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm,stl,fits}]
-                 file
+usage: aftviewer [-h] [--version] [-t TYPE] file
 
 show the constitution of a file. Supported file types ... hdf5, pickle, numpy,
 np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm, stl, fits. To see the
@@ -61,9 +59,10 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   --version, -V         show program's version number and exit
-  -t {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm,stl,fits}, --type {hdf5,pickle,numpy,np_pickle,tar,zip,sqlite3,raw_image,jupyter,xpm,stl,fits}
-                        specify the file type. "aftviewer help -t TYPE" will
-                        show the detailed help.
+  -t TYPE, --type TYPE  specify the file type. Available types are hdf5,
+                        pickle, numpy, np_pickle, tar, zip, sqlite3,
+                        raw_image, jupyter, xpm, stl, fits. "aftviewer help -t
+                        TYPE" will show the detailed help.
 
 AFTViewer has some subcommands, 'aftviewer help -t TYPE' shows detailed help,
 'aftviewer update' run the update command of AFTViewer, 'aftviewer
