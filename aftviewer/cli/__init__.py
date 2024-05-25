@@ -40,6 +40,7 @@ def get_args() -> Args:
                         version=f'%(prog)s {VERSION}')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type.'
+                        f' Available types are {", ".join(supported_type)}.'
                         ' "aftviewer help -t TYPE"'
                         ' will show the detailed help.')
     tmpargs, rems = parser.parse_known_args()
@@ -113,7 +114,9 @@ def update(branch: str) -> None:
 def main() -> None:
     args = get_args()
     if not (args.type is None or args.type in GLOBAL_CONF.types):
-        print_error(f'invalid file type: {args.type}')
+        supported_type = ', '.join(list(GLOBAL_CONF.types.keys()).copy())
+        print(f'Please specify the type from {supported_type}.')
+        print_error(f'invalid file type: {args.type}.')
         return
 
     if args.file == 'config_list':
