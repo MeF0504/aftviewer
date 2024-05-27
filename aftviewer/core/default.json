@@ -8,7 +8,8 @@
         "system_cmd": null,
         "system_cmd_args": ["%c", "%s"],
         "pp_kwargs": {"compact": true},
-        "cui_linenumber": false
+        "cui_linenumber": false,
+        "cui_wrap": false
     },
     "colors": {
         "msg_error": ["r", null],

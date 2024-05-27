@@ -35,6 +35,7 @@ class CursesCUI():
         self.message: List[str] = []
         self.main_shift_ud = 0
         self.main_shift_lr = 0
+        self.main_max_lr = 0
         # mode val
         self.key = ''
         self.search_word = ''  # file name search
@@ -75,6 +76,7 @@ class CursesCUI():
                                         self.winx-self.win_w-3,
                                         self.winy-self.search_h-1,
                                         self.win_w+1)
+        # self.win_main.scrollok(True)
         # __________________________
         # |                        | ^
         # |          pwd           | | win_h
@@ -440,12 +442,14 @@ q\t quit
             pass
         elif self.main_shift_ud < len(self.message)-num-1:
             self.main_shift_ud += num
+        # self.win_main.scroll(num)
 
     def up_main(self, num):
         if self.main_shift_ud < num:
             self.main_shift_ud = 0
         else:
             self.main_shift_ud -= num
+        # self.win_main.scroll(-num)
 
     def bottom_main(self):
         self.down_main(len(self.message)-self.main_shift_ud-2)
@@ -605,19 +609,41 @@ q\t quit
             main_col = curses.color_pair(1)
         # show contents
         lw = len(str(len(self.message)))
+        self.main_max_lr = 0
+        line_cnt = 1
         for i in range(1, main_h):
-            if i-1+self.main_shift_ud >= len(self.message):
+            if line_cnt-1+self.main_shift_ud >= len(self.message):
                 break
             idx = i+self.main_shift_ud
-            message = self.message[idx-1]
-            if get_config('config', 'cui_linenumber'):
-                message = f"{i+self.main_shift_ud:{lw}d} "+message
-            message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
-            try:
-                self.win_main.addstr(i, 0, message, main_col)
-            except Exception as e:
-                self.win_main.addstr(i, 0, "!! {}".format(e),
-                                     curses.color_pair(4))
+            if get_config('config', 'cui_wrap'):
+                pass
+            else:
+                messages = [self.message[idx-1]]
+                if get_config('config', 'cui_linenumber'):
+                    messages = [f"{i+self.main_shift_ud:{lw}d} "+messages[0]]
+            for msg in messages:
+                if self.main_max_lr <= len(msg):
+                    self.main_max_lr = len(msg)
+                # message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
+                msg = msg[self.main_shift_lr:]
+                try:
+                    self.win_main.addnstr(i, 0, msg,
+                                          self.winx-self.win_w-2, main_col)
+                except Exception as e:
+                    self.win_main.addstr(i, 0, "!! {}".format(e),
+                                         curses.color_pair(4))
+                line_cnt += 1
+        # if get_config('config', 'cui_linenumber'):
+        #     message = '\n'.join([f'{i+1:02d} {m}' for i, m
+        #                          in enumerate(self.message)])
+        # else:
+        #     message = '\n'.join(self.message)
+        # try:
+        #     self.win_main.addstr(1, 0, message, main_col)
+        # except Exception as e:
+        #     self.win_main.addstr(1, 0, "!! {}".format(e),
+        #                          curses.color_pair(4))
+        # self.win_main.move(1, 1)
         self.search_cmt = ''
         self.win_main.refresh()
 
