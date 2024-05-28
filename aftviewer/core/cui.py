@@ -38,6 +38,7 @@ class CursesCUI():
         self.main_max_lr = 0
         self.line_number: bool = get_config('config', 'cui_linenumber')
         self.wrap: bool = get_config('config', 'cui_wrap')
+        self.lnwidth = 0  # width of line number
         # mode val
         self.key = ''
         self.search_word = ''  # file name search
@@ -57,8 +58,6 @@ class CursesCUI():
         self.scroll_h = 5
         self.scroll_w = 5
         self.scroll_side = 3
-        # actually this↓ almost means the max length of messages.
-        self.scroll_doll = 0
         self.exp = ''
         self.exp += 'q:quit ↑↓←→:sel'
         self.exp += ' shift+↑:back'
@@ -431,17 +430,10 @@ q\t quit
                                        system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
             self.message = [ln.replace("\t", "  ") for ln in self.message]
-            self.scroll_doll = max([len(ln) for ln in self.message]) -\
-                (self.winx-self.win_w)+5
-            if self.scroll_doll < 0:
-                self.scroll_doll = 0
 
     def down_main(self, num):
         main_h = self.winy-self.win_h
-        if len(self.message) < main_h-1:
-            # all contents are shown
-            pass
-        elif self.main_shift_ud < len(self.message)-num-1:
+        if self.main_shift_ud < len(self.message)-num-1:
             self.main_shift_ud += num
 
     def up_main(self, num):
@@ -463,13 +455,20 @@ q\t quit
             self.main_shift_lr -= num
 
     def shift_right_main(self, num):
+        main_w = self.winx-self.win_w
         self.main_shift_lr += num
+        if self.wrap:
+            shift = self.lnwidth
+        else:
+            shift = 0
+        if self.main_max_lr-self.main_shift_lr <= main_w-shift-5:
+            self.main_shift_lr = self.main_max_lr-main_w+shift+5
 
     def hat_main(self):
         self.shift_left_main(self.main_shift_lr)
 
     def doll_main(self):
-        self.shift_right_main(self.scroll_doll-self.main_shift_lr)
+        self.shift_right_main(self.main_max_lr-self.main_shift_lr)
 
     def file_search(self):
         # file name search mode
@@ -607,33 +606,46 @@ q\t quit
         else:
             main_col = curses.color_pair(1)
         # show contents
-        lw = len(str(len(self.message)))
+        self.lnwidth = len(str(len(self.message)))
         self.main_max_lr = 0
         line_cnt = 1
         for i in range(1, main_h):
-            if line_cnt-1+self.main_shift_ud >= len(self.message):
-                break
             idx = i+self.main_shift_ud
+            if idx > len(self.message):
+                # reach the end of message
+                break
             if self.wrap:
-                pass
+                if self.line_number:
+                    textw = main_w-3
+                else:
+                    textw = main_w
+                textw -= 3
+                messages = [self.message[idx-1][x:x+textw]
+                            for x in range(0, len(self.message[idx-1]), textw)
+                            ]
             else:
                 messages = [self.message[idx-1]]
             for j, msg in enumerate(messages):
+                if line_cnt > main_h-1:
+                    # over the displayable line
+                    break
                 if self.line_number:
-                    msg = ' '*(lw+1)+msg
+                    msg = ' '*(self.lnwidth+1)+msg
                 if self.main_max_lr <= len(msg):
                     self.main_max_lr = len(msg)
                 msg = msg[self.main_shift_lr:]
                 try:
-                    self.win_main.addnstr(i, 0, msg,
+                    self.win_main.addnstr(line_cnt, 0, msg,
                                           self.winx-self.win_w-2, main_col)
                     if self.line_number:
                         if j == 0:
-                            self.win_main.addstr(i, 0, f'{idx:{lw}d}|')
+                            self.win_main.addstr(line_cnt, 0,
+                                                 f'{idx:0{self.lnwidth}d}|')
                         else:
-                            self.win_main.addstr(i, 0, f'{" "*lw}|')
+                            self.win_main.addstr(line_cnt, 0,
+                                                 f'{" "*self.lnwidth}|')
                 except Exception as e:
-                    self.win_main.addstr(i, 0, "!! {}".format(e),
+                    self.win_main.addstr(line_cnt, 0, "!! {}".format(e),
                                          curses.color_pair(4))
                 line_cnt += 1
         self.search_cmt = ''
