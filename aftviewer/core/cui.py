@@ -36,6 +36,8 @@ class CursesCUI():
         self.main_shift_ud = 0
         self.main_shift_lr = 0
         self.main_max_lr = 0
+        self.line_number: bool = get_config('config', 'cui_linenumber')
+        self.wrap: bool = get_config('config', 'cui_wrap')
         # mode val
         self.key = ''
         self.search_word = ''  # file name search
@@ -612,19 +614,24 @@ q\t quit
             if line_cnt-1+self.main_shift_ud >= len(self.message):
                 break
             idx = i+self.main_shift_ud
-            if get_config('config', 'cui_wrap'):
+            if self.wrap:
                 pass
             else:
                 messages = [self.message[idx-1]]
-                if get_config('config', 'cui_linenumber'):
-                    messages = [f"{i+self.main_shift_ud:{lw}d} "+messages[0]]
-            for msg in messages:
+            for j, msg in enumerate(messages):
+                if self.line_number:
+                    msg = ' '*(lw+1)+msg
                 if self.main_max_lr <= len(msg):
                     self.main_max_lr = len(msg)
                 msg = msg[self.main_shift_lr:]
                 try:
                     self.win_main.addnstr(i, 0, msg,
                                           self.winx-self.win_w-2, main_col)
+                    if self.line_number:
+                        if j == 0:
+                            self.win_main.addstr(i, 0, f'{idx:{lw}d}|')
+                        else:
+                            self.win_main.addstr(i, 0, f'{" "*lw}|')
                 except Exception as e:
                     self.win_main.addstr(i, 0, "!! {}".format(e),
                                          curses.color_pair(4))
@@ -650,6 +657,9 @@ selected contents: {self.sel_cont}
 === top window ===
 === main window ===
 scrool (updown x leftright): {self.main_shift_ud}x{self.main_shift_lr}
+max width: {self.main_max_lr}
+line number: {self.line_number}
+wrap: {self.wrap}
 === search mode ===
 is_search: {self.is_search}
 search_word:  {self.search_word}
