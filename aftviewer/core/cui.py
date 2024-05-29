@@ -41,8 +41,8 @@ class CursesCUI():
         self.lnwidth = 0  # width of line number
         # mode val
         self.key = ''
-        self.search_word = ''  # file name search
-        self.search_word2 = ''  # word search in current file
+        self.search_file = ''  # file name search
+        self.search_word = ''  # word search in current file
         self.search_cmt = ''
         self.is_search = False
         # called path-like class
@@ -265,7 +265,7 @@ class CursesCUI():
                       'search file names',
                       True, False, True,
                       ],
-                '/': [self.into_search_mode, [], '/',
+                '/': [self.word_search, [], '/',
                       'start the search mode',
                       True, False, False,
                       ],
@@ -483,10 +483,10 @@ q\t quit
         self.win_search.clear()
         box = Textbox(self.win_search)
         box.edit(self.editer_cmd)
-        search_word = box.gather()
-        self.search_word = search_word.replace("\n", '').replace(" ", '')
-        self.search_word2 = ''
-        if len(self.search_word) == 0:
+        search_file = box.gather()
+        self.search_file = search_file.replace("\n", '').replace(" ", '')
+        self.search_word = ''
+        if len(self.search_file) == 0:
             self.win_main.clear()
             self.win_main.refresh()
         else:
@@ -499,10 +499,10 @@ q\t quit
             self.files = []
             self.dirs = []
             for i, f in enumerate(files):
-                if re.search(self.search_word, f):
+                if re.search(self.search_file, f):
                     self.files.append(f)
             for i, d in enumerate(dirs):
-                if re.search(self.search_word, d):
+                if re.search(self.search_file, d):
                     self.dirs.append(d)
             if len(self.files)+len(self.dirs) != 0:
                 # find something
@@ -513,7 +513,7 @@ q\t quit
                 self.dirs = old_dirs
             self.key = ''
 
-    def into_search_mode(self):
+    def word_search(self):
         # search mode in current file.
         uly = self.winy-self.win_h-self.search_h-2
         ulx = 0
@@ -525,13 +525,13 @@ q\t quit
         self.win_search.clear()
         box = Textbox(self.win_search)
         box.edit(self.editer_cmd)
-        search_word = box.gather()
-        self.search_word2 = search_word.replace("\n", '')[:-1]
-        self.search_word = ''
+        search_file = box.gather()
+        self.search_word = search_file.replace("\n", '')[:-1]
+        self.search_file = ''
         self.jump_search_word(self.main_shift_ud, 0, False)
 
     def jump_search_word(self, start_line, start_col, reverse=False):
-        if not self.search_word2:
+        if not self.search_word:
             return
         if reverse:
             lines = range(start_line, -1, -1)
@@ -544,10 +544,10 @@ q\t quit
             else:
                 line = self.message[i]
                 shift = 0
-            self.search_cmt = f'"{self.search_word2}" not found'
-            if self.search_word2 in line:
+            self.search_cmt = f'"{self.search_word}" not found'
+            if self.search_word in line:
                 self.main_shift_ud = i
-                self.main_shift_lr = line.find(self.search_word2)+shift
+                self.main_shift_lr = line.find(self.search_word)+shift
                 self.search_cmt = ''
                 break
 
@@ -674,8 +674,8 @@ line number: {self.line_number}
 wrap: {self.wrap}
 === search mode ===
 is_search: {self.is_search}
-search_word:  {self.search_word}
-search_word2: {self.search_word2}
+search_file: {self.search_file}
+search_word: {self.search_word}
 ==========='''
         logger.debug(log_str)
 
