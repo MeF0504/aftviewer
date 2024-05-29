@@ -432,9 +432,10 @@ q\t quit
             self.message = [ln.replace("\t", "  ") for ln in self.message]
 
     def down_main(self, num):
-        main_h = self.winy-self.win_h
         if self.main_shift_ud < len(self.message)-num-1:
             self.main_shift_ud += num
+        else:
+            self.main_shift_ud = len(self.message)-1
 
     def up_main(self, num):
         if self.main_shift_ud < num:
@@ -545,9 +546,12 @@ q\t quit
                 line = self.message[i]
                 shift = 0
             self.search_cmt = f'"{self.search_word}" not found'
-            if self.search_word in line:
-                self.main_shift_ud = i
-                self.main_shift_lr = line.find(self.search_word)+shift
+            res = re.search(self.search_word, line)
+            if res is not None:
+                self.main_shift_ud = 0
+                self.down_main(i-self.main_shift_ud)
+                self.main_shift_lr = 0
+                self.shift_right_main(res.start()+shift)
                 self.search_cmt = ''
                 break
 
