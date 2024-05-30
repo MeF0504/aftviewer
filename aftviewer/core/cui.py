@@ -606,15 +606,17 @@ q\t quit
                          textw: int, wrap_cnt: int, lr_start: int):
         if self.is_word_search is None:
             return
+        main_w = self.winx-self.win_w
         if idx-1 == self.is_word_search[1]:
-            if textw == 0 or self.is_word_search[1] % textw == wrap_cnt:
+            if textw == 0 or int(self.is_word_search[2]/textw) == wrap_cnt:
                 ser_st = self.is_word_search[2]-wrap_cnt*textw
                 ser_st -= self.main_shift_lr
                 if lr_start+ser_st < 0:
                     return
-                self.win_main.addstr(line_cnt, lr_start+ser_st,
-                                     self.is_word_search[0],
-                                     curses.color_pair(4))
+                self.win_main.addnstr(line_cnt, lr_start+ser_st,
+                                      self.is_word_search[0],
+                                      main_w-2-(lr_start+ser_st)-self.main_shift_lr,
+                                      curses.color_pair(4))
 
     def show_help_message(self):
         self.message = self.create_help_msg().split('\n')
