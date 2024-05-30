@@ -613,9 +613,12 @@ q\t quit
                 ser_st -= self.main_shift_lr
                 if lr_start+ser_st < 0:
                     return
+                word_len = main_w-2-(lr_start+ser_st)
+                if self.wrap:
+                    word_len -= self.main_shift_lr
                 self.win_main.addnstr(line_cnt, lr_start+ser_st,
                                       self.is_word_search[0],
-                                      main_w-2-(lr_start+ser_st)-self.main_shift_lr,
+                                      word_len,
                                       curses.color_pair(4))
 
     def show_help_message(self):
