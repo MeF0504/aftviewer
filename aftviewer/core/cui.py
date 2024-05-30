@@ -608,14 +608,19 @@ q\t quit
             return
         main_w = self.winx-self.win_w
         if idx-1 == self.is_word_search[1]:
-            if textw == 0 or int(self.is_word_search[2]/textw) == wrap_cnt:
+            if not self.wrap or int(self.is_word_search[2]/textw) == wrap_cnt:
                 ser_st = self.is_word_search[2]-wrap_cnt*textw
                 ser_st -= self.main_shift_lr
+                ser_end = self.is_word_search[3]-wrap_cnt*textw
+                if self.wrap and ser_end > textw:
+                    ser_end = textw
+                ser_end -= self.main_shift_lr
                 if lr_start+ser_st < 0:
                     return
-                word_len = main_w-2-(lr_start+ser_st)
-                if self.wrap:
-                    word_len -= self.main_shift_lr
+                elif lr_start+ser_st > textw:
+                    logger.debug(f'{lr_start}, {ser_st}, {textw}')
+                    return
+                word_len = ser_end-ser_st
                 self.win_main.addnstr(line_cnt, lr_start+ser_st,
                                       self.is_word_search[0],
                                       word_len,
@@ -678,17 +683,16 @@ q\t quit
             if idx > len(self.message):
                 # reach the end of message
                 break
+            if self.line_number:
+                textw = main_w-self.lnwidth-1
+            else:
+                textw = main_w
+            textw -= 2
             if self.wrap:
-                if self.line_number:
-                    textw = main_w-self.lnwidth-1
-                else:
-                    textw = main_w
-                textw -= 2
                 messages = [self.message[idx-1][x:x+textw]
                             for x in range(0, len(self.message[idx-1]), textw)
                             ]
             else:
-                textw = 0
                 messages = [self.message[idx-1]]
             for j, msg in enumerate(messages):
                 if line_cnt > main_h-1:
