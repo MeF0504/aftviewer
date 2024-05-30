@@ -139,6 +139,8 @@ class CursesCUI():
         self.create_color_set(6, 'dir_index')
         # file index
         self.create_color_set(7, 'file_index')
+        # search word
+        self.create_color_set(8, 'search')
         self.win_main.bkgd(' ', curses.color_pair(1))
         self.win_pwd.bkgd(' ', curses.color_pair(2))
         self.win_side.bkgd(' ', curses.color_pair(3))
@@ -624,7 +626,7 @@ q\t quit
                 self.win_main.addnstr(line_cnt, lr_start+ser_st,
                                       self.is_word_search[0],
                                       word_len,
-                                      curses.color_pair(4))
+                                      curses.color_pair(8))
 
     def show_help_message(self):
         self.message = self.create_help_msg().split('\n')

@@ -22,6 +22,7 @@
         "cui_top": ["w", "g"],
         "cui_left": ["w", "b"],
         "cui_error": ["r", "k"],
+        "cui_search": ["w", "m"],
         "cui_file_info": ["y", "k"],
         "cui_dir_index": ["g", "w"],
         "cui_file_index": ["m", "w"]
