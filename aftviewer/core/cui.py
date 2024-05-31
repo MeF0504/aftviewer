@@ -456,14 +456,14 @@ q\t quit
         self.up_main(self.main_shift_ud)
 
     def shift_left_main(self, num):
-        assert num > 0, f'main shift left error: {num}'
+        assert num >= 0, f'main shift left error: {num}'
         if self.main_shift_lr < num:
             self.main_shift_lr = 0
         else:
             self.main_shift_lr -= num
 
     def shift_right_main(self, num):
-        assert num > 0, f'main shift right error: {num}'
+        assert num >= 0, f'main shift right error: {num}'
         main_w = self.winx-self.win_w
         self.main_shift_lr += num
         if self.wrap:
@@ -545,6 +545,9 @@ q\t quit
     def jump_search_word(self, reverse=False):
         if not self.search_word:
             return
+        textw = self.winx-self.win_w-2
+        if self.line_number:
+            textw -= self.lnwidth+1
         if self.is_word_search is None:
             if reverse:
                 start_line = self.main_shift_ud-1
@@ -590,8 +593,11 @@ q\t quit
                 found_word = res.group()
                 self.main_shift_ud = 0
                 self.down_main(i-self.main_shift_ud)
+                col = res.start()+shift
+                if self.wrap:
+                    col = col % textw
                 self.main_shift_lr = 0
-                self.shift_right_main(res.start()+shift)
+                self.shift_right_main(col)
                 self.search_cmt = ''
                 self.is_word_search = [found_word, i,
                                        shift+tmpst+res.start(),
@@ -608,7 +614,6 @@ q\t quit
                          textw: int, wrap_cnt: int, lr_start: int):
         if self.is_word_search is None:
             return
-        main_w = self.winx-self.win_w
         if idx-1 == self.is_word_search[1]:
             if not self.wrap or int(self.is_word_search[2]/textw) == wrap_cnt:
                 ser_st = self.is_word_search[2]-wrap_cnt*textw
@@ -617,10 +622,11 @@ q\t quit
                 if self.wrap and ser_end > textw:
                     ser_end = textw
                 ser_end -= self.main_shift_lr
+                if not self.wrap and ser_end > textw:
+                    ser_end = textw
                 if lr_start+ser_st < 0:
                     return
-                elif lr_start+ser_st > textw:
-                    logger.debug(f'{lr_start}, {ser_st}, {textw}')
+                elif ser_st > textw:
                     return
                 word_len = ser_end-ser_st
                 self.win_main.addnstr(line_cnt, lr_start+ser_st,
