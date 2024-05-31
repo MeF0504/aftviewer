@@ -2,7 +2,7 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
-from typing import List, Dict, Optional
+from typing import List, Dict, Tuple, Optional
 from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
@@ -46,7 +46,7 @@ class CursesCUI():
         self.search_word = ''  # word search in current file
         self.search_cmt = ''
         # ↓ find-word, line, start col, end col
-        self.is_word_search: Optional[List[str, int, int, int]] = None
+        self.is_word_search: Optional[Tuple[str, int, int, int]] = None
         # called path-like class
         self.purepath = purepath
         # key maps
@@ -599,9 +599,9 @@ q\t quit
                 self.main_shift_lr = 0
                 self.shift_right_main(col)
                 self.search_cmt = ''
-                self.is_word_search = [found_word, i,
+                self.is_word_search = (found_word, i,
                                        shift+tmpst+res.start(),
-                                       shift+tmpst+res.end()]
+                                       shift+tmpst+res.end())
                 break
 
     def jump_search_word_next(self):
