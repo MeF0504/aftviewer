@@ -668,16 +668,18 @@ q\t quit
         self.win_main.clear()
         # show title
         self.win_main.addstr(0, 0, self.sel_cont, curses.A_REVERSE)
-        if len(self.sel_cont) != 0:
-            if main_w > len(self.sel_cont)+2:
-                self.win_main.addstr(0, len(self.sel_cont)+2,
-                                     '{}/{}, {}; {}'.format(
-                                         self.main_shift_ud+1,
-                                         len(self.message),
-                                         self.main_shift_lr+1,
-                                         self.search_cmt,
-                                         ),
-                                     curses.color_pair(5))
+        if len(self.sel_cont) == 0:
+            # skip if file is not set.
+            return
+        if main_w > len(self.sel_cont)+2:
+            self.win_main.addstr(0, len(self.sel_cont)+2,
+                                 '{}/{}, {}; {}'.format(
+                                     self.main_shift_ud+1,
+                                     len(self.message),
+                                     self.main_shift_lr+1,
+                                     self.search_cmt,
+                                     ),
+                                 curses.color_pair(5))
         if self.info.error:
             main_col = curses.color_pair(4)
         else:
@@ -700,6 +702,8 @@ q\t quit
                 messages = [self.message[idx-1][x:x+textw]
                             for x in range(0, len(self.message[idx-1]), textw)
                             ]
+                if len(messages) == 0:
+                    messages = ['']
             else:
                 messages = [self.message[idx-1]]
             for j, msg in enumerate(messages):
