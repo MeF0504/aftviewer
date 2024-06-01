@@ -589,12 +589,11 @@ q\t quit
                 res = re.search(self.search_word, line)
             if res is not None:
                 found_word = res.group()
-                self.main_shift_ud = 0
                 self.down_main(i-self.main_shift_ud)
                 col = res.start()+shift
                 if self.wrap:
                     col = col % textw
-                self.main_shift_lr = 0
+                col -= self.main_shift_lr
                 self.shift_right_main(col)
                 self.search_cmt = ''
                 self.is_word_search = (found_word, i,
