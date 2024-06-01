@@ -127,32 +127,42 @@ def get_contents_c(cursor, tables, path):
         return [], sorted(files)
 
 
+def add_col(selected_contents: str):
+    global sel_items
+    cols = os.path.basename(sel_items).split(',')
+    logger.debug(f'cols: {cols}')
+    if selected_contents not in cols:
+        sel_items += f',{selected_contents}'
+
+
 def add_contents(curs):
     # wrapper of core.cui.CursesCUI.select_item
     global sel_items
     curs.sel_cont = curs.contents[curs.sel_idx]
+    curs.is_word_search = None
     if curs.sel_cont in curs.dirs:
-        if curs.is_search:
+        if curs.is_file_search:
             curs.cpath = curs.purepath(curs.sel_cont)
         else:
             curs.cpath = curs.cpath/curs.sel_cont
         curs.dirs, curs.files = curs.tv.get_contents(curs.cpath)
-        curs.is_search = False
+        curs.is_file_search = False
         curs.init_var()
     else:
-        if curs.is_search:
+        if curs.is_file_search:
+            if '/' in sel_items and \
+               sel_items.split('/')[0] == curs.sel_cont.split('/')[0]:
+                # same table
+                add_col(curs.sel_cont.split('/')[1])
+            else:
+                sel_items = curs.sel_cont
             fpath = sel_items
         else:
             if '/' in sel_items:
-                cols = os.path.basename(sel_items).split(',')
-                # debug_log(f'{cols}')
-                logger.debug(f'cols: {cols}')
-                if curs.sel_cont not in cols:
-                    sel_items += f',{curs.sel_cont}'
+                add_col(curs.sel_cont)
             else:
                 sel_items = str(curs.cpath/curs.sel_cont)
             fpath = sel_items
-        # debug_log(f'set {fpath}')
         logger.info(f'set {fpath}')
         curs.main_shift_ud = 0
         curs.main_shift_lr = 0
@@ -162,10 +172,6 @@ def add_contents(curs):
         curs.info = curs.show_func(fpath, cui=True)
         curs.message = curs.info.message.split("\n")
         curs.message = [ln.replace("\t", "  ") for ln in curs.message]
-        curs.scroll_doll = max([len(ln) for ln in curs.message]) -\
-            (curs.winx-curs.win_w)+5
-        if curs.scroll_doll < 0:
-            curs.scroll_doll = 0
 
 
 def clear_items(curs):

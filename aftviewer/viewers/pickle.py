@@ -47,7 +47,7 @@ def get_item(data, cpath):
 def show_func(data, cpath, **kwargs):
     tmp_data = get_item(data, cpath)
     if tmp_data is None:
-        return RM(f'Error! no key {cpath}', False)
+        return RM(f'warning! no key {cpath} or the value is None', False)
     res = pprint.pformat(tmp_data, **pargs)
     return RM(res, False)
 

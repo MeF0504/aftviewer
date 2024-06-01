@@ -2,7 +2,7 @@ import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
-from typing import List, Dict
+from typing import List, Dict, Tuple, Optional
 from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
@@ -35,15 +35,22 @@ class CursesCUI():
         self.message: List[str] = []
         self.main_shift_ud = 0
         self.main_shift_lr = 0
-        # mode val
-        self.key = ''
-        self.search_word = ''  # file name search
-        self.search_word2 = ''  # word search in current file
+        self.main_max_lr = 0
+        self.line_number: bool = get_config('config', 'cui_linenumber')
+        self.wrap: bool = get_config('config', 'cui_wrap')
+        self.lnwidth = 0  # width of line number
+        # file search
+        self.search_file = ''  # file name search
+        self.is_file_search = False
+        # word search in the current file
+        self.search_word = ''  # word search in current file
         self.search_cmt = ''
-        self.is_search = False
+        # ↓ find-word, line, start col, end col
+        self.is_word_search: Optional[Tuple[str, int, int, int]] = None
         # called path-like class
         self.purepath = purepath
         # key maps
+        self.key = ''
         self.keymaps: Dict[str, list] = {}
 
     def init_win(self):
@@ -54,8 +61,6 @@ class CursesCUI():
         self.scroll_h = 5
         self.scroll_w = 5
         self.scroll_side = 3
-        # actually this↓ almost means the max length of messages.
-        self.scroll_doll = 0
         self.exp = ''
         self.exp += 'q:quit ↑↓←→:sel'
         self.exp += ' shift+↑:back'
@@ -134,6 +139,8 @@ class CursesCUI():
         self.create_color_set(6, 'dir_index')
         # file index
         self.create_color_set(7, 'file_index')
+        # search word
+        self.create_color_set(8, 'search')
         self.win_main.bkgd(' ', curses.color_pair(1))
         self.win_pwd.bkgd(' ', curses.color_pair(2))
         self.win_side.bkgd(' ', curses.color_pair(3))
@@ -263,7 +270,7 @@ class CursesCUI():
                       'search file names',
                       True, False, True,
                       ],
-                '/': [self.into_search_mode, [], '/',
+                '/': [self.word_search, [], '/',
                       'start the search mode',
                       True, False, False,
                       ],
@@ -389,10 +396,10 @@ q\t quit
             self.side_shift_lr += self.scroll_side
 
     def go_up_sidebar(self):
-        if self.is_search:
+        if self.is_file_search:
             self.dirs, self.files = self.tv.get_contents(self.cpath)
             self.init_var()
-            self.is_search = False
+            self.is_file_search = False
         elif str(self.cpath) != '.':
             self.cpath = self.cpath.parent
             self.dirs, self.files = self.tv.get_contents(self.cpath)
@@ -400,8 +407,9 @@ q\t quit
 
     def select_item(self, system):
         self.sel_cont = self.contents[self.sel_idx]
+        self.is_word_search = None
         if self.sel_cont in self.dirs:
-            if self.is_search:
+            if self.is_file_search:
                 self.cpath = self.purepath(self.sel_cont)
             else:
                 self.cpath = self.cpath/self.sel_cont
@@ -412,10 +420,10 @@ q\t quit
                 return
             self.dirs = dirs
             self.files = files
-            self.is_search = False
+            self.is_file_search = False
             self.init_var()
         else:
-            if self.is_search:
+            if self.is_file_search:
                 fpath = self.sel_cont
             else:
                 fpath = str(self.cpath/self.sel_cont)
@@ -428,18 +436,12 @@ q\t quit
                                        system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
             self.message = [ln.replace("\t", "  ") for ln in self.message]
-            self.scroll_doll = max([len(ln) for ln in self.message]) -\
-                (self.winx-self.win_w)+5
-            if self.scroll_doll < 0:
-                self.scroll_doll = 0
 
     def down_main(self, num):
-        main_h = self.winy-self.win_h
-        if len(self.message) < main_h-1:
-            # all contents are shown
-            pass
-        elif self.main_shift_ud < len(self.message)-num-1:
+        if self.main_shift_ud < len(self.message)-num-1:
             self.main_shift_ud += num
+        else:
+            self.main_shift_ud = len(self.message)-1
 
     def up_main(self, num):
         if self.main_shift_ud < num:
@@ -454,19 +456,28 @@ q\t quit
         self.up_main(self.main_shift_ud)
 
     def shift_left_main(self, num):
+        assert num >= 0, f'main shift left error: {num}'
         if self.main_shift_lr < num:
             self.main_shift_lr = 0
         else:
             self.main_shift_lr -= num
 
     def shift_right_main(self, num):
+        assert num >= 0, f'main shift right error: {num}'
+        if self.wrap:
+            return
+        main_w = self.winx-self.win_w
         self.main_shift_lr += num
+        if self.main_max_lr-self.main_shift_lr <= main_w-5:
+            self.main_shift_lr = self.main_max_lr-main_w+5
+        if self.main_shift_lr < 0:
+            self.main_shift_lr = 0
 
     def hat_main(self):
         self.shift_left_main(self.main_shift_lr)
 
     def doll_main(self):
-        self.shift_right_main(self.scroll_doll-self.main_shift_lr)
+        self.shift_right_main(self.main_max_lr-self.main_shift_lr)
 
     def file_search(self):
         # file name search mode
@@ -481,10 +492,10 @@ q\t quit
         self.win_search.clear()
         box = Textbox(self.win_search)
         box.edit(self.editer_cmd)
-        search_word = box.gather()
-        self.search_word = search_word.replace("\n", '').replace(" ", '')
-        self.search_word2 = ''
-        if len(self.search_word) == 0:
+        search_file = box.gather()
+        self.search_file = search_file.replace("\n", '').replace(" ", '')
+        self.search_word = ''
+        if len(self.search_file) == 0:
             self.win_main.clear()
             self.win_main.refresh()
         else:
@@ -497,21 +508,21 @@ q\t quit
             self.files = []
             self.dirs = []
             for i, f in enumerate(files):
-                if re.search(self.search_word, f):
+                if re.search(self.search_file, f):
                     self.files.append(f)
             for i, d in enumerate(dirs):
-                if re.search(self.search_word, d):
+                if re.search(self.search_file, d):
                     self.dirs.append(d)
             if len(self.files)+len(self.dirs) != 0:
                 # find something
-                self.is_search = True
+                self.is_file_search = True
                 self.init_var()
             else:
                 self.files = old_files
                 self.dirs = old_dirs
             self.key = ''
 
-    def into_search_mode(self):
+    def word_search(self):
         # search mode in current file.
         uly = self.winy-self.win_h-self.search_h-2
         ulx = 0
@@ -523,37 +534,102 @@ q\t quit
         self.win_search.clear()
         box = Textbox(self.win_search)
         box.edit(self.editer_cmd)
+        self.is_word_search = None
         search_word = box.gather()
-        self.search_word2 = search_word.replace("\n", '')[:-1]
-        self.search_word = ''
-        self.jump_search_word(self.main_shift_ud, 0, False)
+        self.search_word = search_word.replace("\n", '')[:-1]
+        self.search_file = ''
+        self.jump_search_word(False)
 
-    def jump_search_word(self, start_line, start_col, reverse=False):
-        if not self.search_word2:
+    def jump_search_word(self, reverse=False):
+        if not self.search_word:
             return
+        textw = self.winx-self.win_w-2
+        if self.line_number:
+            textw -= self.lnwidth+1
+        if self.is_word_search is None:
+            if reverse:
+                start_line = self.main_shift_ud-1
+            else:
+                start_line = self.main_shift_ud
+            start_col = 0
+        else:
+            start_line = self.is_word_search[1]
+            if reverse:
+                start_col = self.is_word_search[2]-1
+            else:
+                start_col = self.is_word_search[3]+1
         if reverse:
             lines = range(start_line, -1, -1)
         else:
             lines = range(start_line, len(self.message))
         for i in lines:
             if i == start_line:
-                line = self.message[i][start_col:]
-                shift = start_col
+                if reverse:
+                    line = self.message[i][:start_col]
+                    shift = 0
+                else:
+                    line = self.message[i][start_col:]
+                    shift = start_col
             else:
                 line = self.message[i]
                 shift = 0
-            self.search_cmt = f'"{self.search_word2}" not found'
-            if self.search_word2 in line:
-                self.main_shift_ud = i
-                self.main_shift_lr = line.find(self.search_word2)+shift
+            self.search_cmt = f'"{self.search_word}" not found'
+            if reverse:
+                # find last match
+                tmpall = re.findall(self.search_word, line)
+                res = None
+                for tmpstr in tmpall:
+                    if res is None:
+                        tmpst = 0
+                    else:
+                        tmpst += res.end()
+                    res = re.search(self.search_word, line[tmpst:])
+            else:
+                tmpst = 0
+                res = re.search(self.search_word, line)
+            if res is not None:
+                found_word = res.group()
+                self.down_main(i-self.main_shift_ud)
+                col = res.start()+shift
+                if self.wrap:
+                    col = col % textw
+                col -= self.main_shift_lr
+                self.shift_right_main(col)
                 self.search_cmt = ''
+                self.is_word_search = (found_word, i,
+                                       shift+tmpst+res.start(),
+                                       shift+tmpst+res.end())
                 break
 
     def jump_search_word_next(self):
-        self.jump_search_word(self.main_shift_ud, self.main_shift_lr+1, False)
+        self.jump_search_word(False)
 
     def jump_search_word_pre(self):
-        self.jump_search_word(self.main_shift_ud-1, 0, True)
+        self.jump_search_word(True)
+
+    def show_search_word(self, idx: int, line_cnt: int,
+                         textw: int, wrap_cnt: int, lr_start: int):
+        if self.is_word_search is None:
+            return
+        if idx-1 == self.is_word_search[1]:
+            if not self.wrap or int(self.is_word_search[2]/textw) == wrap_cnt:
+                ser_st = self.is_word_search[2]-wrap_cnt*textw
+                ser_st -= self.main_shift_lr
+                ser_end = self.is_word_search[3]-wrap_cnt*textw
+                if self.wrap and ser_end > textw:
+                    ser_end = textw
+                ser_end -= self.main_shift_lr
+                if not self.wrap and ser_end > textw:
+                    ser_end = textw
+                if lr_start+ser_st < 0:
+                    return
+                elif ser_st > textw:
+                    return
+                word_len = ser_end-ser_st
+                self.win_main.addnstr(line_cnt, lr_start+ser_st,
+                                      self.is_word_search[0],
+                                      word_len,
+                                      curses.color_pair(8))
 
     def show_help_message(self):
         self.message = self.create_help_msg().split('\n')
@@ -589,35 +665,70 @@ q\t quit
         self.win_main.clear()
         # show title
         self.win_main.addstr(0, 0, self.sel_cont, curses.A_REVERSE)
-        if len(self.sel_cont) != 0:
-            if main_w > len(self.sel_cont)+2:
-                self.win_main.addstr(0, len(self.sel_cont)+2,
-                                     '{}/{}, {}; {}'.format(
-                                         self.main_shift_ud+1,
-                                         len(self.message),
-                                         self.main_shift_lr+1,
-                                         self.search_cmt,
-                                         ),
-                                     curses.color_pair(5))
+        if len(self.sel_cont) == 0:
+            # skip if file is not set.
+            return
+        if main_w > len(self.sel_cont)+2:
+            self.win_main.addstr(0, len(self.sel_cont)+2,
+                                 '{}/{}, {}; {}'.format(
+                                     self.main_shift_ud+1,
+                                     len(self.message),
+                                     self.main_shift_lr+1,
+                                     self.search_cmt,
+                                     ),
+                                 curses.color_pair(5))
         if self.info.error:
             main_col = curses.color_pair(4)
         else:
             main_col = curses.color_pair(1)
         # show contents
-        lw = len(str(len(self.message)))
+        self.lnwidth = len(str(len(self.message)))
+        self.main_max_lr = 0
+        line_cnt = 1
         for i in range(1, main_h):
-            if i-1+self.main_shift_ud >= len(self.message):
-                break
             idx = i+self.main_shift_ud
-            message = self.message[idx-1]
-            if get_config('config', 'cui_linenumber'):
-                message = f"{i+self.main_shift_ud:{lw}d} "+message
-            message = message[self.main_shift_lr:self.main_shift_lr+main_w-2]
-            try:
-                self.win_main.addstr(i, 0, message, main_col)
-            except Exception as e:
-                self.win_main.addstr(i, 0, "!! {}".format(e),
-                                     curses.color_pair(4))
+            if idx > len(self.message):
+                # reach the end of message
+                break
+            if self.line_number:
+                textw = main_w-self.lnwidth-1
+            else:
+                textw = main_w
+            textw -= 2
+            if self.wrap:
+                messages = [self.message[idx-1][x:x+textw]
+                            for x in range(0, len(self.message[idx-1]), textw)
+                            ]
+                if len(messages) == 0:
+                    messages = ['']
+            else:
+                messages = [self.message[idx-1]]
+            for j, msg in enumerate(messages):
+                if line_cnt > main_h-1:
+                    # over the displayable line
+                    break
+                if self.line_number:
+                    lr_st = self.lnwidth+1
+                else:
+                    lr_st = 0
+                if self.main_max_lr <= len(msg):
+                    self.main_max_lr = len(msg)
+                msg = msg[self.main_shift_lr:]
+                try:
+                    self.win_main.addnstr(line_cnt, lr_st, msg,
+                                          main_w-2-lr_st, main_col)
+                    self.show_search_word(idx, line_cnt, textw, j, lr_st)
+                    if self.line_number:
+                        if j == 0:
+                            self.win_main.addstr(line_cnt, 0,
+                                                 f'{idx:0{self.lnwidth}d}|')
+                        else:
+                            self.win_main.addstr(line_cnt, 0,
+                                                 f'{" "*self.lnwidth}|')
+                except Exception as e:
+                    self.win_main.addstr(line_cnt, 0, "!! {}".format(e),
+                                         curses.color_pair(4))
+                line_cnt += 1
         self.search_cmt = ''
         self.win_main.refresh()
 
@@ -639,10 +750,14 @@ selected contents: {self.sel_cont}
 === top window ===
 === main window ===
 scrool (updown x leftright): {self.main_shift_ud}x{self.main_shift_lr}
+max width: {self.main_max_lr}
+line number: {self.line_number}
+wrap: {self.wrap}
 === search mode ===
-is_search: {self.is_search}
-search_word:  {self.search_word}
-search_word2: {self.search_word2}
+is_file_search: {self.is_file_search}
+is_word_search: {self.is_word_search}
+search_file: {self.search_file}
+search_word: {self.search_word}
 ==========='''
         logger.debug(log_str)
 
