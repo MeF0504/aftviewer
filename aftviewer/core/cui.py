@@ -464,14 +464,12 @@ q\t quit
 
     def shift_right_main(self, num):
         assert num >= 0, f'main shift right error: {num}'
+        if self.wrap:
+            return
         main_w = self.winx-self.win_w
         self.main_shift_lr += num
-        if self.wrap:
-            shift = self.lnwidth
-        else:
-            shift = 0
-        if self.main_max_lr-self.main_shift_lr <= main_w-shift-5:
-            self.main_shift_lr = self.main_max_lr-main_w+shift+5
+        if self.main_max_lr-self.main_shift_lr <= main_w-5:
+            self.main_shift_lr = self.main_max_lr-main_w+5
         if self.main_shift_lr < 0:
             self.main_shift_lr = 0
 
