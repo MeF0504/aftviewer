@@ -23,13 +23,13 @@ default_color_set = {
 
 
 class CUIWin():
-    def __init__(self, width: int, height: int,
+    def __init__(self, height: int, width: int,
                  begin_y: int, begin_x: int,
                  update: Optional[Callable]):
         self.w = width
         self.h = height
         self.updatefunc = update
-        self.b = curses.newwin(width, height, begin_y, begin_x)
+        self.b = curses.newwin(height, width, begin_y, begin_x)
 
     def update(self):
         if self.updatefunc is None:
@@ -502,6 +502,7 @@ q\t quit
             # message of waiting for opening an item
             self.message = ['opening an item...']
             self.mainwin.update()
+            # self.update_main_window()
             self.info = self.show_func(fpath, cui=True,
                                        system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
@@ -598,7 +599,7 @@ q\t quit
         # uly = self.winy-self.win_h-self.search_h-2
         uly = self.mainwin.h-self.search.h-2
         ulx = 0
-        self.win_main.addstr(uly-1, ulx, 'search word: (empty cancel)',
+        self.mainwin.b.addstr(uly-1, ulx, 'search word: (empty cancel)',
                              curses.A_REVERSE)
         rectangle(self.mainwin.b, uly, ulx,
                   self.search.h+uly+1, self.mainwin.w-2)
@@ -712,7 +713,7 @@ q\t quit
 
     def update_side_bar(self):
         # side_h = self.winy-self.win_h
-        self.sidebar.b.clear()
+        # self.sidebar.b.clear()
         for i in range(self.sidebar.h):
             if i+self.sidebar.ud >= len(self.sidebar.contents):
                 break
@@ -730,12 +731,12 @@ q\t quit
                 self.sidebar.b.addstr(i, len(cidx), cont, curses.A_REVERSE)
             else:
                 self.sidebar.b.addstr(i, len(cidx), cont, attr)
-        self.sidebar.b.refresh()
+        # self.sidebar.b.refresh()
 
     def update_main_window(self):
         # main_h = self.winy-self.win_h
         # main_w = self.winx-self.win_w
-        self.mainwin.b.clear()
+        # self.mainwin.b.clear()
         # show title
         self.mainwin.b.addstr(0, 0, self.selected, curses.A_REVERSE)
         if len(self.selected) == 0:
@@ -791,8 +792,8 @@ q\t quit
                 try:
                     self.mainwin.b.addnstr(line_cnt, lr_st, msg,
                                            self.mainwin.w-2-lr_st,
-                                           self.mainwin.col)
-                    self.show_search_word(idx, line_cnt, textw, j, lr_st)
+                                           main_col)
+                    self.show_search_word(idx, line_cnt, j, lr_st)
                     if self.line_number:
                         if j == 0:
                             self.mainwin.b.addstr(line_cnt, 0,
@@ -801,18 +802,19 @@ q\t quit
                             self.mainwin.b.addstr(line_cnt, 0,
                                                   f'{" "*self.mainwin.lnwidth}|')
                 except Exception as e:
-                    self.mainwin.b.addstr(line_cnt, 0, "!! {}".format(e),
+                    self.mainwin.b.addstr(line_cnt, 0,
+                                          f'!! {e}'[:self.mainwin.textw],
                                           curses.color_pair(4))
                 line_cnt += 1
         self.search.cmt = ''
-        self.mainwin.b.refresh()
+        # self.mainwin.b.refresh()
 
     def update_pwd_window(self):
-        self.topwin.b.clear()
-        # self.topwin.b.addstr(0, 3, 'file: {}'.format(self.fname), curses.A_BOLD)
-        # self.topwin.b.addstr(1, 5, 'current path: {}'.format(str(self.cpath)))
+        # self.topwin.b.clear()
+        self.topwin.b.addstr(0, 3, 'file: {}'.format(self.fname), curses.A_BOLD)
+        self.topwin.b.addstr(1, 5, 'current path: {}'.format(str(self.cpath)))
         self.topwin.b.addstr(2, 1, self.exp)
-        self.topwin.b.refresh()
+        # self.topwin.b.refresh()
 
     def debug_log(self):
         log_str = f'''
@@ -896,9 +898,12 @@ search_word   : {self.search.word}
 
             if upm:
                 self.mainwin.update()
+                # self.update_main_window()
             if upt:
+                # self.update_pwd_window()
                 self.topwin.update()
             if ups:
+                # self.update_side_bar()
                 self.sidebar.update()
             if GLOBAL_CONF.debug:
                 self.debug_info()
