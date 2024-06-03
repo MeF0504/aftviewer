@@ -627,11 +627,14 @@ q\t quit
             if res is not None:
                 found_word = res.group()
                 self.mainwin.down(i-self.mainwin.ud)
-                col = res.start()+shift
+                col = res.start()+shift+tmpst
                 if self.wrap:
                     col = col % self.mainwin.textw
                 col -= self.mainwin.lr
-                self.mainwin.right(col)
+                if col < 0:
+                    self.mainwin.left(-col)
+                else:
+                    self.mainwin.right(col)
                 self.search.cmt = ''
                 self.search.is_word = (found_word, i,
                                        shift+tmpst+res.start(),
@@ -815,6 +818,11 @@ search_word   : {self.search.word}
                              self.sidebar.idx, len(self.message),
                              self.mainwin.ud, self.mainwin.lr))
         self.topwin.b.addstr(2, int(self.winx*2/3), ' '*(int(self.winx/3)-1))
+        if self.search.is_word is not None:
+            self.topwin.b.addnstr(2, int(self.winx*2/3), '{:d}-{:d}'.format(
+                                  self.search.is_word[1],
+                                  self.search.is_word[2]),
+                                  int(self.winx/3)-1)
         self.topwin.b.refresh()
 
     def add_key_maps(self, key, config):
