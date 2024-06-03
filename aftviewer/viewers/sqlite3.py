@@ -135,40 +135,40 @@ def add_col(selected_contents: str):
         sel_items += f',{selected_contents}'
 
 
-def add_contents(curs):
+def add_contents(curs: CursesCUI):
     # wrapper of core.cui.CursesCUI.select_item
     global sel_items
-    curs.sel_cont = curs.contents[curs.sel_idx]
-    curs.is_word_search = None
-    if curs.sel_cont in curs.dirs:
-        if curs.is_file_search:
-            curs.cpath = curs.purepath(curs.sel_cont)
+    curs.selected = curs.sidebar.contents[curs.sidebar.idx]
+    curs.search.is_word = None
+    if curs.selected in curs.dirs:
+        if curs.search.is_file:
+            curs.cpath = curs.purepath(curs.selected)
         else:
-            curs.cpath = curs.cpath/curs.sel_cont
+            curs.cpath = curs.cpath/curs.selected
         curs.dirs, curs.files = curs.tv.get_contents(curs.cpath)
-        curs.is_file_search = False
+        curs.search.is_file = False
         curs.init_var()
     else:
-        if curs.is_file_search:
+        if curs.search.is_file:
             if '/' in sel_items and \
-               sel_items.split('/')[0] == curs.sel_cont.split('/')[0]:
+               sel_items.split('/')[0] == curs.selected.split('/')[0]:
                 # same table
-                add_col(curs.sel_cont.split('/')[1])
+                add_col(curs.selected.split('/')[1])
             else:
-                sel_items = curs.sel_cont
+                sel_items = curs.selected
             fpath = sel_items
         else:
             if '/' in sel_items:
-                add_col(curs.sel_cont)
+                add_col(curs.selected)
             else:
-                sel_items = str(curs.cpath/curs.sel_cont)
+                sel_items = str(curs.cpath/curs.selected)
             fpath = sel_items
         logger.info(f'set {fpath}')
-        curs.main_shift_ud = 0
-        curs.main_shift_lr = 0
+        curs.mainwin.ud = 0
+        curs.mainwin.lr = 0
         # message of waiting for opening an item
         curs.message = ['opening an item...']
-        curs.update_main_window()
+        curs.mainwin.update()
         curs.info = curs.show_func(fpath, cui=True)
         curs.message = curs.info.message.split("\n")
         curs.message = [ln.replace("\t", "  ") for ln in curs.message]
@@ -177,7 +177,7 @@ def add_contents(curs):
 def clear_items(curs):
     global sel_items
     sel_items = ''
-    curs.go_up_sidebar()
+    curs.sidebar.go_up()
 
 
 def init_outfile(output):
@@ -205,12 +205,12 @@ def add_args(parser):
 
 
 def show_help():
-    helpmsg = help_template('sqlite3', 'show the contents of the database. ' +
-                            'In this type, you can specify multiple columns ' +
-                            'by "-k table/col,col2". ' +
-                            'NOTE: --output is supported when --verbose or ' +
-                            '--key is specified. ' +
-                            'If extension of the output file is".csv",' +
+    helpmsg = help_template('sqlite3', 'show the contents of the database. '
+                            'In this type, you can specify multiple columns '
+                            'by "-k table/col,col2". '
+                            'NOTE: --output is supported when --verbose or '
+                            '--key is specified. '
+                            'If extension of the output file is".csv",'
                             'it is saved as the CSV file.',
                             add_args)
     print(helpmsg)
