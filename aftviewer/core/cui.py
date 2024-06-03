@@ -41,34 +41,21 @@ class CUIWin():
 
 class CursesCUI():
     def __init__(self, purepath: PPath = PurePath):
-        # sidebar val
-        # self.sel_idx = 0 -> self.sidebar.idx
-        # self.side_shift_ud = 0 -> self.sidebar.ud
-        # self.side_shift_lr = 0 -> self.sidebar.lr
-        # self.contents: List[str] = [] -> self.sidebar.contents
-        # self.sel_cont = '' -> self.selected
+        # selected item
         self.selected = ''
-        # main window val
+        # information about selected item
         self.info = ReturnMessage('', False)
+        # message shown in the main window
         self.message: List[str] = []
-        # self.main_shift_ud = 0 -> self.mainwin.ud
-        # self.main_shift_lr = 0 -> self.mainwin.lr
-        # self.main_max_lr = 0 -> self.mainwin.max_lr
+        # flag if display the line number or not
         self.line_number: bool = get_config('config', 'cui_linenumber')
+        # flag if wrap the message
         self.wrap: bool = get_config('config', 'cui_wrap')
-        # self.lnwidth = 0  # width of line number -> self.mainwin.lnwidth
-        # file search
-        # self.search_file = ''  # file name search self.search.file
-        # self.is_file_search = False -> self.search.is_file
-        # word search in the current file
-        # self.search_word = ''  # word search in current file -> self.search.word
-        # self.search_cmt = '' -> self.search.cmt
-        # ↓ find-word, line, start col, end col
-        # self.is_word_search: Optional[Tuple[str, int, int, int]] = None -> self.search.is_word
         # called path-like class
         self.purepath = purepath
-        # key maps
+        # entered key
         self.key = ''
+        # key maps
         self.keymaps: Dict[str, list] = {}
 
     def init_win(self):
@@ -76,9 +63,6 @@ class CursesCUI():
         win_h = 3   # height of top window
         win_w = int(self.winx*3/10)  # width of sidebar
         search_h = 1    # height of search window
-        # self.scroll_h = 5
-        # self.scroll_w = 5
-        # self.scroll_side = 3
         self.exp = ''
         self.exp += 'q:quit ↑↓←→:sel'
         self.exp += ' shift+↑:back'
@@ -89,11 +73,25 @@ class CursesCUI():
         assert self.winx > len(self.exp)+1, \
             f'window width {self.winx} should be larger than {len(self.exp)+1}'
 
+        # __________________________
+        # |                        | ^
+        # |          pwd           | | win_h
+        # |________________________| v
+        # |      |                 | ^
+        # |  s   |                 | |
+        # |  i   |       main      | | winy-win_h
+        # |  d   |                 | |
+        # |  e   |                 | v
+        #  <----> <--------------->
+        #  win_w     winx-win_w
+
         self.topwin = CUIWin(height=win_h, width=self.winx,
-                             begin_y=0, begin_x=0, updatefunc=self._update_pwd_window)
+                             begin_y=0, begin_x=0,
+                             updatefunc=self._update_pwd_window)
 
         self.sidebar = CUIWin(height=self.winy-win_h, width=win_w,
-                              begin_y=win_h, begin_x=0, updatefunc=self._update_side_bar)
+                              begin_y=win_h, begin_x=0,
+                              updatefunc=self._update_side_bar)
         self.sidebar.ud = 0
         self.sidebar.lr = 0
         self.sidebar.idx = 0
@@ -136,27 +134,6 @@ class CursesCUI():
         self.search.cmt = ''  # comments shown in the main window
         # ↓ find-word, line, start col, end col
         self.search.is_word: Optional[Tuple[str, int, int, int]] = None
-        # self.win_pwd = curses.newwin(self.win_h, self.winx, 0, 0)
-        # self.win_side = curses.newwin(self.winy-self.win_h,
-        #                               self.win_w, self.win_h, 0)
-        # self.win_main = curses.newwin(self.winy-self.win_h,
-        #                               self.winx-self.win_w,
-        #                               self.win_h, self.win_w)
-        # self.win_search = curses.newwin(self.search_h,
-        #                                 self.winx-self.win_w-3,
-        #                                 self.winy-self.search_h-1,
-        #                                 self.win_w+1)
-        # __________________________
-        # |                        | ^
-        # |          pwd           | | win_h
-        # |________________________| v
-        # |      |                 | ^
-        # |  s   |                 | |
-        # |  i   |       main      | | winy-win_h
-        # |  d   |                 | |
-        # |  e   |                 | v
-        #  <----> <--------------->
-        #  win_w     winx-win_w
 
     def create_color_set(self, num, name):
         assert num < curses.COLOR_PAIRS, \
@@ -212,14 +189,8 @@ class CursesCUI():
         self.sidebar.b.bkgd(' ', curses.color_pair(3))
 
     def init_var(self):
-        # self.sel_idx = 0
-        # self.side_shift_ud = 0
-        # self.side_shift_lr = 0
         self.info = ReturnMessage('', False)
         self.message = []
-        # self.main_shift_ud = 0
-        # self.main_shift_lr = 0
-        # self.sel_cont = ''
         self.sidebar.idx = 0
         self.sidebar.ud = 0
         self.sidebar.lr = 0
@@ -252,7 +223,8 @@ class CursesCUI():
                            False, False, True,
                            ],
                 'D': [self.sidebar.down, [self.sidebar.scroll_h], 'D',
-                      f'move the sidebar cursor down by {self.sidebar.scroll_h}',
+                      'move the sidebar cursor down by'
+                      f' {self.sidebar.scroll_h}',
                       False, False, True,
                       ],
                 'U': [self.sidebar.up, [self.sidebar.scroll_h], 'U',
@@ -403,7 +375,6 @@ q\t quit
         return res_dirs, res_files
 
     def _down_sidebar(self, num: int):
-        # side_h = self.winy-self.win_h
         if len(self.sidebar.contents) <= self.sidebar.h:
             # all contents are shown
             if self.sidebar.idx < len(self.sidebar.contents)-1:
@@ -424,7 +395,6 @@ q\t quit
             self.sidebar.ud = len(self.sidebar.contents)-1
 
     def _up_sidebar(self, num: int):
-        # side_h = self.winy-self.win_h
         if len(self.sidebar.contents) <= self.sidebar.h:
             # all contents are shown
             if self.sidebar.idx > 0:
@@ -503,7 +473,6 @@ q\t quit
             # message of waiting for opening an item
             self.message = ['opening an item...']
             self.mainwin.update()
-            # self._update_main_window()
             self.info = self.show_func(fpath, cui=True,
                                        system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
@@ -538,7 +507,6 @@ q\t quit
         assert num >= 0, f'main shift right error: {num}'
         if self.wrap:
             return
-        # main_w = self.winx-self.win_w
         self.mainwin.lr += num
         if self.mainwin.max_lr-self.mainwin.lr <= self.mainwin.w-5:
             self.mainwin.lr = self.mainwin.max_lr-self.mainwin.w+5
@@ -553,7 +521,6 @@ q\t quit
 
     def file_search(self):
         # file name search mode
-        # uly = self.winy-self.win_h-self.search_h-2
         uly = self.mainwin.h-self.search.h-2
         ulx = 0
         self.mainwin.b.clear()
@@ -597,7 +564,6 @@ q\t quit
 
     def word_search(self):
         # search mode in current file.
-        # uly = self.winy-self.win_h-self.search_h-2
         uly = self.mainwin.h-self.search.h-2
         ulx = 0
         self.mainwin.b.addstr(uly-1, ulx, 'search word: (empty cancel)',
@@ -617,9 +583,6 @@ q\t quit
     def jump_search_word(self, reverse=False):
         if not self.search.word:
             return
-        # textw = self.winx-self.win_w-2
-        # if self.line_number:
-        #     textw -= self.lnwidth+1
         if self.search.is_word is None:
             if reverse:
                 start_line = self.mainwin.ud-1
@@ -713,8 +676,6 @@ q\t quit
         self.mainwin.lr = 0
 
     def _update_side_bar(self):
-        # side_h = self.winy-self.win_h
-        # self.sidebar.b.clear()
         for i in range(self.sidebar.h):
             if i+self.sidebar.ud >= len(self.sidebar.contents):
                 break
@@ -732,12 +693,8 @@ q\t quit
                 self.sidebar.b.addstr(i, len(cidx), cont, curses.A_REVERSE)
             else:
                 self.sidebar.b.addstr(i, len(cidx), cont, attr)
-        # self.sidebar.b.refresh()
 
     def _update_main_window(self):
-        # main_h = self.winy-self.win_h
-        # main_w = self.winx-self.win_w
-        # self.mainwin.b.clear()
         # show title
         self.mainwin.b.addstr(0, 0, self.selected, curses.A_REVERSE)
         if len(self.selected) == 0:
@@ -808,14 +765,11 @@ q\t quit
                                           curses.color_pair(4))
                 line_cnt += 1
         self.search.cmt = ''
-        # self.mainwin.b.refresh()
 
     def _update_pwd_window(self):
-        # self.topwin.b.clear()
         self.topwin.b.addstr(0, 3, 'file: {}'.format(self.fname), curses.A_BOLD)
         self.topwin.b.addstr(1, 5, 'current path: {}'.format(str(self.cpath)))
         self.topwin.b.addstr(2, 1, self.exp)
-        # self.topwin.b.refresh()
 
     def debug_log(self):
         log_str = f'''
@@ -886,7 +840,7 @@ search_word   : {self.search.word}
         stdscr.refresh()
 
         while self.key != 'q':
-            # showed indices are side_shift_ud ~ side_shift_ud+(winy-win_h)
+            # showed indices are sidebar.ud ~ sidebar.ud+sidebar.h
             if self.key == '':
                 upm, upt, ups = True, True, True
             else:
@@ -899,12 +853,9 @@ search_word   : {self.search.word}
 
             if upm:
                 self.mainwin.update()
-                # self._update_main_window()
             if upt:
-                # self._update_pwd_window()
                 self.topwin.update()
             if ups:
-                # self._update_side_bar()
                 self.sidebar.update()
             if GLOBAL_CONF.debug:
                 self.debug_info()
