@@ -25,10 +25,10 @@ default_color_set = {
 class CUIWin():
     def __init__(self, height: int, width: int,
                  begin_y: int, begin_x: int,
-                 update: Optional[Callable]):
+                 updatefunc: Optional[Callable]):
         self.w = width
         self.h = height
-        self.updatefunc = update
+        self.updatefunc = updatefunc
         self.b = curses.newwin(height, width, begin_y, begin_x)
 
     def update(self):
@@ -90,26 +90,27 @@ class CursesCUI():
             f'window width {self.winx} should be larger than {len(self.exp)+1}'
 
         self.topwin = CUIWin(height=win_h, width=self.winx,
-                             begin_y=0, begin_x=0, update=self.update_pwd_window)
+                             begin_y=0, begin_x=0, updatefunc=self._update_pwd_window)
 
         self.sidebar = CUIWin(height=self.winy-win_h, width=win_w,
-                              begin_y=win_h, begin_x=0, update=self.update_side_bar)
+                              begin_y=win_h, begin_x=0, updatefunc=self._update_side_bar)
         self.sidebar.ud = 0
         self.sidebar.lr = 0
         self.sidebar.idx = 0
         self.sidebar.contents: List[str] = []
         self.sidebar.scroll_h = 5
         self.sidebar.scroll_w = 3
-        self.sidebar.down = self.down_sidebar
-        self.sidebar.up = self.up_sidebar
-        self.sidebar.bottom = self.bottom_sidebar
-        self.sidebar.top = self.top_sidebar
-        self.sidebar.left = self.shift_left_sidebar
-        self.sidebar.right = self.shift_right_sidebar
+        self.sidebar.down = self._down_sidebar
+        self.sidebar.up = self._up_sidebar
+        self.sidebar.bottom = self._bottom_sidebar
+        self.sidebar.top = self._top_sidebar
+        self.sidebar.left = self._shift_left_sidebar
+        self.sidebar.right = self._shift_right_sidebar
+        self.sidebar.go_up = self._go_up_sidebar
 
         self.mainwin = CUIWin(height=self.winy-win_h, width=self.winx-win_w,
                               begin_y=win_h, begin_x=win_w,
-                              update=self.update_main_window)
+                              updatefunc=self._update_main_window)
         self.mainwin.ud = 0
         self.mainwin.lr = 0
         self.mainwin.max_lr = 0
@@ -117,18 +118,18 @@ class CursesCUI():
         self.mainwin.textw = 0  # width that the text is shown
         self.mainwin.scroll_h = 5
         self.mainwin.scroll_w = 5
-        self.mainwin.down = self.down_main
-        self.mainwin.up = self.up_main
-        self.mainwin.bottom = self.bottom_main
-        self.mainwin.top = self.top_main
-        self.mainwin.right = self.shift_right_main
-        self.mainwin.left = self.shift_left_main
-        self.mainwin.hat = self.hat_main
-        self.mainwin.doll = self.doll_main
+        self.mainwin.down = self._down_main
+        self.mainwin.up = self._up_main
+        self.mainwin.bottom = self._bottom_main
+        self.mainwin.top = self._top_main
+        self.mainwin.right = self._shift_right_main
+        self.mainwin.left = self._shift_left_main
+        self.mainwin.hat = self._hat_main
+        self.mainwin.doll = self._doll_main
 
         self.search = CUIWin(height=search_h, width=self.winx-win_w-3,
                              begin_y=self.winy-search_h-1, begin_x=win_w+1,
-                             update=None)
+                             updatefunc=None)
         self.search.file = ''  # file name search
         self.search.is_file = False
         self.search.word = ''  # word search in current file
@@ -282,11 +283,11 @@ class CursesCUI():
                              'shift strings in the sidebar left',
                              False, False, True,
                              ],
-                'KEY_SR': [self.go_up_sidebar, [], 'S-↑',
+                'KEY_SR': [self._go_up_sidebar, [], 'S-↑',
                            'go up the path or quit the search mode',
                            True, True, True,
                            ],
-                'KEY_SUP': [self.go_up_sidebar, [], '', '',
+                'KEY_SUP': [self._go_up_sidebar, [], '', '',
                             True, True, True,
                             ],
                 '\n': [self.select_item, [False], "<CR>",
@@ -401,7 +402,7 @@ q\t quit
             res_files += [str(cpath/f) for f in files]
         return res_dirs, res_files
 
-    def down_sidebar(self, num: int):
+    def _down_sidebar(self, num: int):
         # side_h = self.winy-self.win_h
         if len(self.sidebar.contents) <= self.sidebar.h:
             # all contents are shown
@@ -422,7 +423,7 @@ q\t quit
         if self.sidebar.ud >= len(self.sidebar.contents):
             self.sidebar.ud = len(self.sidebar.contents)-1
 
-    def up_sidebar(self, num: int):
+    def _up_sidebar(self, num: int):
         # side_h = self.winy-self.win_h
         if len(self.sidebar.contents) <= self.sidebar.h:
             # all contents are shown
@@ -443,19 +444,19 @@ q\t quit
         if self.sidebar.ud < 0:
             self.sidebar.ud = 0
 
-    def bottom_sidebar(self):
-        self.down_sidebar(len(self.sidebar.contents)-self.sidebar.idx-1)
+    def _bottom_sidebar(self):
+        self.sidebar.down(len(self.sidebar.contents)-self.sidebar.idx-1)
 
-    def top_sidebar(self):
-        self.up_sidebar(self.sidebar.idx)
+    def _top_sidebar(self):
+        self.sidebar.up(self.sidebar.idx)
 
-    def shift_left_sidebar(self):
+    def _shift_left_sidebar(self):
         if self.sidebar.lr < self.sidebar.scroll_w:
             self.sidebar.lr = 0
         else:
             self.sidebar.lr -= self.sidebar.scroll_w
 
-    def shift_right_sidebar(self):
+    def _shift_right_sidebar(self):
         len_content = len(self.sidebar.contents[self.sidebar.idx])
         if self.sidebar.idx >= 100:
             len_content += 4
@@ -465,7 +466,7 @@ q\t quit
         if self.sidebar.lr < len_content-self.sidebar.w:
             self.sidebar.lr += self.sidebar.scroll_w
 
-    def go_up_sidebar(self):
+    def _go_up_sidebar(self):
         if self.search.is_file:
             self.dirs, self.files = self.tv.get_contents(self.cpath)
             self.init_var()
@@ -502,38 +503,38 @@ q\t quit
             # message of waiting for opening an item
             self.message = ['opening an item...']
             self.mainwin.update()
-            # self.update_main_window()
+            # self._update_main_window()
             self.info = self.show_func(fpath, cui=True,
                                        system=system, stdscr=self.stdscr)
             self.message = self.info.message.split("\n")
             self.message = [ln.replace("\t", "  ") for ln in self.message]
 
-    def down_main(self, num: int):
+    def _down_main(self, num: int):
         if self.mainwin.ud < len(self.message)-num-1:
             self.mainwin.ud += num
         else:
             self.mainwin.ud = len(self.message)-1
 
-    def up_main(self, num: int):
+    def _up_main(self, num: int):
         if self.mainwin.ud < num:
             self.mainwin.ud = 0
         else:
             self.mainwin.ud -= num
 
-    def bottom_main(self):
-        self.down_main(len(self.message)-self.mainwin.ud-2)
+    def _bottom_main(self):
+        self.mainwin.down(len(self.message)-self.mainwin.ud-2)
 
-    def top_main(self):
-        self.up_main(self.mainwin.ud)
+    def _top_main(self):
+        self.mainwin.up(self.mainwin.ud)
 
-    def shift_left_main(self, num: int):
+    def _shift_left_main(self, num: int):
         assert num >= 0, f'main shift left error: {num}'
         if self.mainwin.lr < num:
             self.mainwin.lr = 0
         else:
             self.mainwin.lr -= num
 
-    def shift_right_main(self, num: int):
+    def _shift_right_main(self, num: int):
         assert num >= 0, f'main shift right error: {num}'
         if self.wrap:
             return
@@ -544,11 +545,11 @@ q\t quit
         if self.mainwin.lr < 0:
             self.mainwin.lr = 0
 
-    def hat_main(self):
-        self.shift_left_main(self.mainwin.lr)
+    def _hat_main(self):
+        self.mainwin.left(self.mainwin.lr)
 
-    def doll_main(self):
-        self.shift_right_main(self.mainwin.max_lr-self.mainwin.lr)
+    def _doll_main(self):
+        self.mainwin.right(self.mainwin.max_lr-self.mainwin.lr)
 
     def file_search(self):
         # file name search mode
@@ -662,12 +663,12 @@ q\t quit
                 res = re.search(self.search.word, line)
             if res is not None:
                 found_word = res.group()
-                self.down_main(i-self.mainwin.ud)
+                self.mainwin.down(i-self.mainwin.ud)
                 col = res.start()+shift
                 if self.wrap:
                     col = col % self.mainwin.textw
                 col -= self.mainwin.lr
-                self.shift_right_main(col)
+                self.mainwin.right(col)
                 self.search.cmt = ''
                 self.search.is_word = (found_word, i,
                                        shift+tmpst+res.start(),
@@ -711,7 +712,7 @@ q\t quit
         self.mainwin.ud = 0
         self.mainwin.lr = 0
 
-    def update_side_bar(self):
+    def _update_side_bar(self):
         # side_h = self.winy-self.win_h
         # self.sidebar.b.clear()
         for i in range(self.sidebar.h):
@@ -733,7 +734,7 @@ q\t quit
                 self.sidebar.b.addstr(i, len(cidx), cont, attr)
         # self.sidebar.b.refresh()
 
-    def update_main_window(self):
+    def _update_main_window(self):
         # main_h = self.winy-self.win_h
         # main_w = self.winx-self.win_w
         # self.mainwin.b.clear()
@@ -809,7 +810,7 @@ q\t quit
         self.search.cmt = ''
         # self.mainwin.b.refresh()
 
-    def update_pwd_window(self):
+    def _update_pwd_window(self):
         # self.topwin.b.clear()
         self.topwin.b.addstr(0, 3, 'file: {}'.format(self.fname), curses.A_BOLD)
         self.topwin.b.addstr(1, 5, 'current path: {}'.format(str(self.cpath)))
@@ -898,12 +899,12 @@ search_word   : {self.search.word}
 
             if upm:
                 self.mainwin.update()
-                # self.update_main_window()
+                # self._update_main_window()
             if upt:
-                # self.update_pwd_window()
+                # self._update_pwd_window()
                 self.topwin.update()
             if ups:
-                # self.update_side_bar()
+                # self._update_side_bar()
                 self.sidebar.update()
             if GLOBAL_CONF.debug:
                 self.debug_info()
