@@ -3,7 +3,7 @@ import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
 from typing import List, Dict, Tuple, Optional, Callable
-from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
+from logging import getLogger, StreamHandler
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
 from . import GLOBAL_CONF, get_config, print_error
@@ -339,6 +339,13 @@ class CursesCUI():
                                      'save info into log file.',
                                      False, False, False,
                                      ]
+
+    def disable_stream_handler(self):
+        for hdlr in logger.handlers:
+            if type(hdlr) is StreamHandler:
+                # basically do not show log messages in terminal.
+                logger.removeHandler(hdlr)
+                # hdlr.setLevel(logCRITICAL)
 
     def create_help_msg(self):
         help_msg = '''
@@ -907,10 +914,7 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     cpath = purepath('.')
     tv = TreeViewer('.', get_contents, purepath=purepath, logger=logger)
     curses_cui = CursesCUI(purepath)
-    for hdlr in logger.handlers:
-        if type(hdlr) is StreamHandler:
-            # basically do not show log messages in terminal.
-            hdlr.setLevel(logCRITICAL)
+    curses_cui.disable_stream_handler()
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)
     except AssertionError as e:

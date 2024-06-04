@@ -2,7 +2,7 @@ import os
 import sqlite3
 from functools import partial
 from pathlib import PurePosixPath
-from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
+from logging import getLogger
 try:
     import curses
 except ImportError:
@@ -240,14 +240,12 @@ def main(fpath, args):
         curses_cui.add_key_maps('KEY_ENTER', [add_contents, [curses_cui],
                                               '', '', True, True, True])
         curses_cui.add_key_maps('KEY_SR', [clear_items, [curses_cui], 'S-↑',
-                                           'go up the path or quit the search mode',
+                                           'go up the path or quit'
+                                           ' the search mode',
                                            True, True, True])
         curses_cui.add_key_maps('KEY_SUP', [clear_items, [curses_cui],
                                             '', '', True, True, True])
-        for hdlr in logger.handlers:
-            if type(hdlr) is StreamHandler:
-                hdlr.setLevel(logCRITICAL)
-                break
+        curses_cui.disable_stream_handler()
         try:
             curses.wrapper(curses_cui.main, fname,
                            partial(show_table, cursor, tables),
