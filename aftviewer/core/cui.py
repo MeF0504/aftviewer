@@ -567,7 +567,7 @@ q\t quit
         uly = self.mainwin.h-self.search.h-2
         ulx = 0
         self.mainwin.b.addstr(uly-1, ulx, 'search word: (empty cancel)',
-                             curses.A_REVERSE)
+                              curses.A_REVERSE)
         rectangle(self.mainwin.b, uly, ulx,
                   self.search.h+uly+1, self.mainwin.w-2)
         self.mainwin.b.refresh()
@@ -705,13 +705,13 @@ q\t quit
             return
         if self.mainwin.w > len(self.selected)+2:
             self.mainwin.b.addstr(0, len(self.selected)+2,
-                                 '{}/{}, {}; {}'.format(
-                                     self.mainwin.ud+1,
-                                     len(self.message),
-                                     self.mainwin.lr+1,
-                                     self.search.cmt,
-                                     ),
-                                 curses.color_pair(5))
+                                  '{}/{}, {}; {}'.format(
+                                      self.mainwin.ud+1,
+                                      len(self.message),
+                                      self.mainwin.lr+1,
+                                      self.search.cmt,
+                                      ),
+                                  curses.color_pair(5))
         if self.info.error:
             main_col = curses.color_pair(4)
         else:
@@ -757,11 +757,10 @@ q\t quit
                     self.show_search_word(idx, line_cnt, j, lr_st)
                     if self.line_number:
                         if j == 0:
-                            self.mainwin.b.addstr(line_cnt, 0,
-                                                  f'{idx:0{self.mainwin.lnwidth}d}|')
+                            numstr = f'{idx:0{self.mainwin.lnwidth}d}|'
                         else:
-                            self.mainwin.b.addstr(line_cnt, 0,
-                                                  f'{" "*self.mainwin.lnwidth}|')
+                            numstr = f'{" "*self.mainwin.lnwidth}|'
+                        self.mainwin.b.addstr(line_cnt, 0, numstr)
                 except Exception as e:
                     self.mainwin.b.addstr(line_cnt, 0,
                                           f'!! {e}'[:self.mainwin.textw],
@@ -770,8 +769,10 @@ q\t quit
         self.search.cmt = ''
 
     def _update_pwd_window(self):
-        self.topwin.b.addstr(0, 3, 'file: {}'.format(self.fname), curses.A_BOLD)
-        self.topwin.b.addstr(1, 5, 'current path: {}'.format(str(self.cpath)))
+        fname = str(self.fname)[-(self.topwin.w-3-6-1):]
+        path = str(self.cpath)[-(self.topwin.w-5-14-1):]
+        self.topwin.b.addstr(0, 3, f'file: {fname}', curses.A_BOLD)
+        self.topwin.b.addstr(1, 5, f'current path: {path}')
         self.topwin.b.addstr(2, 1, self.exp)
 
     def debug_log(self):
