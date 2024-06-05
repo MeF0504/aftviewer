@@ -71,7 +71,7 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: Optional[bytes],
         zipinfo = zip_file.getinfo(key_name)
     except KeyError as e:
         logger.error(f'failed to open [{cpath}]: {e}')
-        return RM('Error!! Cannot open {}.'.format(cpath), True)
+        return RM(f'Error!! Cannot open {cpath}.', True)
 
     if args_chk(args, 'output') and args_chk(args, 'key'):
         outpath = Path(args.output)
@@ -80,8 +80,11 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: Optional[bytes],
             outpath.parent.mkdir(parents=True)
         for item in zip_file.namelist():
             logger.debug(f'checking;; {item}')
-            if cpath in [str(x) for x in PurePosixPath(item).parents]:
-                logger.info(f'  find; {item}')
+            if cpath == item:
+                logger.info(f'  find1; {item}')
+                zip_file.extract(zip_file.getinfo(item), path=outpath, pwd=pwd)
+            elif cpath in [str(x) for x in PurePosixPath(item).parents]:
+                logger.info(f'  find2; {item}')
                 zip_file.extract(zip_file.getinfo(item), path=outpath, pwd=pwd)
         return RM(f'file is saved to {outpath/cpath}', False)
 

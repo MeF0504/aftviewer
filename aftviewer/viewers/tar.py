@@ -29,7 +29,7 @@ def show_tar(tar_file: tarfile.TarFile,
         tarinfo = tar_file.getmember(key_name)
     except KeyError as e:
         logger.error(f'failed to open [{cpath}]: {e}')
-        return RM('Error!! Cannot open {}.'.format(cpath), True)
+        return RM(f'Error!! Cannot open {cpath}.', True)
 
     if args_chk(args, 'output') and args_chk(args, 'key'):
         outpath = Path(args.output)
@@ -38,8 +38,11 @@ def show_tar(tar_file: tarfile.TarFile,
             outpath.parent.mkdir(parents=True)
         for item in tar_file.getmembers():
             logger.debug(f'checking;; {item.name}')
-            if cpath in [str(x) for x in PurePosixPath(item.name).parents]:
-                logger.info(f'  find; {item.name}')
+            if cpath == item.name:
+                logger.info(f'  find1; {item.name}')
+                tar_file.extract(item, path=outpath)
+            elif cpath in [str(x) for x in PurePosixPath(item.name).parents]:
+                logger.info(f'  find2; {item.name}')
                 tar_file.extract(item, path=outpath)
         return RM(f'file is saved to {outpath/cpath}', False)
 
