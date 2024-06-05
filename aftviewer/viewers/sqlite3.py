@@ -2,7 +2,7 @@ import os
 import sqlite3
 from functools import partial
 from pathlib import PurePosixPath
-from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
+from logging import getLogger
 try:
     import curses
 except ImportError:
@@ -11,7 +11,7 @@ else:
     import_curses = True
 
 from .. import (GLOBAL_CONF, args_chk, print_key, cprint, print_error,
-                interactive_view,
+                interactive_view, get_config,
                 help_template, add_args_specification, add_args_output
                 )
 from .. import ReturnMessage as RM
@@ -174,10 +174,18 @@ def add_contents(curs: CursesCUI):
         curs.message = [ln.replace("\t", "  ") for ln in curs.message]
 
 
-def clear_items(curs):
+def clear_items(curs: CursesCUI):
     global sel_items
     sel_items = ''
     curs.sidebar.go_up()
+
+
+def get_db_title():
+    global sel_items
+    if '/' in sel_items:
+        return sel_items.split('/')[1]
+    else:
+        return sel_items
 
 
 def init_outfile(output):
@@ -240,14 +248,14 @@ def main(fpath, args):
         curses_cui.add_key_maps('KEY_ENTER', [add_contents, [curses_cui],
                                               '', '', True, True, True])
         curses_cui.add_key_maps('KEY_SR', [clear_items, [curses_cui], 'S-↑',
-                                           'go up the path or quit the search mode',
+                                           'go up the path or quit'
+                                           ' the search mode',
                                            True, True, True])
+        curses_cui.get_title = get_db_title
         curses_cui.add_key_maps('KEY_SUP', [clear_items, [curses_cui],
                                             '', '', True, True, True])
-        for hdlr in logger.handlers:
-            if type(hdlr) is StreamHandler:
-                hdlr.setLevel(logCRITICAL)
-                break
+        curses_cui.disable_stream_handler()
+        curses_cui.wrap = get_config('sqlite3', 'cui_wrap')
         try:
             curses.wrapper(curses_cui.main, fname,
                            partial(show_table, cursor, tables),

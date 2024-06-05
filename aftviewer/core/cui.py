@@ -3,7 +3,7 @@ import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
 from typing import List, Dict, Tuple, Optional, Callable
-from logging import getLogger, StreamHandler, CRITICAL as logCRITICAL
+from logging import getLogger, StreamHandler
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
 from . import GLOBAL_CONF, get_config, print_error
@@ -340,6 +340,13 @@ class CursesCUI():
                                      False, False, False,
                                      ]
 
+    def disable_stream_handler(self):
+        for hdlr in logger.handlers:
+            if type(hdlr) is StreamHandler:
+                # basically do not show log messages in terminal.
+                logger.removeHandler(hdlr)
+                # hdlr.setLevel(logCRITICAL)
+
     def create_help_msg(self):
         help_msg = '''
 key\t function
@@ -373,6 +380,9 @@ q\t quit
             res_dirs += [str(cpath/d) for d in dirs]
             res_files += [str(cpath/f) for f in files]
         return res_dirs, res_files
+
+    def get_title(self):
+        return self.selected
 
     def _down_sidebar(self, num: int):
         if len(self.sidebar.contents) <= self.sidebar.h:
@@ -699,19 +709,23 @@ q\t quit
 
     def _update_main_window(self):
         # show title
-        self.mainwin.b.addstr(0, 0, self.selected, curses.A_REVERSE)
-        if len(self.selected) == 0:
+        title = self.get_title()
+        self.mainwin.b.addnstr(0, 0, title, self.mainwin.w-1,
+                               curses.A_REVERSE)
+        if len(title) == 0:
             # skip if file is not set.
             return
-        if self.mainwin.w > len(self.selected)+2:
-            self.mainwin.b.addstr(0, len(self.selected)+2,
+        lentitle = len(title)+2
+        if self.mainwin.w > lentitle:
+            self.mainwin.b.addnstr(0, lentitle,
                                   '{}/{}, {}; {}'.format(
                                       self.mainwin.ud+1,
                                       len(self.message),
                                       self.mainwin.lr+1,
                                       self.search.cmt,
                                       ),
-                                  curses.color_pair(5))
+                                   self.mainwin.w-lentitle-1,
+                                   curses.color_pair(5))
         if self.info.error:
             main_col = curses.color_pair(4)
         else:
@@ -907,10 +921,7 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     cpath = purepath('.')
     tv = TreeViewer('.', get_contents, purepath=purepath, logger=logger)
     curses_cui = CursesCUI(purepath)
-    for hdlr in logger.handlers:
-        if type(hdlr) is StreamHandler:
-            # basically do not show log messages in terminal.
-            hdlr.setLevel(logCRITICAL)
+    curses_cui.disable_stream_handler()
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)
     except AssertionError as e:
