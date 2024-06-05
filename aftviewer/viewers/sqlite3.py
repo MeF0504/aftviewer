@@ -11,7 +11,7 @@ else:
     import_curses = True
 
 from .. import (GLOBAL_CONF, args_chk, print_key, cprint, print_error,
-                interactive_view,
+                interactive_view, get_config,
                 help_template, add_args_specification, add_args_output
                 )
 from .. import ReturnMessage as RM
@@ -246,6 +246,7 @@ def main(fpath, args):
         curses_cui.add_key_maps('KEY_SUP', [clear_items, [curses_cui],
                                             '', '', True, True, True])
         curses_cui.disable_stream_handler()
+        curses_cui.wrap = get_config('sqlite3', 'cui_wrap')
         try:
             curses.wrapper(curses_cui.main, fname,
                            partial(show_table, cursor, tables),
