@@ -174,10 +174,18 @@ def add_contents(curs: CursesCUI):
         curs.message = [ln.replace("\t", "  ") for ln in curs.message]
 
 
-def clear_items(curs):
+def clear_items(curs: CursesCUI):
     global sel_items
     sel_items = ''
     curs.sidebar.go_up()
+
+
+def get_db_title():
+    global sel_items
+    if '/' in sel_items:
+        return sel_items.split('/')[1]
+    else:
+        return sel_items
 
 
 def init_outfile(output):
@@ -243,6 +251,7 @@ def main(fpath, args):
                                            'go up the path or quit'
                                            ' the search mode',
                                            True, True, True])
+        curses_cui.get_title = get_db_title
         curses_cui.add_key_maps('KEY_SUP', [clear_items, [curses_cui],
                                             '', '', True, True, True])
         curses_cui.disable_stream_handler()

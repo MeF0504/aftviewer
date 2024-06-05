@@ -381,6 +381,9 @@ q\t quit
             res_files += [str(cpath/f) for f in files]
         return res_dirs, res_files
 
+    def get_title(self):
+        return self.selected
+
     def _down_sidebar(self, num: int):
         if len(self.sidebar.contents) <= self.sidebar.h:
             # all contents are shown
@@ -706,19 +709,23 @@ q\t quit
 
     def _update_main_window(self):
         # show title
-        self.mainwin.b.addstr(0, 0, self.selected, curses.A_REVERSE)
-        if len(self.selected) == 0:
+        title = self.get_title()
+        self.mainwin.b.addnstr(0, 0, title, self.mainwin.w-1,
+                               curses.A_REVERSE)
+        if len(title) == 0:
             # skip if file is not set.
             return
-        if self.mainwin.w > len(self.selected)+2:
-            self.mainwin.b.addstr(0, len(self.selected)+2,
+        lentitle = len(title)+2
+        if self.mainwin.w > lentitle:
+            self.mainwin.b.addnstr(0, lentitle,
                                   '{}/{}, {}; {}'.format(
                                       self.mainwin.ud+1,
                                       len(self.message),
                                       self.mainwin.lr+1,
                                       self.search.cmt,
                                       ),
-                                  curses.color_pair(5))
+                                   self.mainwin.w-lentitle-1,
+                                   curses.color_pair(5))
         if self.info.error:
             main_col = curses.color_pair(4)
         else:
