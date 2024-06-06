@@ -59,13 +59,15 @@ def main(fpath: Path, args: Args):
     if len(data.shape) != 2:
         print_error(f'This function assumes 2D image. this is {data.shape}.')
         return
-    logger.debug(f'min value: {np.nanmin(data)}')
-    data -= np.nanmin(data)
-    nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
-    logger.debug(f'nan rate: {nan_rate:.3f}')
-    data = np.where(data == data, data, 0)
+    logger.debug(f'value: {np.nanmin(data)} - {np.nanmax(data)}')
+    # ignore values less than or equal to 0
+    data = np.where(data <= 0, np.nan, data)
     if hasattr(args, 'log_scale') and args.log_scale:
-        data = np.log10(data+1)
+        data = np.log10(data)
+    nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
+    logger.debug(f'nan rate: {nan_rate:.3f} (include 0)')
+    # set ignored values to zero
+    data = np.where(data == data, data, 0)
     max_val = np.max(data)
     # convert gray-scale to RGB.
     data2 = np.zeros((data.shape[0], data.shape[1], 3))
