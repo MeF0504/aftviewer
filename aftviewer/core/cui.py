@@ -63,15 +63,15 @@ class CursesCUI():
         win_h = 3   # height of top window
         win_w = int(self.winx*3/10)  # width of sidebar
         search_h = 1    # height of search window
-        self.exp = ''
-        self.exp += 'q:quit ↑↓←→:sel'
-        self.exp += ' shift+↑:back'
-        self.exp += ' enter:open'
-        self.exp += ' jkhl:scroll'
-        self.exp += ' /:search'
-        self.exp += ' ?:help'
-        assert self.winx > len(self.exp)+1, \
-            f'window width {self.winx} should be larger than {len(self.exp)+1}'
+        self.exp = ' '.join(['q:quit',
+                             '?:help',
+                             'shift+↑:back',
+                             'enter:open',
+                             '↓↑:move item',
+                             'jkhl:scroll',
+                             '/:search word',
+                             'f:search file',
+                             ])
 
         # __________________________
         # |                        | ^
@@ -787,7 +787,7 @@ q\t quit
         path = str(self.cpath)[-(self.topwin.w-5-14-1):]
         self.topwin.b.addstr(0, 3, f'file: {fname}', curses.A_BOLD)
         self.topwin.b.addstr(1, 5, f'current path: {path}')
-        self.topwin.b.addstr(2, 1, self.exp)
+        self.topwin.b.addstr(2, 1, self.exp[:self.topwin.w-1-1])
 
     def debug_log(self):
         log_str = f'''
