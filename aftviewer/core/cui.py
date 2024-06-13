@@ -349,15 +349,15 @@ class CursesCUI():
 
     def create_help_msg(self):
         help_msg = '''
-key\t function
-(S- means shift+key)
-q\t quit
+key     |explanation
+(S-key means shift+key)
+q       |quit
 '''
         for k, confs in self.keymaps.items():
             _, _, symbol, help_str, _, _, _ = confs
             if len(symbol) == 0:
                 continue
-            help_line = f'{symbol}\t {help_str}\n'
+            help_line = f'{symbol:8s}|{help_str}\n'
             help_msg += help_line
 
         return help_msg
