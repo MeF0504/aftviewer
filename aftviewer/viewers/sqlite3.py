@@ -255,7 +255,7 @@ def main(fpath, args):
         curses_cui.add_key_maps('KEY_SUP', [clear_items, [curses_cui],
                                             '', '', True, True, True])
         curses_cui.disable_stream_handler()
-        curses_cui.wrap = get_config('sqlite3', 'cui_wrap')
+        curses_cui.wrap = False
         try:
             curses.wrapper(curses_cui.main, fname,
                            partial(show_table, cursor, tables),
