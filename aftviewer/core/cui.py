@@ -313,6 +313,10 @@ class CursesCUI():
                       'search file names',
                       True, False, True,
                       ],
+                'W': [self.toggle_wrap, [], 'W',
+                      'toggle wrap mode',
+                      True, False, False,
+                      ],
                 '/': [self.word_search, [], '/',
                       'start the search mode',
                       True, False, False,
@@ -687,6 +691,9 @@ q       |quit
         self.selected = '<help>'
         self.mainwin.ud = 0
         self.mainwin.lr = 0
+
+    def toggle_wrap(self):
+        self.wrap = not self.wrap
 
     def _update_side_bar(self):
         for i in range(self.sidebar.h):

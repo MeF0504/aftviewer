@@ -45,9 +45,6 @@
         "viewer": null,
         "facecolors": null,
         "edgecolors": "black"
-    },
-    "sqlite3": {
-        "cui_wrap": false
     }
 }
 
