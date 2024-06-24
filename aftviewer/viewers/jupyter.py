@@ -69,9 +69,9 @@ def main(fpath, args):
             f.write('#! /usr/bin/env python3\n')
         outf = open(outp, 'a')
         header = '# '
-        fgi, bgi = ('', '')
-        fgo, bgo = ('', '')
-        fgt, bgt = ('', '')
+        fgi, bgi = (None, None)
+        fgo, bgo = (None, None)
+        fgt, bgt = (None, None)
     else:
         outf = sys.stdout
         header = ''
