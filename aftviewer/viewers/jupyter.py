@@ -69,9 +69,9 @@ def main(fpath, args):
             f.write('#! /usr/bin/env python3\n')
         outf = open(outp, 'a')
         header = '# '
-        fgi, bgi = ('', '')
-        fgo, bgo = ('', '')
-        fgt, bgt = ('', '')
+        fgi, bgi = (None, None)
+        fgo, bgo = (None, None)
+        fgt, bgt = (None, None)
     else:
         outf = sys.stdout
         header = ''
@@ -99,7 +99,13 @@ def main(fpath, args):
             # Input
             cprint(f'{header}In [{cnt}]', fg=fgi, bg=bgi, file=outf)
             for instr in cell['source']:
-                print(instr, end='', file=outf)
+                if instr.startswith('!'):
+                    outtext = f'{header}{instr}'
+                elif instr.startswith('%'):
+                    outtext = f'{header}{instr}'
+                else:
+                    outtext = instr
+                print(outtext, end='', file=outf)
             print(file=outf)
             # Output
             if len(cell['outputs']) != 0:
