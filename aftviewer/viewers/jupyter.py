@@ -99,7 +99,13 @@ def main(fpath, args):
             # Input
             cprint(f'{header}In [{cnt}]', fg=fgi, bg=bgi, file=outf)
             for instr in cell['source']:
-                print(instr, end='', file=outf)
+                if instr.startswith('!'):
+                    outtext = f'{header}{instr}'
+                elif instr.startswith('%'):
+                    outtext = f'{header}{instr}'
+                else:
+                    outtext = instr
+                print(outtext, end='', file=outf)
             print(file=outf)
             # Output
             if len(cell['outputs']) != 0:
