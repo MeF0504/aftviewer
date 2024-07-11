@@ -493,7 +493,9 @@ q       |quit
             self.message = [ln.replace("\t", "  ") for ln in self.message]
 
     def _down_main(self, num: int):
-        if self.mainwin.ud < len(self.message)-num-1:
+        if len(self.message) == 0:
+            return
+        elif self.mainwin.ud < len(self.message)-num-1:
             self.mainwin.ud += num
         else:
             self.mainwin.ud = len(self.message)-1
@@ -725,7 +727,7 @@ q       |quit
         lentitle = len(title)+2
         if self.mainwin.w > lentitle:
             self.mainwin.b.addnstr(0, lentitle,
-                                  '{}/{}, {}; {}'.format(
+                                   '{}/{}, {}; {}'.format(
                                       self.mainwin.ud+1,
                                       len(self.message),
                                       self.mainwin.lr+1,
