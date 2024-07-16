@@ -79,9 +79,9 @@ def main(fpath, args):
         fgo, bgo = get_config('jupyter', 'output_color')
         fgt, bgt = get_config('jupyter', 'type_color')
 
+    meta = data['metadata']
+    logger.debug(f'meta data: {meta}')
     if args_chk(args, 'verbose'):
-        meta = data['metadata']
-        logger.debug(f'meta data: {meta}')
         print(f'{header}kernel   : {meta["kernelspec"]["display_name"]}',
               file=outf)
         if 'language_info' in meta:
@@ -90,14 +90,21 @@ def main(fpath, args):
         if 'colab' in meta:
             print(f'{header}colab : {meta["colab"]["name"]}', file=outf)
 
-    for cell in data['cells']:
+    L = len(data['cells'])
+    show_num = get_config('jupyter', 'show_number')
+    for i, cell in enumerate(data['cells']):
         logger.debug(f'\n---- cell ----\n{cell}\n---------------')
+        if show_num:
+            num = f' ({i+1}/{L})'
+        else:
+            num = ''
         if cell['cell_type'] == 'code':
             cnt = cell['execution_count']
             if cnt is None:
                 cnt = ' '
             # Input
-            cprint(f'{header}In [{cnt}]', fg=fgi, bg=bgi, file=outf)
+            cprint(f'{header}In [{cnt}]{num}',
+                   fg=fgi, bg=bgi, file=outf)
             for instr in cell['source']:
                 if instr.startswith('!'):
                     outtext = f'{header}{instr}'
@@ -109,16 +116,19 @@ def main(fpath, args):
             print(file=outf)
             # Output
             if len(cell['outputs']) != 0:
-                cprint(f'{header}Out [{cnt}]', fg=fgo, bg=bgo, file=outf)
+                cprint(f'{header}Out [{cnt}]{num}',
+                       fg=fgo, bg=bgo, file=outf)
             for output in cell['outputs']:
                 show_output(output, args, outf)
         elif cell['cell_type'] == 'markdown':
-            cprint(f'{header}markdown', fg=fgt, bg=bgt, file=outf)
+            cprint(f'{header}markdown{num}',
+                   fg=fgt, bg=bgt, file=outf)
             for instr in cell['source']:
                 print(f'{header}{instr}', end='', file=outf)
             print(file=outf)
         elif cell['cell_type'] == 'raw':
-            cprint(f'{header}raw', fg=fgt, bg=bgt, file=outf)
+            cprint(f'{header}raw{num}',
+                   fg=fgt, bg=bgt, file=outf)
             for instr in cell['source']:
                 print(f'{header}{instr}', end='', file=outf)
             print(file=outf)
