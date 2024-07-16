@@ -36,7 +36,8 @@
     "jupyter": {
         "input_color": ["c", null],
         "output_color": ["r", null],
-        "type_color": ["g", null]
+        "type_color": ["g", null],
+        "show_number": false
     },
     "hdf5": {
         "type_color": ["k", "w"]
