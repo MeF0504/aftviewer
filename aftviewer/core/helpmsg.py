@@ -1,5 +1,5 @@
 import argparse
-from typing import Callable, Optional, Union
+from typing import Callable
 from logging import getLogger
 
 from . import GLOBAL_CONF
@@ -69,9 +69,8 @@ def add_args_output(parser: argparse.ArgumentParser):
                         type=str)
 
 
-def add_args_verbose(parser: Union[argparse.ArgumentParser,
-                                   argparse._MutuallyExclusiveGroup,
-                                   ]) -> None:
+def add_args_verbose(parser: argparse.ArgumentParser |
+                     argparse._MutuallyExclusiveGroup) -> None:
     """
     add optional argument --verbose.
 
@@ -90,9 +89,8 @@ def add_args_verbose(parser: Union[argparse.ArgumentParser,
                         )
 
 
-def add_args_key(parser: Union[argparse.ArgumentParser,
-                               argparse._MutuallyExclusiveGroup,
-                               ]) -> None:
+def add_args_key(parser: argparse.ArgumentParser |
+                 argparse._MutuallyExclusiveGroup) -> None:
     """
     add optional argument --key.
 
@@ -113,9 +111,9 @@ def add_args_key(parser: Union[argparse.ArgumentParser,
                         )
 
 
-def add_args_interactive(parser: Union[argparse.ArgumentParser,
-                                       argparse._MutuallyExclusiveGroup,
-                                       ]) -> None:
+def add_args_interactive(parser: argparse.ArgumentParser |
+                         argparse._MutuallyExclusiveGroup,
+                         ) -> None:
     """
     add optional argument --interactive.
 
@@ -135,9 +133,9 @@ def add_args_interactive(parser: Union[argparse.ArgumentParser,
                         )
 
 
-def add_args_cui(parser: Union[argparse.ArgumentParser,
-                               argparse._MutuallyExclusiveGroup,
-                               ]) -> None:
+def add_args_cui(parser: argparse.ArgumentParser |
+                 argparse._MutuallyExclusiveGroup,
+                 ) -> None:
     """
     add optional argument --interactive_cui.
 
@@ -229,8 +227,8 @@ def add_args_update(parser: argparse.ArgumentParser) -> None:
 
 
 def help_template(filetype: str, description: str,
-                  add_args: Optional[Callable[[argparse.ArgumentParser],
-                                              None]] = None
+                  add_args: None | Callable[[argparse.ArgumentParser],
+                                            None] = None
                   ) -> str:
     """
     offer a template for help messages.

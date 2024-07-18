@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import sys
 import shutil
@@ -9,7 +11,7 @@ import mimetypes
 import pprint
 from importlib import import_module
 from pathlib import Path, PurePath
-from typing import Tuple, Any, Optional
+from typing import Any
 from types import ModuleType
 from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
     Formatter, DEBUG as logDEBUG, INFO as logINFO
@@ -241,7 +243,7 @@ def cprint(str1: str, str2: str = '',
     print(print_str, **kwargs)
 
 
-def get_col(name: str) -> Tuple[COLType,
+def get_col(name: str) -> tuple[COLType,
                                 COLType]:
     """
     get the color id of a given name.
@@ -276,7 +278,7 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
     ----------
     fname: str
         An opened file name.
-    get_contents: Callable[[PurePath], Tuple[List[str], List[str]]]
+    get_contents: Callable[[PurePath], tuple[List[str], List[str]]]
         A function to get lists of directories and files.
         The argument is the path to an item.
         The first return value is a list of directory names,
@@ -461,7 +463,7 @@ def set_numpy_format(numpy: Any) -> None:
     numpy.set_printoptions(**opts)
 
 
-def get_filetype(fpath: Path) -> Optional[str]:
+def get_filetype(fpath: Path) -> None | str:
     if not fpath.is_file():
         __logger.debug('file does not exists')
         return None
@@ -482,7 +484,7 @@ def get_filetype(fpath: Path) -> Optional[str]:
     return None
 
 
-def load_lib(args: Args) -> Optional[ModuleType]:
+def load_lib(args: Args) -> None | ModuleType:
     if args.type is None:
         __logger.debug('file type is None')
         return None

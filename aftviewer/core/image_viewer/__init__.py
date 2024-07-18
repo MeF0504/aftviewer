@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import os
 import sys
 import tempfile
 import subprocess
 import mimetypes
-from typing import Any, List, Union, Optional
+from typing import Any
 from types import ModuleType
 from importlib import import_module
 from pathlib import Path
@@ -17,7 +19,7 @@ logger = getLogger(GLOBAL_CONF.logname)
 
 # image viewer
 # not set, module in this package, or external command.
-__ImgViewer: Union[None, ModuleType, str] = None
+__ImgViewer: None | ModuleType | str = None
 __set_ImgViewer = False
 
 
@@ -34,7 +36,7 @@ def __get_exec_cmds(image_viewer, fname):
     return res
 
 
-def __collect_image_viewers() -> List[str]:
+def __collect_image_viewers() -> list[str]:
     img_viewers = ['None']
     file_dir = Path(__file__).parent
     for fy in file_dir.glob('*'):
@@ -59,7 +61,7 @@ def __collect_image_viewers() -> List[str]:
     return img_viewers
 
 
-def __get_mod(img_viewer: Optional[str]) -> Union[None, ModuleType]:
+def __get_mod(img_viewer: None | str) -> None | ModuleType:
     try:
         add_path = GLOBAL_CONF.conf_dir/f'additional_ivs/{img_viewer}.py'
         if (Path(__file__).parent/f'{img_viewer}.py').is_file():
@@ -129,7 +131,7 @@ def __set_image_viewer(args: Args) -> None:
     logger.debug(f'image viewer: {__ImgViewer} (None?:{__ImgViewer is None})')
 
 
-def show_image_file(img_file: str, args: Args) -> Union[None, bool]:
+def show_image_file(img_file: str, args: Args) -> None | bool:
     """
     show an image file with the image viewer.
 
@@ -185,7 +187,7 @@ def show_image_file(img_file: str, args: Args) -> Union[None, bool]:
     return ret
 
 
-def show_image_ndarray(data: Any, name: str, args: Args) -> Union[None, bool]:
+def show_image_ndarray(data: Any, name: str, args: Args) -> None | bool:
     """
     show a given ndArray as an image with the image viewer.
 
@@ -243,7 +245,7 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> Union[None, bool]:
     return ret
 
 
-def is_image(path: Union[str, os.PathLike]) -> bool:
+def is_image(path: str | os.PathLike) -> bool:
     """
     judge whether the file of a given path is an image file.
 

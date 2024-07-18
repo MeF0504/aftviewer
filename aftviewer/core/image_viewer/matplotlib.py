@@ -1,4 +1,6 @@
-from typing import Any, Tuple
+from __future__ import annotations
+
+from typing import Any
 from logging import getLogger
 
 import matplotlib.pyplot as plt
@@ -24,7 +26,8 @@ def clear_mpl_axes(axes):
     axes.spines['left'].set_visible(False)
 
 
-def get_size_dpi(shape: Tuple[int, int]) -> Tuple[Tuple[float, float], int]:
+def get_size_dpi(shape: tuple[int, ...]) -> tuple[tuple[float, float], int]:
+    assert len(shape) > 1, f'Image dimension must be >= 2, now {len(shape)}'
     if get_screen:
         height = get_monitors()[0].height*0.7  # pixel
     else:
