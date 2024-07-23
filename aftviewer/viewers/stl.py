@@ -2,7 +2,6 @@ import argparse
 import re
 from pathlib import Path
 from logging import getLogger
-from typing import Optional
 
 from stl import mesh
 # stl depends on numpy.
@@ -71,8 +70,8 @@ def main(fpath: Path, args: Args):
 
     mesh_data = mesh.Mesh.from_file(str(fpath))
     logger.debug(f'mesh shape: {mesh_data.vectors.shape}')
-    ecol: Optional[str] = get_config('stl', 'edgecolors')
-    fcol: Optional[str] = get_config('stl', 'facecolors')
+    ecol: None | str = get_config('stl', 'edgecolors')
+    fcol: None | str = get_config('stl', 'facecolors')
     if not check_color(ecol):
         ecol = None
     if not check_color(fcol):

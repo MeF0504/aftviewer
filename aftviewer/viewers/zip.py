@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import zipfile
 import tempfile
@@ -5,7 +7,6 @@ from functools import partial
 from getpass import getpass
 from pathlib import Path, PurePosixPath
 from logging import getLogger
-from typing import Optional
 
 from .. import (GLOBAL_CONF, Args, args_chk, is_image, print_key, print_error,
                 interactive_view, interactive_cui, show_image_file,
@@ -60,8 +61,8 @@ def get_contents(zip_file, path):
     return dirs, files
 
 
-def show_zip(zip_file: zipfile.ZipFile, pwd: Optional[bytes],
-             tmpdir: Optional[tempfile.TemporaryDirectory],
+def show_zip(zip_file: zipfile.ZipFile, pwd: None | bytes,
+             tmpdir: None | tempfile.TemporaryDirectory,
              args: Args, get_contents: GC, cpath: str, **kwargs):
     res = []
     try:

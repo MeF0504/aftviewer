@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import re
 import curses
 from curses.textpad import Textbox, rectangle
 from pathlib import PurePath
-from typing import List, Dict, Tuple, Optional, Callable
+from typing import Callable
 from logging import getLogger, StreamHandler
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
@@ -25,7 +27,7 @@ default_color_set = {
 class CUIWin():
     def __init__(self, height: int, width: int,
                  begin_y: int, begin_x: int,
-                 updatefunc: Optional[Callable]):
+                 updatefunc: None | Callable):
         self.w = width
         self.h = height
         self.updatefunc = updatefunc
@@ -46,7 +48,7 @@ class CursesCUI():
         # information about selected item
         self.info = ReturnMessage('', False)
         # message shown in the main window
-        self.message: List[str] = []
+        self.message: list[str] = []
         # flag if display the line number or not
         self.line_number: bool = get_config('config', 'cui_linenumber')
         # flag if wrap the message
@@ -56,7 +58,7 @@ class CursesCUI():
         # entered key
         self.key = ''
         # key maps
-        self.keymaps: Dict[str, list] = {}
+        self.keymaps: dict[str, list] = {}
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
@@ -95,7 +97,7 @@ class CursesCUI():
         self.sidebar.ud = 0
         self.sidebar.lr = 0
         self.sidebar.idx = 0
-        self.sidebar.contents: List[str] = []
+        self.sidebar.contents: list[str] = []
         self.sidebar.scroll_h = 5
         self.sidebar.scroll_w = 3
         self.sidebar.down = self._down_sidebar
@@ -133,7 +135,7 @@ class CursesCUI():
         self.search.word = ''  # word search in current file
         self.search.cmt = ''  # comments shown in the main window
         # ↓ find-word, line, start col, end col
-        self.search.is_word: Optional[Tuple[str, int, int, int]] = None
+        self.search.is_word: None | tuple[str, int, int, int] = None
 
     def create_color_set(self, num, name):
         assert num < curses.COLOR_PAIRS, \
@@ -903,7 +905,7 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     ----------
     fname: str
         An opened file name.
-    get_contents: Callable[[PurePath], Tuple[List[str], List[str]]]
+    get_contents: Callable[[PurePath], tuple[list[str], list[str]]]
         A function to get lists of directories and files.
         The argument is the path to an item.
         The first return value is a list of directory names,

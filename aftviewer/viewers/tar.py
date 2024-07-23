@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import os
 import tarfile
 import tempfile
 from functools import partial
 from pathlib import Path, PurePosixPath
 from logging import getLogger
-from typing import Optional
 
 from .. import (GLOBAL_CONF, Args, args_chk, print_key, print_error,
                 is_image, interactive_view, interactive_cui,
@@ -17,7 +18,7 @@ logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_tar(tar_file: tarfile.TarFile,
-             tmpdir: Optional[tempfile.TemporaryDirectory],
+             tmpdir: None | tempfile.TemporaryDirectory,
              args: Args, get_contents: GC, cpath: str, **kwargs):
     res = []
     # check cpath

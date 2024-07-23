@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Union, Callable, Optional, Iterable
+from typing import Callable, Union
 
 
 @dataclass(frozen=True)
@@ -83,7 +85,7 @@ class Args:
     image_viewer: str
     encoding: str
     verbose: bool
-    key: List[str]
+    key: list[str]
     interactive: bool
     cui: bool
     output: str
