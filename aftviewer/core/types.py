@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Union
 
 
 @dataclass(frozen=True)
@@ -93,4 +93,4 @@ class Args:
 
 SF = Callable[..., ReturnMessage]
 
-COLType = str | int | None
+COLType = Union[str, int, None]
