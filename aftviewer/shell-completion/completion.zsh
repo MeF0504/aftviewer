@@ -9,10 +9,10 @@ _aftviewer_cmp()
         '(-iv --image_viewer)'{-iv,--image_viewer}'[set image viewer]:image viewer:_aftviewer_iv' \
         '(-o --output)'{-o,--output}'[output file or directory]:output:_files' \
         '(-p --ask_password)'{-p,--ask_password}'[password is asked when opening a file]:pass' \
-        '(-v --verbose)'{-v,--verbose}'[view file with verbose mode]:verbose' \
+        '(-v --verbose)'{-v,--verbose}'[view file with verbose mode]' \
         '(-k --key)'{-k,--key}'[set viewing keys]:keys' \
-        '(-i --interactive)'{-i,--interactive}'[view file with interactive mode]:interactive' \
-        '(-c --interactive_cui)'{-c,--interactive_cui}'[view file with interactive cui mode]:interactive cui' \
+        '(-i --interactive)'{-i,--interactive}'[view file with interactive mode]' \
+        '(-c --interactive_cui)'{-c,--interactive_cui}'[view file with interactive cui mode]' \
         --encoding'[set encoding]:encoding' \
         '*:target file:_aftviewer_targets'
 }
