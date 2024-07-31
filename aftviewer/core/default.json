@@ -8,6 +8,7 @@
         "system_cmd": null,
         "system_cmd_args": ["%c", "%s"],
         "pp_kwargs": {"compact": true},
+        "cui_mouse_enable": false,
         "cui_linenumber": false,
         "cui_wrap": false
     },

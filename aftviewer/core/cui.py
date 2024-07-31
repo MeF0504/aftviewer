@@ -49,6 +49,8 @@ class CursesCUI():
         self.info = ReturnMessage('', False)
         # message shown in the main window
         self.message: list[str] = []
+        # mouse is available or not
+        self.mouse: bool = get_config('config', 'cui_mouse_enable')
         # flag if display the line number or not
         self.line_number: bool = get_config('config', 'cui_linenumber')
         # flag if wrap the message
@@ -57,6 +59,11 @@ class CursesCUI():
         self.purepath = purepath
         # entered key
         self.key = ''
+        # debug message for mouse click
+        if self.mouse:
+            self.mouse_mess = '<>'
+        else:
+            self.mouse_mess = '---'
         # key maps
         self.keymaps: dict[str, list] = {}
 
@@ -332,6 +339,11 @@ class CursesCUI():
                       True, False, False,
                       ],
                 }
+        if self.mouse:
+            def_keymaps['KEY_MOUSE'] = [self.run_mouse, [], 'click',
+                                        'open the item in the main window',
+                                        True, True, True,
+                                        ]
         logger.debug('set default key maps')
         for k in def_keymaps:
             if k not in self.keymaps:
@@ -800,6 +812,20 @@ q       |quit
         self.topwin.b.addstr(1, 5, f'current path: {path}')
         self.topwin.b.addstr(2, 1, self.exp[:self.topwin.w-1-1])
 
+    def run_mouse(self):
+        idnum, x, y, z, bstate = curses.getmouse()
+        self.mouse_mess = f'{idnum}-{x}-{y}-{bstate}'
+        if bstate == curses.BUTTON1_CLICKED:
+            if x > self.sidebar.w:
+                return
+            idx = y-self.topwin.h
+            if idx < 0:
+                return
+            if idx < self.sidebar.idx-self.sidebar.ud:
+                self.sidebar.up(self.sidebar.idx-self.sidebar.ud-idx)
+            else:
+                self.sidebar.down(idx-self.sidebar.idx+self.sidebar.ud)
+
     def debug_log(self):
         log_str = f'''
 ===== LOG INFO =====
@@ -849,6 +875,9 @@ search_word   : {self.search.word}
                                   self.search.is_word[1],
                                   self.search.is_word[2]),
                                   int(self.winx/3)-1)
+        else:
+            self.topwin.b.addnstr(2, int(self.winx*2/3), self.mouse_mess,
+                                  int(self.winx/3)-1)
         self.topwin.b.refresh()
 
     def add_key_maps(self, key, config):
@@ -873,6 +902,8 @@ search_word   : {self.search.word}
         self.set_keymap()
         stdscr.refresh()
 
+        if self.mouse:
+            curses.mousemask(curses.BUTTON1_CLICKED)
         while self.key != 'q':
             # showed indices are sidebar.ud ~ sidebar.ud+sidebar.h
             if self.key == '':
