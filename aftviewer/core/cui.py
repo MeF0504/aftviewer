@@ -825,6 +825,8 @@ q       |quit
                 self.sidebar.up(self.sidebar.idx-self.sidebar.ud-idx)
             else:
                 self.sidebar.down(idx-self.sidebar.idx+self.sidebar.ud)
+        if bstate == curses.BUTTON3_CLICKED:
+            self.sidebar.go_up()
 
     def debug_log(self):
         log_str = f'''
@@ -903,7 +905,7 @@ search_word   : {self.search.word}
         stdscr.refresh()
 
         if self.mouse:
-            curses.mousemask(curses.BUTTON1_CLICKED)
+            curses.mousemask(curses.ALL_MOUSE_EVENTS)
         while self.key != 'q':
             # showed indices are sidebar.ud ~ sidebar.ud+sidebar.h
             if self.key == '':
