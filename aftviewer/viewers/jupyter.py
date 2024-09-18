@@ -137,6 +137,8 @@ def main(fpath, args):
             logger.error(f'not a supported type of cell: {cell["cell_type"]}')
 
         if not (args_chk(args, 'verbose') or args_chk(args, 'output')):
-            input(' >>> Press ENTER to continue')
+            key = input(' >>> Press ENTER to continue or "quit" to break: ')
+            if key == 'quit':
+                break
 
     outf.close()
