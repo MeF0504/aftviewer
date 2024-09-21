@@ -131,7 +131,8 @@ def __set_image_viewer(args: Args) -> None:
     logger.debug(f'image viewer: {__ImgViewer} (None?:{__ImgViewer is None})')
 
 
-def show_image_file(img_file: str, args: Args) -> None | bool:
+def show_image_file(img_file: str, args: Args,
+                    wait: bool = True) -> None | bool:
     """
     show an image file with the image viewer.
 
@@ -141,6 +142,10 @@ def show_image_file(img_file: str, args: Args) -> None | bool:
         image file.
     args: Args
         The arguments given by the command line.
+    wait: bool
+        If true, wait to press any key after opening the image file
+        by the command.
+        Default: True.
 
     Returns
     -------
@@ -175,8 +180,10 @@ def show_image_file(img_file: str, args: Args) -> None | bool:
         if chk_cmd(__ImgViewer, logger=logger):
             cmds = __get_exec_cmds(__ImgViewer, img_file)
             out = subprocess.run(cmds)
-            # wait to open file. this is for, e.g., open command on Mac OS.
-            input('Press Enter to continue')
+            if wait:
+                # wait to open file. this supports stable behavior
+                # for, e.g., open command on Mac OS.
+                input('Press Enter to continue')
             if out.returncode == 0:
                 ret = True
             else:
@@ -187,7 +194,8 @@ def show_image_file(img_file: str, args: Args) -> None | bool:
     return ret
 
 
-def show_image_ndarray(data: Any, name: str, args: Args) -> None | bool:
+def show_image_ndarray(data: Any, name: str, args: Args,
+                       wait: bool = True) -> None | bool:
     """
     show a given ndArray as an image with the image viewer.
 
@@ -200,6 +208,10 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> None | bool:
         The name of the image.
     args: Args
         The arguments given by the command line.
+    wait: bool
+        If true, wait to press any key after opening the image file
+        by the command.
+        Default: True
 
     Returns
     -------
@@ -233,8 +245,10 @@ def show_image_ndarray(data: Any, name: str, args: Args) -> None | bool:
                 make_bitmap(tmp.name, data, verbose=False, logger=logger)
                 cmds = __get_exec_cmds(__ImgViewer, tmp.name)
                 out = subprocess.run(cmds)
-                # wait to open file. this is for, e.g., open command on Mac OS.
-                input('Press Enter to continue')
+                if wait:
+                    # wait to open file. this supports stable behavior
+                    # for, e.g., open command on Mac OS.
+                    input('Press Enter to continue')
                 if out.returncode == 0:
                     ret = True
                 else:
