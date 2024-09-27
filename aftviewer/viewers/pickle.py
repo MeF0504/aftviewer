@@ -52,6 +52,18 @@ def show_func(data, cpath, **kwargs):
     return RM(res, False)
 
 
+def add_info(data, cpath):
+    path_list = list(PurePath(cpath).parts)
+    # remove root dir = file name.
+    path = PurePath('/'.join(path_list[1:]))
+    tmp_data = get_item(data, path)
+    if isinstance(tmp_data, dict):
+        return '', ''
+    else:
+        res = pprint.pformat(tmp_data, **pargs)
+        return '', f' :{res}'
+
+
 def get_contents(data, path):
     dirs = []
     files = []
@@ -102,12 +114,9 @@ def main(fpath, args):
             interactive_cui(fname, gc, partial(show_func, data))
         else:
             if args_chk(args, 'verbose'):
-                try:
-                    tmp_keys = sorted(data.keys())
-                except TypeError:
-                    tmp_keys = data.keys()
-                show_keys(data, tmp_keys)
+                addinfo = partial(add_info, data)
             else:
-                show_tree(fname, gc, logger=logger)
+                addinfo = None
+            show_tree(fname, gc, logger=logger, add_info=addinfo)
     else:
         pprint.pprint(data, **pargs)
