@@ -53,9 +53,8 @@ def show_func(data, cpath, **kwargs):
 
 
 def add_info(data, cpath):
-    path_list = list(PurePath(cpath).parts)
     # remove root dir = file name.
-    path = PurePath('/'.join(path_list[1:]))
+    path = '/'.join(PurePath(cpath).parts[1:])
     tmp_data = get_item(data, path)
     if isinstance(tmp_data, dict):
         return '', ''
