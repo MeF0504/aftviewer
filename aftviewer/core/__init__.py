@@ -22,6 +22,7 @@ from .types import CONF, Args, SF, COLType
 
 
 __debug = False
+__add_types = {}
 if 'XDG_CONFIG_HOME' in os.environ:
     __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'aftviewer'
 else:
@@ -31,34 +32,16 @@ if not __conf_dir.exists():
 
 # load config file.
 with (Path(__file__).parent/'default.json').open('r') as f:
-    __json_opts = json.load(f)
+    __def_opts = json.load(f)
 if (__conf_dir/'setting.json').is_file():
     with open(__conf_dir/'setting.json') as f:
-        load_opts = json.load(f)
-        if 'debug' in load_opts:
-            __debug = bool(load_opts['debug'])
-        if 'force_default' in load_opts and load_opts['force_default']:
-            load_opts = {}
-        if 'additional_types' in load_opts:
-            __add_types = load_opts['additional_types']
-            __json_opts['additional_types'] = __add_types
-        else:
-            __add_types = {}
-        for key in list(__json_opts.keys()) + list(__add_types.keys()):
-            if key == 'additional_types':
-                continue
-            if key in load_opts:
-                if key in __json_opts:
-                    # update values in default.json
-                    for k2, v2 in load_opts[key].items():
-                        if k2 in __json_opts[key]:
-                            __json_opts[key][k2] = v2
-                else:
-                    # create settings for new file type
-                    __json_opts[key] = load_opts[key]
-    del load_opts
-else:
-    __add_types = {}
+        __user_opts = json.load(f)
+        if 'debug' in __user_opts:
+            __debug = bool(__user_opts['debug'])
+        if 'force_default' in __user_opts and __user_opts['force_default']:
+            __user_opts = {}
+        if 'additional_types' in __user_opts:
+            __add_types = __user_opts['additional_types']
 
 # set supported file types
 __type_config = {
@@ -114,7 +97,6 @@ __logger.debug(f'src: {__file__}')
 # global variables
 GLOBAL_CONF = CONF(__debug,
                    __conf_dir,
-                   __json_opts,
                    __type_config,
                    __logname)
 
@@ -162,32 +144,53 @@ def args_chk(args: Args, attr: str) -> bool:
         return False
 
 
-def get_config(key1: str, key2: str) -> Any:
+def get_config(key: str, filetype: str) -> Any:
     """
     get the current configuration value.
 
     Parameters
     ----------
-    key1: str
-        Main key name. Selected one from "config", "colors", and type names.
-    key2: str
+    key: str
         configuration key name.
+    filetype: str
+        File type name of the script calling this function.
 
     Returns
     -------
     Any
         Return specified configuration value. If it is not set, return None.
     """
-    assert key1 in ["config", "colors"] + list(__type_config.keys()), \
-        f'incorrect key name: {key1}'
-    if key1 not in __json_opts:
-        # type name is not set in setting.json.
-        return None
-    val1 = __json_opts[key1]
-    if key2 not in val1:
-        return None
+    # assert key1 in ["config", "colors"] + list(__type_config.keys()), \
+    #     f'incorrect key name: {key1}'
+    # if key1 not in __json_opts:
+    #     # type name is not set in setting.json.
+    #     return None
+    # val1 = __json_opts[key1]
+    # if key2 not in val1:
+    #     return None
+    # else:
+    #     return val1[key2]
+    if filetype in __user_opts and key in __user_opts[filetype]:
+        return __user_opts[filetype][key]
+    elif 'config' in __user_opts and key in __user_opts['config']:
+        return __user_opts['config'][key]
+    elif filetype in __def_opts:
+        # file-specified option
+        if key in __def_opts[filetype]:
+            return __def_opts[filetype][key]
+        else:
+            __logger.error(f'config "{key}" not found in ft "{filetype}".')
+            return None
+    elif 'config' in __def_opts:
+        # in the default setting, no duplication in filetype and "config".
+        if key in __def_opts['config']:
+            return __def_opts['config'][key]
+        else:
+            __logger.error(f'config "{key}" not found in config.')
+            return None
     else:
-        return val1[key2]
+        __logger.error('something wrong; no config key in default setting.')
+        return None
 
 
 def cprint(str1: str, str2: str = '',
@@ -243,16 +246,18 @@ def cprint(str1: str, str2: str = '',
     print(print_str, **kwargs)
 
 
-def get_col(name: str) -> tuple[COLType,
-                                COLType]:
+def get_col(name: str, filetype: str) -> tuple[COLType, COLType]:
     """
     get the color id of a given name.
 
     Parameters
     ----------
     name: str
-        A name of the option. This name should be included in
-        "color_config" in configuration options.
+        A name of the color. Please see wiki
+        (https://github.com/MeF0504/aftviewer/wiki/Customization#colors)
+        for details.
+    filetype: str
+        File type name of the script calling this function.
 
     Returns
     -------
@@ -261,12 +266,25 @@ def get_col(name: str) -> tuple[COLType,
     str, int, or None
         foreground color id. If the name is incorrect, return None.
     """
-    col_conf = get_config('colors', name)
-    if name is None:
-        __logger.warning(f'incorrect color set name: {name}')
-        return None, None
+    # col_conf = get_config('colors', name)
+    # if name is None:
+    #     __logger.warning(f'incorrect color set name: {name}')
+    #     return None, None
+    # else:
+    #     return col_conf
+    if filetype in __user_opts and \
+       'colors' in __user_opts[filetype] and \
+       name in __user_opts[filetype]['colors']:
+        return __user_opts[filetype]['colors'][name]
+    elif 'config' in __user_opts and \
+         'colors' in __user_opts['config'] and \
+         name in __user_opts['config']['colors']:
+        return __user_opts['config']['colors'][name]
+    elif name in __def_opts['config']['colors']:
+        return __def_opts['config']['colors'][name]
     else:
-        return col_conf
+        __logger.error('color name "{name}" not found in default config.')
+        return None, None
 
 
 def interactive_view(fname: str, get_contents: GC, show_func: SF,
@@ -510,6 +528,7 @@ def load_lib(args: Args) -> None | ModuleType:
     try:
         lib = import_module(lib_path)
     except ImportError as e:
-        __logger.error(f'Failed to load library (lib: {lib_path2}, error: {e})')
+        __logger.error('Failed to load library '
+                       f'(lib: {lib_path2}, error: {e})')
         return None
     return lib
