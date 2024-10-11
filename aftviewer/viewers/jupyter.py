@@ -8,8 +8,8 @@ from pathlib import Path
 from logging import getLogger
 from typing import Any
 
-from .. import (GLOBAL_CONF, Args, args_chk, cprint,
-                show_image_file, print_error, get_config, help_template,
+from .. import (GLOBAL_CONF, Args, args_chk, cprint, show_image_file,
+                print_error, get_config, get_col, help_template,
                 add_args_imageviewer, add_args_output, add_args_verbose)
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -94,9 +94,9 @@ def main(fpath, args):
     else:
         outf = sys.stdout
         header = ''
-        fgi, bgi = get_config('jupyter', 'input_color')
-        fgo, bgo = get_config('jupyter', 'output_color')
-        fgt, bgt = get_config('jupyter', 'type_color')
+        fgi, bgi = get_col('input_color', 'jupyter')
+        fgo, bgo = get_col('output_color', 'jupyter')
+        fgt, bgt = get_col('type_color', 'jupyter')
 
     tmpdir = None
     meta = data['metadata']
@@ -113,7 +113,7 @@ def main(fpath, args):
             print(f'{header}colab : {meta["colab"]["name"]}', file=outf)
 
     L = len(data['cells'])
-    show_num = get_config('jupyter', 'show_number')
+    show_num = get_config('show_number', 'jupyter')
     for i, cell in enumerate(data['cells']):
         logger.debug(f'\n---- cell ----\n{cell}\n---------------')
         if show_num:

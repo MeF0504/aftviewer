@@ -7,7 +7,7 @@ from logging import getLogger
 import h5py
 
 from .. import (GLOBAL_CONF, args_chk, print_key, print_error,
-                FG, BG, FG256, BG256, END, set_numpy_format, get_config,
+                FG, BG, FG256, BG256, END, get_config,
                 interactive_view, interactive_cui,
                 help_template, add_args_specification
                 )
@@ -20,9 +20,10 @@ except ImportError:
     imp_np = False
 else:
     imp_np = True
-    set_numpy_format(np)
+    opts = get_config('numpy_printoptions', 'hdf5')
+    np.set_printoptions(**opts)
 logger = getLogger(GLOBAL_CONF.logname)
-pargs = get_config('config', 'pp_kwargs')
+pargs = get_config('pp_kwargs', 'hdf5')
 
 
 def show_hdf5(h5_file, cpath, **kwargs):
@@ -31,7 +32,7 @@ def show_hdf5(h5_file, cpath, **kwargs):
         bg = ''
         end = ''
     else:
-        fgkey, bgkey = get_config('hdf5', 'type_color')
+        fgkey, bgkey = get_config('type_color', 'hdf5')
         if fgkey in FG:
             fg = FG[fgkey]
         elif type(fgkey) is int:
@@ -144,7 +145,7 @@ def main(fpath, args):
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, gc, sf, PurePosixPath)
+        interactive_cui(fpath, 'hdf5', gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         if args.key:
             for k in args.key:

@@ -11,9 +11,8 @@ else:
     import_curses = True
 
 from .. import (GLOBAL_CONF, args_chk, print_key, cprint, print_error,
-                interactive_view, get_config,
-                help_template, add_args_specification, add_args_output
-                )
+                interactive_view, help_template, add_args_specification,
+                add_args_output)
 from .. import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
 from ..core.cui import CursesCUI
@@ -235,13 +234,12 @@ def main(fpath, args):
         gc = partial(get_contents_i, cursor, tables)
         interactive_view(fname, gc, partial(show_table, cursor, tables))
     elif args_chk(args, 'cui'):
-        # interactive_cui(fname, gc, partial(show_table, cursor, tables))
         if not import_curses:
             print('failed to import curses.')
             return
         gc = partial(get_contents_c, cursor, tables)
         tv = TreeViewer('.', gc, purepath=PurePosixPath, logger=logger)
-        curses_cui = CursesCUI()
+        curses_cui = CursesCUI('sqlite3')
         curses_cui.add_key_maps('\n', [add_contents, [curses_cui], '<CR>',
                                        'open/add the item in the main window',
                                        True, True, True])

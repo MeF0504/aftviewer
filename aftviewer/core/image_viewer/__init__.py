@@ -23,9 +23,9 @@ __ImgViewer: None | ModuleType | str = None
 __set_ImgViewer = False
 
 
-def __get_exec_cmds(image_viewer, fname):
+def __get_exec_cmds(image_viewer, fname, filetype):
     res = []
-    for cmd in get_config('config', 'iv_exec_cmd'):
+    for cmd in get_config('iv_exec_cmd', filetype):
         if cmd == '%s':
             res.append(fname)
         elif cmd == '%c':
@@ -83,8 +83,8 @@ def __get_mod(img_viewer: None | str) -> None | ModuleType:
 def __set_image_viewer(args: Args) -> None:
     global __ImgViewer, __set_ImgViewer
     img_viewers = __collect_image_viewers()
-    iv_config = get_config('config', 'image_viewer')
-    iv_cui_config = get_config('config', 'image_viewer_cui')
+    iv_config = get_config('image_viewer', args.type)
+    iv_cui_config = get_config('image_viewer_cui', args.type)
 
     tmp_iv = None
     if args_chk(args, 'image_viewer'):
@@ -178,7 +178,7 @@ def show_image_file(img_file: str, args: Args,
             ret = None
     elif type(__ImgViewer) is str:
         if chk_cmd(__ImgViewer, logger=logger):
-            cmds = __get_exec_cmds(__ImgViewer, img_file)
+            cmds = __get_exec_cmds(__ImgViewer, img_file, args.type)
             out = subprocess.run(cmds)
             if wait:
                 # wait to open file. this supports stable behavior
@@ -243,7 +243,7 @@ def show_image_ndarray(data: Any, name: str, args: Args,
         if chk_cmd(__ImgViewer, logger=logger):
             with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
                 make_bitmap(tmp.name, data, verbose=False, logger=logger)
-                cmds = __get_exec_cmds(__ImgViewer, tmp.name)
+                cmds = __get_exec_cmds(__ImgViewer, tmp.name, args.type)
                 out = subprocess.run(cmds)
                 if wait:
                     # wait to open file. this supports stable behavior

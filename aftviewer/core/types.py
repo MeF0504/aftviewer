@@ -17,8 +17,6 @@ class CONF:
     conf_dir: pathlib.Path
         configuration directory.
         default: "$XDG_CONFIG_HOME/aftviewer" or "~/.config/aftviewer"
-    opts: dict
-        behavior options. This values are overridden by conf_dir/setting.json.
     types: dict
         supported file types and its extensions.
         This dictionary is overridden by "additional_types" in opts.
@@ -27,7 +25,6 @@ class CONF:
     """
     debug: bool
     conf_dir: Path
-    opts: dict
     types: dict
     logname: str
 

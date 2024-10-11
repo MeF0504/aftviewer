@@ -1,9 +1,8 @@
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from .. import args_chk, print_key, set_numpy_format, help_template, \
+from .. import args_chk, print_key, get_config, help_template, \
     add_args_specification
-set_numpy_format(np)
 
 
 def show_numpy(data):
@@ -75,6 +74,8 @@ def show_help():
 
 
 def main(fpath, args):
+    opts = get_config('numpy_printoptions', 'numpy')
+    np.set_printoptions(**opts)
     data = np.load(fpath, allow_pickle=False)
     if args_chk(args, 'verbose'):
         if type(data) is NpzFile:

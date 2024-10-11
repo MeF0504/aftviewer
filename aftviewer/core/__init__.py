@@ -23,6 +23,7 @@ from .types import CONF, Args, SF, COLType
 
 __debug = False
 __add_types = {}
+__user_opts = {}
 if 'XDG_CONFIG_HOME' in os.environ:
     __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'aftviewer'
 else:
@@ -171,26 +172,24 @@ def get_config(key: str, filetype: str) -> Any:
     # else:
     #     return val1[key2]
     if filetype in __user_opts and key in __user_opts[filetype]:
+        __logger.debug(f'"{key}" in user ft "{filetype}".')
         return __user_opts[filetype][key]
     elif 'config' in __user_opts and key in __user_opts['config']:
+        __logger.debug(f'"{key}" in user config.')
         return __user_opts['config'][key]
-    elif filetype in __def_opts:
-        # file-specified option
-        if key in __def_opts[filetype]:
-            return __def_opts[filetype][key]
-        else:
-            __logger.error(f'config "{key}" not found in ft "{filetype}".')
-            return None
+    elif filetype in __def_opts and key in __def_opts[filetype]:
+        __logger.debug(f'"{key}" in default ft "{filetype}".')
+        return __def_opts[filetype][key]
     elif 'config' in __def_opts:
-        # in the default setting, no duplication in filetype and "config".
         if key in __def_opts['config']:
+            __logger.debug(f'"{key}" in default config.')
             return __def_opts['config'][key]
         else:
-            __logger.error(f'config "{key}" not found in config.')
+            __logger.error(f'"{key}" not found in config.')
             return None
     else:
         __logger.error('something wrong; no config key in default setting.')
-        return None
+    return None
 
 
 def cprint(str1: str, str2: str = '',
@@ -280,6 +279,10 @@ def get_col(name: str, filetype: str) -> tuple[COLType, COLType]:
          'colors' in __user_opts['config'] and \
          name in __user_opts['config']['colors']:
         return __user_opts['config']['colors'][name]
+    elif filetype in __def_opts and \
+       'colors' in __def_opts[filetype] and \
+       name in __def_opts[filetype]['colors']:
+        return __def_opts[filetype]['colors'][name]
     elif name in __def_opts['config']['colors']:
         return __def_opts['config']['colors'][name]
     else:
@@ -418,7 +421,7 @@ def print_key(key_name: str) -> None:
     cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg)
 
 
-def run_system_cmd(fname: str) -> bool:
+def run_system_cmd(fname: str, filetype: str) -> bool:
     """
     open the file using the system command.
 
@@ -426,13 +429,15 @@ def run_system_cmd(fname: str) -> bool:
     ----------
     fname: str
         a file name to be opened.
+    filetype: str
+        File type name of the script calling this function.
 
     Returns
     -------
     bool
         Return True if the command succeeded, otherwise False.
     """
-    cmd = get_config('config', 'system_cmd')
+    cmd = get_config('system_cmd', filetype)
     if cmd is None:
         if platform.system() == 'Windows':
             cmd = 'start'
@@ -444,7 +449,7 @@ def run_system_cmd(fname: str) -> bool:
             print('Unsupported platform')
             return False
     res = []
-    for arg in get_config('config', 'system_cmd_args'):
+    for arg in get_config('system_cmd_args', filetype):
         if arg == '%s':
             res.append(fname)
         elif arg == '%c':
@@ -461,24 +466,6 @@ def run_system_cmd(fname: str) -> bool:
         return False
     else:
         return True
-
-
-def set_numpy_format(numpy: Any) -> None:
-    """
-    set NumPy format following the given configuration option.
-
-    Parameters
-    ----------
-    numpy: module
-        NumPy module. (This file is designed not to call anything other than
-        standard modules, so the NumPy module is used as an argument.)
-
-    Returns
-    -------
-    None
-    """
-    opts = get_config('numpy', 'print_option')
-    numpy.set_printoptions(**opts)
 
 
 def get_filetype(fpath: Path) -> None | str:

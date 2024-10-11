@@ -8,7 +8,7 @@ from typing import Callable
 from logging import getLogger, StreamHandler
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from . import GLOBAL_CONF, get_config, print_error
+from . import GLOBAL_CONF, get_config, get_col, print_error
 from .types import ReturnMessage, SF
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -42,7 +42,7 @@ class CUIWin():
 
 
 class CursesCUI():
-    def __init__(self, purepath: PPath = PurePath):
+    def __init__(self, filetype: str, purepath: PPath = PurePath):
         # selected item
         self.selected = ''
         # information about selected item
@@ -50,15 +50,17 @@ class CursesCUI():
         # message shown in the main window
         self.message: list[str] = []
         # flag if display the line number or not
-        self.line_number: bool = get_config('config', 'cui_linenumber')
+        self.line_number: bool = get_config('cui_linenumber', filetype)
         # flag if wrap the message
-        self.wrap: bool = get_config('config', 'cui_wrap')
+        self.wrap: bool = get_config('cui_wrap', filetype)
         # called path-like class
         self.purepath = purepath
         # entered key
         self.key = ''
         # key maps
         self.keymaps: dict[str, list] = {}
+        # file type
+        self.ft = filetype
 
     def init_win(self):
         self.winy, self.winx = self.stdscr.getmaxyx()
@@ -140,7 +142,7 @@ class CursesCUI():
     def create_color_set(self, num, name):
         assert num < curses.COLOR_PAIRS, \
             f'color number {num} is larger than {curses.COLOR_PAIRS}'
-        fg, bg = get_config('colors', f'cui_{name}')
+        fg, bg = get_col(f'cui_{name}', self.ft)
         if fg in default_color_set:
             fg = default_color_set[fg]
         elif fg is None:
@@ -896,7 +898,8 @@ search_word   : {self.search.word}
             self.key = self.stdscr.getkey()
 
 
-def interactive_cui(fname: str, get_contents: GC, show_func: SF,
+def interactive_cui(fname: str, filetype: str,
+                    get_contents: GC, show_func: SF,
                     purepath: PPath = PurePath) -> None:
     """
     provide the CUI (TUI) to show the contents.
@@ -905,6 +908,8 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     ----------
     fname: str
         An opened file name.
+    filetype: str
+        File type name of the script calling this function.
     get_contents: Callable[[PurePath], tuple[list[str], list[str]]]
         A function to get lists of directories and files.
         The argument is the path to an item.
@@ -931,7 +936,7 @@ def interactive_cui(fname: str, get_contents: GC, show_func: SF,
     """
     cpath = purepath('.')
     tv = TreeViewer('.', get_contents, purepath=purepath, logger=logger)
-    curses_cui = CursesCUI(purepath)
+    curses_cui = CursesCUI(filetype, purepath)
     curses_cui.disable_stream_handler()
     try:
         curses.wrapper(curses_cui.main, fname, show_func, cpath, tv)

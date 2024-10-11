@@ -6,6 +6,7 @@
         "system_cmd": null,
         "system_cmd_args": ["%c", "%s"],
         "pp_kwargs": {"compact": true},
+        "numpy_printoptions": {},
         "cui_linenumber": false,
         "cui_wrap": false,
         "colors": {
@@ -28,14 +29,16 @@
     "pickle": {
         "encoding": "ASCII"
     },
-    "numpy": {
-        "print_option": {}
+    "np_pickle": {
+        "encoding": "ASCII"
     },
     "jupyter": {
-        "input_color": ["c", null],
-        "output_color": ["r", null],
-        "type_color": ["g", null],
-        "show_number": false
+        "colors": {
+            "input_color": ["c", null],
+            "output_color": ["r", null],
+            "type_color": ["g", null]
+        },
+            "show_number": false
     },
     "hdf5": {
         "type_color": ["k", "w"]

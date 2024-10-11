@@ -166,7 +166,7 @@ def main(fpath, args):
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, gc, sf, PurePosixPath)
+        interactive_cui(fpath, 'tar', gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             tar_file.list(verbose=False)
