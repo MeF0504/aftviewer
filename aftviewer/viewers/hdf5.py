@@ -20,10 +20,10 @@ except ImportError:
     imp_np = False
 else:
     imp_np = True
-    opts = get_config('numpy_printoptions', 'hdf5')
+    opts = get_config('numpy_printoptions')
     np.set_printoptions(**opts)
 logger = getLogger(GLOBAL_CONF.logname)
-pargs = get_config('pp_kwargs', 'hdf5')
+pargs = get_config('pp_kwargs')
 
 
 def show_hdf5(h5_file, cpath, **kwargs):
@@ -32,7 +32,7 @@ def show_hdf5(h5_file, cpath, **kwargs):
         bg = ''
         end = ''
     else:
-        fgkey, bgkey = get_config('type_color', 'hdf5')
+        fgkey, bgkey = get_config('type_color')
         if fgkey in FG:
             fg = FG[fgkey]
         elif type(fgkey) is int:
@@ -145,7 +145,7 @@ def main(fpath, args):
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, 'hdf5', gc, sf, PurePosixPath)
+        interactive_cui(fpath, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         if args.key:
             for k in args.key:

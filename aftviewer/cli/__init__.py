@@ -9,7 +9,7 @@ from logging import getLogger
 import subprocess
 
 from ..core import (GLOBAL_CONF,
-                    get_filetype, load_lib, args_chk, print_key, print_error
+                    set_filetype, load_lib, args_chk, print_key, print_error
                     )
 from ..core.__version__ import VERSION
 from ..core.image_viewer import __collect_image_viewers
@@ -48,8 +48,7 @@ def get_args() -> Args:
         add_args_shell_cmp(parser)
     elif tmpargs.file == 'update':
         add_args_update(parser)
-    if not args_chk(tmpargs, 'type'):
-        tmpargs.type = get_filetype(Path(tmpargs.file))
+    set_filetype(tmpargs)
     lib = load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
@@ -154,8 +153,7 @@ def main() -> None:
         print("{} is a directory.".format(fpath))
         return
 
-    if not args_chk(args, 'type'):
-        args.type = get_filetype(fpath)
+    set_filetype(args)
 
     if args.type == 'text':
         if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):

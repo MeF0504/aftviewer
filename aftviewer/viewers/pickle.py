@@ -13,7 +13,7 @@ from .. import ReturnMessage as RM
 
 from pymeflib.tree2 import show_tree
 logger = getLogger(GLOBAL_CONF.logname)
-pargs = get_config('pp_kwargs', 'pickle')
+pargs = get_config('pp_kwargs')
 
 
 def show_keys(data, key):
@@ -97,7 +97,7 @@ def main(fpath, args):
         logger.info('set encoding from args')
         encoding = args.encoding
     else:
-        encoding = get_config('encoding', 'pickle')
+        encoding = get_config('encoding')
     logger.info(f'encoding: {encoding}')
     with open(fpath, 'rb') as f:
         data = pickle.load(f, encoding=encoding)
@@ -110,7 +110,7 @@ def main(fpath, args):
         elif args_chk(args, 'interactive'):
             interactive_view(fname, gc, partial(show_func, data))
         elif args_chk(args, 'cui'):
-            interactive_cui(fname, 'pickle', gc, partial(show_func, data))
+            interactive_cui(fname, gc, partial(show_func, data))
         else:
             if args_chk(args, 'verbose'):
                 addinfo = partial(add_info, data)

@@ -239,7 +239,7 @@ def main(fpath, args):
             return
         gc = partial(get_contents_c, cursor, tables)
         tv = TreeViewer('.', gc, purepath=PurePosixPath, logger=logger)
-        curses_cui = CursesCUI('sqlite3')
+        curses_cui = CursesCUI()
         curses_cui.add_key_maps('\n', [add_contents, [curses_cui], '<CR>',
                                        'open/add the item in the main window',
                                        True, True, True])

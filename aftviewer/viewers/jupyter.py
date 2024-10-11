@@ -113,7 +113,7 @@ def main(fpath, args):
             print(f'{header}colab : {meta["colab"]["name"]}', file=outf)
 
     L = len(data['cells'])
-    show_num = get_config('show_number', 'jupyter')
+    show_num = get_config('show_number')
     for i, cell in enumerate(data['cells']):
         logger.debug(f'\n---- cell ----\n{cell}\n---------------')
         if show_num:

@@ -74,7 +74,7 @@ def show_help():
 
 
 def main(fpath, args):
-    opts = get_config('numpy_printoptions', 'numpy')
+    opts = get_config('numpy_printoptions')
     np.set_printoptions(**opts)
     data = np.load(fpath, allow_pickle=False)
     if args_chk(args, 'verbose'):

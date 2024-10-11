@@ -24,6 +24,7 @@ from .types import CONF, Args, SF, COLType
 __debug = False
 __add_types = {}
 __user_opts = {}
+__filetype: str | None = None
 if 'XDG_CONFIG_HOME' in os.environ:
     __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'aftviewer'
 else:
@@ -145,7 +146,7 @@ def args_chk(args: Args, attr: str) -> bool:
         return False
 
 
-def get_config(key: str, filetype: str) -> Any:
+def get_config(key: str) -> Any:
     """
     get the current configuration value.
 
@@ -153,8 +154,6 @@ def get_config(key: str, filetype: str) -> Any:
     ----------
     key: str
         configuration key name.
-    filetype: str
-        File type name of the script calling this function.
 
     Returns
     -------
@@ -171,6 +170,9 @@ def get_config(key: str, filetype: str) -> Any:
     #     return None
     # else:
     #     return val1[key2]
+    filetype = __filetype
+    if filetype is None:
+        __logger.warning('filetype is not set? (get_config)')
     if filetype in __user_opts and key in __user_opts[filetype]:
         __logger.debug(f'"{key}" in user ft "{filetype}".')
         return __user_opts[filetype][key]
@@ -245,7 +247,7 @@ def cprint(str1: str, str2: str = '',
     print(print_str, **kwargs)
 
 
-def get_col(name: str, filetype: str) -> tuple[COLType, COLType]:
+def get_col(name: str) -> tuple[COLType, COLType]:
     """
     get the color id of a given name.
 
@@ -255,8 +257,6 @@ def get_col(name: str, filetype: str) -> tuple[COLType, COLType]:
         A name of the color. Please see wiki
         (https://github.com/MeF0504/aftviewer/wiki/Customization#colors)
         for details.
-    filetype: str
-        File type name of the script calling this function.
 
     Returns
     -------
@@ -271,6 +271,9 @@ def get_col(name: str, filetype: str) -> tuple[COLType, COLType]:
     #     return None, None
     # else:
     #     return col_conf
+    filetype = __filetype
+    if filetype is None:
+        __logger.warning('filetype is not set? (get_config)')
     if filetype in __user_opts and \
        'colors' in __user_opts[filetype] and \
        name in __user_opts[filetype]['colors']:
@@ -421,7 +424,7 @@ def print_key(key_name: str) -> None:
     cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg)
 
 
-def run_system_cmd(fname: str, filetype: str) -> bool:
+def run_system_cmd(fname: str) -> bool:
     """
     open the file using the system command.
 
@@ -429,15 +432,13 @@ def run_system_cmd(fname: str, filetype: str) -> bool:
     ----------
     fname: str
         a file name to be opened.
-    filetype: str
-        File type name of the script calling this function.
 
     Returns
     -------
     bool
         Return True if the command succeeded, otherwise False.
     """
-    cmd = get_config('system_cmd', filetype)
+    cmd = get_config('system_cmd')
     if cmd is None:
         if platform.system() == 'Windows':
             cmd = 'start'
@@ -449,7 +450,7 @@ def run_system_cmd(fname: str, filetype: str) -> bool:
             print('Unsupported platform')
             return False
     res = []
-    for arg in get_config('system_cmd_args', filetype):
+    for arg in get_config('system_cmd_args'):
         if arg == '%s':
             res.append(fname)
         elif arg == '%c':
@@ -468,25 +469,36 @@ def run_system_cmd(fname: str, filetype: str) -> bool:
         return True
 
 
-def get_filetype(fpath: Path) -> None | str:
+def set_filetype(args: Args) -> None:
+    global __filetype
+    if args.type is not None:
+        __filetype = args.type
+        __logger.debug(f'set file type from args: {args.type}')
+        return
+    fpath = Path(args.file)
     if not fpath.is_file():
         __logger.debug('file does not exists')
-        return None
+        return
     ext = fpath.suffix[1:].lower()
     if tarfile.is_tarfile(fpath):
         __logger.debug('set file type: tar')
-        return 'tar'
+        args.type = 'tar'
+        __filetype = args.type
+        return
     else:
         for typ, exts in __type_config.items():
             if ext in exts.split():
                 __logger.debug(f'set file type: {typ}')
-                return typ
+                args.type = typ
+                __filetype = args.type
+                return
         mt = mimetypes.guess_type(fpath)[0]
         __logger.info(f'get mimetype: {mt}')
         if mt is not None and mt.split('/')[0] == 'text':
-            return 'text'
+            args.type = 'text'
+            __filetype = args.type
+            return
     __logger.debug('file type is not set.')
-    return None
 
 
 def load_lib(args: Args) -> None | ModuleType:

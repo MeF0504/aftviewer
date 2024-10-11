@@ -75,9 +75,9 @@ def main(fpath, args):
         logger.info('set encoding from args')
         encoding = args.encoding
     else:
-        encoding = get_config('encoding', 'np_pickle')
+        encoding = get_config('encoding')
     logger.info(f'encoding: {encoding}')
-    opts = get_config('numpy_printoptions', 'np_pickle')
+    opts = get_config('numpy_printoptions')
     np.set_printoptions(**opts)
 
     data = np.load(fpath, allow_pickle=True, encoding=encoding)
@@ -102,7 +102,7 @@ def main(fpath, args):
     elif args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf)
     elif args_chk(args, 'cui'):
-        interactive_cui(fname, 'np_pickle', gc, sf)
+        interactive_cui(fname, gc, sf)
     else:
         for k in data.keys():
             print_key(k)
