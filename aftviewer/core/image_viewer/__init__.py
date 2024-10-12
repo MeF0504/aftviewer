@@ -178,7 +178,7 @@ def show_image_file(img_file: str, args: Args,
             ret = None
     elif type(__ImgViewer) is str:
         if chk_cmd(__ImgViewer, logger=logger):
-            cmds = __get_exec_cmds(__ImgViewer, img_file, args.type)
+            cmds = __get_exec_cmds(__ImgViewer, img_file)
             out = subprocess.run(cmds)
             if wait:
                 # wait to open file. this supports stable behavior
@@ -243,7 +243,7 @@ def show_image_ndarray(data: Any, name: str, args: Args,
         if chk_cmd(__ImgViewer, logger=logger):
             with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
                 make_bitmap(tmp.name, data, verbose=False, logger=logger)
-                cmds = __get_exec_cmds(__ImgViewer, tmp.name, args.type)
+                cmds = __get_exec_cmds(__ImgViewer, tmp.name)
                 out = subprocess.run(cmds)
                 if wait:
                     # wait to open file. this supports stable behavior

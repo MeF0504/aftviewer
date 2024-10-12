@@ -94,9 +94,9 @@ def main(fpath, args):
     else:
         outf = sys.stdout
         header = ''
-        fgi, bgi = get_col('input_color', 'jupyter')
-        fgo, bgo = get_col('output_color', 'jupyter')
-        fgt, bgt = get_col('type_color', 'jupyter')
+        fgi, bgi = get_col('input_color')
+        fgo, bgo = get_col('output_color')
+        fgt, bgt = get_col('type_color')
 
     tmpdir = None
     meta = data['metadata']
