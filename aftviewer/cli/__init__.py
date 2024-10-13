@@ -8,9 +8,9 @@ from types import FunctionType
 from logging import getLogger
 import subprocess
 
-from ..core import (GLOBAL_CONF,
-                    set_filetype, load_lib, args_chk, print_key, print_error
-                    )
+from ..core import (GLOBAL_CONF, set_filetype, load_lib, args_chk,
+                    print_key, print_error, cprint,
+                    get_opt_keys, get_config)
 from ..core.__version__ import VERSION
 from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
@@ -58,14 +58,35 @@ def get_args() -> Args:
 
 
 def show_opts() -> None:
-    for key, val in GLOBAL_CONF.opts.items():
-        if type(val) is dict:
-            print_key(key)
-            for k2, v2 in val.items():
-                print(f'  {k2}: {v2}')
+    def show_key(key, val):
+        if key == 'colors':
+            print('  colors:')
+            for cname in val:
+                try:
+                    fg, bg = val[cname]
+                    print(f'    {cname}: ', end='')
+                    cprint(f'{fg}, {bg}', '', fg=fg, bg=bg)
+                except Exception as e:
+                    print(f'Failed to display color {cname} ({e})')
         else:
-            print_key(key)
-            print(val)
+            print(f'  {key}: {val}')
+    opts = get_opt_keys()
+    at = 'additional_types'
+    if at in opts:
+        print_key(at)
+        for ft in opts[at]:
+            print(f'  {ft}: {opts[at][ft]}')
+        opts.pop(at)
+    print_key('default')
+    for key in opts['config']:
+        val = get_config(key, 'config')
+        show_key(key, val)
+    opts.pop('config')
+    for ft in opts:
+        print_key(ft)
+        for key in opts[ft]:
+            val = get_config(key, ft)
+            show_key(key, val)
 
 
 def set_shell_comp(args: Args) -> None:

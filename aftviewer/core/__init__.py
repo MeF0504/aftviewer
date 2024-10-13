@@ -146,7 +146,7 @@ def args_chk(args: Args, attr: str) -> bool:
         return False
 
 
-def get_config(key: str) -> Any:
+def get_config(key: str, filetype: str | None = None) -> Any:
     """
     get the current configuration value.
 
@@ -154,25 +154,22 @@ def get_config(key: str) -> Any:
     ----------
     key: str
         configuration key name.
+    filetype: str or None
+        set file type name of the script calling this function
+        to return proper value.
+        if None, use the file type set from command arguments or
+        got from the file extension.
 
     Returns
     -------
     Any
         Return specified configuration value. If it is not set, return None.
     """
-    # assert key1 in ["config", "colors"] + list(__type_config.keys()), \
-    #     f'incorrect key name: {key1}'
-    # if key1 not in __json_opts:
-    #     # type name is not set in setting.json.
-    #     return None
-    # val1 = __json_opts[key1]
-    # if key2 not in val1:
-    #     return None
-    # else:
-    #     return val1[key2]
-    filetype = __filetype
     if filetype is None:
-        __logger.warning('filetype is not set? (get_config)')
+        filetype = __filetype
+    if filetype is None:
+        __logger.warning(f'filetype is not set? (get_config, {key})')
+
     if filetype in __user_opts and key in __user_opts[filetype]:
         __logger.debug(f'"{key}" in user ft "{filetype}".')
         return __user_opts[filetype][key]
@@ -247,7 +244,7 @@ def cprint(str1: str, str2: str = '',
     print(print_str, **kwargs)
 
 
-def get_col(name: str) -> tuple[COLType, COLType]:
+def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
     """
     get the color id of a given name.
 
@@ -257,6 +254,11 @@ def get_col(name: str) -> tuple[COLType, COLType]:
         A name of the color. Please see wiki
         (https://github.com/MeF0504/aftviewer/wiki/Customization#colors)
         for details.
+    filetype: str or None
+        set file type name of the script calling this function
+        to return proper value.
+        if None, use the file type set from command arguments or
+        got from the file extension.
 
     Returns
     -------
@@ -265,15 +267,11 @@ def get_col(name: str) -> tuple[COLType, COLType]:
     str, int, or None
         foreground color id. If the name is incorrect, return None.
     """
-    # col_conf = get_config('colors', name)
-    # if name is None:
-    #     __logger.warning(f'incorrect color set name: {name}')
-    #     return None, None
-    # else:
-    #     return col_conf
-    filetype = __filetype
     if filetype is None:
-        __logger.warning('filetype is not set? (get_config)')
+        filetype = __filetype
+    if filetype is None:
+        __logger.warning(f'filetype is not set? (get_col, {name})')
+
     if filetype in __user_opts and \
        'colors' in __user_opts[filetype] and \
        name in __user_opts[filetype]['colors']:
@@ -283,8 +281,8 @@ def get_col(name: str) -> tuple[COLType, COLType]:
          name in __user_opts['config']['colors']:
         return __user_opts['config']['colors'][name]
     elif filetype in __def_opts and \
-       'colors' in __def_opts[filetype] and \
-       name in __def_opts[filetype]['colors']:
+         'colors' in __def_opts[filetype] and \
+         name in __def_opts[filetype]['colors']:
         return __def_opts[filetype]['colors'][name]
     elif name in __def_opts['config']['colors']:
         return __def_opts['config']['colors'][name]
@@ -531,3 +529,28 @@ def load_lib(args: Args) -> None | ModuleType:
                        f'(lib: {lib_path2}, error: {e})')
         return None
     return lib
+
+
+def get_opt_keys() -> list[str]:
+    res = {}
+    if len(__add_types.keys()) != 0:
+        res['additional_types'] = __add_types
+    res['config'] = list(__def_opts['config'].keys())
+    for t in __type_config:
+        if t in __add_types:
+            # only user_set config
+            res[t] = []
+            if t in __user_opts:
+                res[t] += list(__user_opts[t].keys())
+        else:
+            # def + user_set (if in 'config') config
+            res[t] = []
+            if t in __def_opts:
+                res[t] += list(__def_opts[t].keys())
+            if t in __user_opts:
+                for k in __user_opts[t]:
+                    if k in __def_opts['config']:
+                        res[t].append(k)
+            res[t] = list(set(res[t]))
+        res[t].sort()
+    return res
