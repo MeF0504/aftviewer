@@ -173,21 +173,24 @@ def get_config(key: str, filetype: str | None = None) -> Any:
     if filetype in __user_opts and key in __user_opts[filetype]:
         __logger.debug(f'"{key}" in user ft "{filetype}".')
         return __user_opts[filetype][key]
-    elif 'config' in __user_opts and key in __user_opts['config']:
-        __logger.debug(f'"{key}" in user config.')
-        return __user_opts['config'][key]
+    elif 'defaults' in __user_opts and \
+         key in __def_opts['defaults'] and \
+         key in __user_opts['defaults']:
+        # check that key is in "defaults" of both default file and user file.
+        __logger.debug(f'"{key}" in user settings.')
+        return __user_opts['defaults'][key]
     elif filetype in __def_opts and key in __def_opts[filetype]:
         __logger.debug(f'"{key}" in default ft "{filetype}".')
         return __def_opts[filetype][key]
-    elif 'config' in __def_opts:
-        if key in __def_opts['config']:
-            __logger.debug(f'"{key}" in default config.')
-            return __def_opts['config'][key]
+    elif 'defaults' in __def_opts:
+        if key in __def_opts['defaults']:
+            __logger.debug(f'"{key}" in default settings.')
+            return __def_opts['defaults'][key]
         else:
-            __logger.error(f'"{key}" not found in config.')
+            __logger.error(f'"{key}" not found in settings.')
             return None
     else:
-        __logger.error('something wrong; no config key in default setting.')
+        __logger.error('something wrong; no "defaults" key in default file.')
     return None
 
 
@@ -276,18 +279,19 @@ def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
        'colors' in __user_opts[filetype] and \
        name in __user_opts[filetype]['colors']:
         return __user_opts[filetype]['colors'][name]
-    elif 'config' in __user_opts and \
-         'colors' in __user_opts['config'] and \
-         name in __user_opts['config']['colors']:
-        return __user_opts['config']['colors'][name]
+    elif 'defaults' in __user_opts and \
+         'colors' in __user_opts['defaults'] and \
+         name in __def_opts['defaults']['colors'] and \
+         name in __user_opts['defaults']['colors']:
+        return __user_opts['defaults']['colors'][name]
     elif filetype in __def_opts and \
          'colors' in __def_opts[filetype] and \
          name in __def_opts[filetype]['colors']:
         return __def_opts[filetype]['colors'][name]
-    elif name in __def_opts['config']['colors']:
-        return __def_opts['config']['colors'][name]
+    elif name in __def_opts['defaults']['colors']:
+        return __def_opts['defaults']['colors'][name]
     else:
-        __logger.error('color name "{name}" not found in default config.')
+        __logger.error(f'color name "{name}" not found in default file.')
         return None, None
 
 

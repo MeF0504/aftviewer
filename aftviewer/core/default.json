@@ -1,5 +1,5 @@
 {
-    "config": {
+    "defaults": {
         "image_viewer": null,
         "image_viewer_cui": null,
         "iv_exec_cmd": ["%c", "%s"],
