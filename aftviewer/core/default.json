@@ -41,7 +41,9 @@
             "show_number": false
     },
     "hdf5": {
-        "type_color": ["k", "w"]
+        "colors": {
+            "type_color": ["k", "w"]
+        }
     },
     "stl": {
         "viewer": null,

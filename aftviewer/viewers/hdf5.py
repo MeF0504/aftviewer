@@ -7,7 +7,7 @@ from logging import getLogger
 import h5py
 
 from .. import (GLOBAL_CONF, args_chk, print_key, print_error,
-                FG, BG, FG256, BG256, END, get_config,
+                FG, BG, FG256, BG256, END, get_config, get_col,
                 interactive_view, interactive_cui,
                 help_template, add_args_specification
                 )
@@ -32,17 +32,17 @@ def show_hdf5(h5_file, cpath, **kwargs):
         bg = ''
         end = ''
     else:
-        fgkey, bgkey = get_config('type_color')
+        fgkey, bgkey = get_col('type_color')
         if fgkey in FG:
             fg = FG[fgkey]
-        elif type(fgkey) is int:
+        elif type(fgkey) is int and 0 <= fgkey <= 255:
             fg = FG256(fgkey)
         else:
             logger.warning(f'incorrect fg color: {fgkey}')
             fg = ''
         if bgkey in BG:
             bg = BG[bgkey]
-        elif type(bgkey) is int:
+        elif type(bgkey) is int and 0 <= bgkey <= 255:
             bg = BG256(bgkey)
         else:
             logger.warning(f'incorrect bg color: {bgkey}')
