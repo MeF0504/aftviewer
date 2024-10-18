@@ -9,8 +9,8 @@ from logging import getLogger
 import subprocess
 
 from ..core import (GLOBAL_CONF, set_filetype, load_lib, args_chk,
-                    print_key, print_error, cprint,
-                    get_opt_keys, get_config)
+                    print_key, print_error, cprint, get_config, get_col,
+                    get_opt_keys, get_color_names)
 from ..core.__version__ import VERSION
 from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
@@ -57,13 +57,13 @@ def get_args() -> Args:
     return args
 
 
-def show_opts() -> None:
-    def show_key(key, val):
+def show_opts(filetype: str | None) -> None:
+    def show_key(key, val, filetype):
         if key == 'colors':
             print('  colors:')
             for cname in val:
                 try:
-                    fg, bg = val[cname]
+                    fg, bg = get_col(cname, filetype)
                     print(f'    {cname}: ', end='')
                     cprint(f'{fg}, {bg}', '', fg=fg, bg=bg)
                 except Exception as e:
@@ -71,6 +71,20 @@ def show_opts() -> None:
         else:
             print(f'  {key}: {val}')
     opts = get_opt_keys()
+    if filetype is not None:
+        print_key(filetype)
+        keys = list(set(opts['defaults'] + opts[filetype]))
+        for key in keys:
+            if key == 'colors':
+                val = list(set(get_color_names(None)
+                               + get_color_names(filetype)))
+                val.sort()
+            else:
+                val = get_config(key, filetype)
+            show_key(key, val, filetype)
+        return
+
+    # filetype is None -> show all.
     at = 'additional_types'
     if at in opts:
         print_key(at)
@@ -79,14 +93,20 @@ def show_opts() -> None:
         opts.pop(at)
     print_key('defaults')
     for key in opts['defaults']:
-        val = get_config(key, 'defaults')
-        show_key(key, val)
+        if key == 'colors':
+            val = get_color_names(None)
+        else:
+            val = get_config(key, 'defaults')
+        show_key(key, val, 'defaults')
     opts.pop('defaults')
     for ft in opts:
         print_key(ft)
         for key in opts[ft]:
-            val = get_config(key, ft)
-            show_key(key, val)
+            if key == 'colors':
+                val = get_color_names(ft)
+            else:
+                val = get_config(key, ft)
+            show_key(key, val, ft)
 
 
 def set_shell_comp(args: Args) -> None:
@@ -140,7 +160,7 @@ def main() -> None:
         return
 
     if args.file == 'config_list':
-        show_opts()
+        show_opts(args.type)
         return
 
     if args.file == 'shell_completion':

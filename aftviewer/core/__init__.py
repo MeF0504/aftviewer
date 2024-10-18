@@ -558,3 +558,23 @@ def get_opt_keys() -> list[str]:
             res[t] = list(set(res[t]))
         res[t].sort()
     return res
+
+
+def get_color_names(filetype: str | None) -> list[str]:
+    if filetype is None:
+        return list(__def_opts['defaults']['colors'].keys())
+    else:
+        if filetype in __add_types:
+            if filetype in __user_opts and 'colors' in __user_opts[filetype]:
+                return list(__user_opts[filetype]['colors'].keys())
+            else:
+                return []
+        else:
+            res = []
+            if filetype in __def_opts and 'colors' in __def_opts[filetype]:
+                res += list(__def_opts[filetype]['colors'].keys())
+            if filetype in __user_opts and 'colors' in __user_opts[filetype]:
+                res += list(__user_opts[filetype]['colors'].keys())
+            res = list(set(res))
+            res.sort()
+            return res
