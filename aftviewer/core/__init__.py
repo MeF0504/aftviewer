@@ -539,7 +539,7 @@ def get_opt_keys() -> list[str]:
     res = {}
     if len(__add_types.keys()) != 0:
         res['additional_types'] = __add_types
-    res['config'] = list(__def_opts['config'].keys())
+    res['defaults'] = list(__def_opts['defaults'].keys())
     for t in __type_config:
         if t in __add_types:
             # only user_set config
@@ -553,7 +553,7 @@ def get_opt_keys() -> list[str]:
                 res[t] += list(__def_opts[t].keys())
             if t in __user_opts:
                 for k in __user_opts[t]:
-                    if k in __def_opts['config']:
+                    if k in __def_opts['defaults']:
                         res[t].append(k)
             res[t] = list(set(res[t]))
         res[t].sort()

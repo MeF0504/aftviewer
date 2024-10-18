@@ -77,11 +77,11 @@ def show_opts() -> None:
         for ft in opts[at]:
             print(f'  {ft}: {opts[at][ft]}')
         opts.pop(at)
-    print_key('default')
-    for key in opts['config']:
-        val = get_config(key, 'config')
+    print_key('defaults')
+    for key in opts['defaults']:
+        val = get_config(key, 'defaults')
         show_key(key, val)
-    opts.pop('config')
+    opts.pop('defaults')
     for ft in opts:
         print_key(ft)
         for key in opts[ft]:
