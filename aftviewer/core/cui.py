@@ -8,7 +8,7 @@ from typing import Callable
 from logging import getLogger, StreamHandler
 
 from pymeflib.tree2 import TreeViewer, GC, PPath
-from . import GLOBAL_CONF, get_config, print_error
+from . import GLOBAL_CONF, get_config, get_col, print_error
 from .types import ReturnMessage, SF
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -50,9 +50,9 @@ class CursesCUI():
         # message shown in the main window
         self.message: list[str] = []
         # flag if display the line number or not
-        self.line_number: bool = get_config('config', 'cui_linenumber')
+        self.line_number: bool = get_config('cui_linenumber')
         # flag if wrap the message
-        self.wrap: bool = get_config('config', 'cui_wrap')
+        self.wrap: bool = get_config('cui_wrap')
         # called path-like class
         self.purepath = purepath
         # entered key
@@ -140,7 +140,7 @@ class CursesCUI():
     def create_color_set(self, num, name):
         assert num < curses.COLOR_PAIRS, \
             f'color number {num} is larger than {curses.COLOR_PAIRS}'
-        fg, bg = get_config('colors', f'cui_{name}')
+        fg, bg = get_col(f'cui_{name}')
         if fg in default_color_set:
             fg = default_color_set[fg]
         elif fg is None:

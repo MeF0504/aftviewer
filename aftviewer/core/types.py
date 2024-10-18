@@ -13,21 +13,18 @@ class CONF:
 
     Attributes:
     debug: bool
-        debug mode is enabled or not.
+        Debug mode is enabled or not.
     conf_dir: pathlib.Path
-        configuration directory.
+        Configuration directory.
         default: "$XDG_CONFIG_HOME/aftviewer" or "~/.config/aftviewer"
-    opts: dict
-        behavior options. This values are overridden by conf_dir/setting.json.
     types: dict
-        supported file types and its extensions.
+        Supported file types and its extensions.
         This dictionary is overridden by "additional_types" in opts.
     logname: str
-        log name used in logger.
+        Log name used in logger.
     """
     debug: bool
     conf_dir: Path
-    opts: dict
     types: dict
     logname: str
 

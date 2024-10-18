@@ -11,9 +11,8 @@ else:
     import_curses = True
 
 from .. import (GLOBAL_CONF, args_chk, print_key, cprint, print_error,
-                interactive_view, get_config,
-                help_template, add_args_specification, add_args_output
-                )
+                interactive_view, help_template, add_args_specification,
+                add_args_output)
 from .. import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
 from ..core.cui import CursesCUI
@@ -235,7 +234,6 @@ def main(fpath, args):
         gc = partial(get_contents_i, cursor, tables)
         interactive_view(fname, gc, partial(show_table, cursor, tables))
     elif args_chk(args, 'cui'):
-        # interactive_cui(fname, gc, partial(show_table, cursor, tables))
         if not import_curses:
             print('failed to import curses.')
             return
