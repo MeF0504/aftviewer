@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from importlib import import_module
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent))
 # NumPy Style -> https://numpydoc.readthedocs.io/en/latest/format.html
 
 varis = {
@@ -20,7 +20,7 @@ types = {
 funcs = {
         '.core': ['args_chk', 'get_config', 'get_col',
                   'cprint', 'print_key', 'print_error', 'print_warning',
-                  'set_numpy_format', 'interactive_view', 'run_system_cmd',
+                  'interactive_view', 'run_system_cmd',
                   ],
         '.core.image_viewer': ['is_image',
                                'show_image_file', 'show_image_ndarray',

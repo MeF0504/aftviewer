@@ -9,9 +9,10 @@ from types import FunctionType
 from logging import getLogger
 import subprocess
 
-from ..core import (GLOBAL_CONF, set_filetype, load_lib, args_chk,
-                    print_key, print_error, cprint, get_config, get_col,
-                    get_opt_keys, get_color_names)
+from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
+                    __get_opt_keys, __get_color_names,
+                    print_key, print_error, cprint,
+                    args_chk, get_config, get_col)
 from ..core.__version__ import VERSION
 from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
@@ -49,8 +50,8 @@ def get_args() -> Args:
         add_args_shell_cmp(parser)
     elif tmpargs.file == 'update':
         add_args_update(parser)
-    set_filetype(tmpargs)
-    lib = load_lib(tmpargs)
+    __set_filetype(tmpargs)
+    lib = __load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
     args = parser.parse_args()
@@ -71,14 +72,14 @@ def show_opts(filetype: str | None) -> None:
                     print(f'Failed to display color {cname} ({e})')
         else:
             print(f'  {key}: {val}')
-    opts = get_opt_keys()
+    opts = __get_opt_keys()
     if filetype is not None:
         print_key(filetype)
         keys = list(set(opts['defaults'] + opts[filetype]))
         for key in keys:
             if key == 'colors':
-                val = list(set(get_color_names(None)
-                               + get_color_names(filetype)))
+                val = list(set(__get_color_names(None)
+                               + __get_color_names(filetype)))
                 val.sort()
             else:
                 val = get_config(key, filetype)
@@ -95,7 +96,7 @@ def show_opts(filetype: str | None) -> None:
     print_key('defaults')
     for key in opts['defaults']:
         if key == 'colors':
-            val = get_color_names(None)
+            val = __get_color_names(None)
         else:
             val = get_config(key, 'defaults')
         show_key(key, val, 'defaults')
@@ -104,7 +105,7 @@ def show_opts(filetype: str | None) -> None:
         print_key(ft)
         for key in opts[ft]:
             if key == 'colors':
-                val = get_color_names(ft)
+                val = __get_color_names(ft)
             else:
                 val = get_config(key, ft)
             show_key(key, val, ft)
@@ -176,7 +177,7 @@ def main() -> None:
         if not args_chk(args, 'type'):
             print('please set --type to see the details.')
             return
-        lib = load_lib(args)
+        lib = __load_lib(args)
         if lib is None:
             print('Library file is not found.')
         else:
@@ -195,7 +196,7 @@ def main() -> None:
         print("{} is a directory.".format(fpath))
         return
 
-    set_filetype(args)
+    __set_filetype(args)
 
     if args.type == 'text':
         if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
@@ -207,7 +208,7 @@ def main() -> None:
         print('This is not a supported file type.')
         return
 
-    lib = load_lib(args)
+    lib = __load_lib(args)
     if lib is None:
         print(f'The library file for "{args.type}" is not found.')
     else:

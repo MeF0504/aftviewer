@@ -5,7 +5,7 @@ from types import FunctionType
 
 import pytest
 
-from aftviewer.core import load_lib
+from aftviewer.core import __load_lib
 from . import chk_deps
 
 
@@ -31,7 +31,7 @@ def test_help_message(filetype):
     args = parser.parse_args([])
     args.file = 'help'
     args.type = filetype
-    lib = load_lib(args)
+    lib = __load_lib(args)
     assert lib is not None, 'failed to load library.'
     if hasattr(lib, 'show_help') and type(lib.show_help) is FunctionType:
         lib.show_help()

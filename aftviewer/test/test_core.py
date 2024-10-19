@@ -6,7 +6,7 @@ import pytest
 
 from . import chk_deps
 
-from aftviewer.core import args_chk, load_lib
+from aftviewer.core import args_chk, __load_lib
 from aftviewer.core.helpmsg import add_args_imageviewer, add_args_encoding, \
     add_args_output, add_args_verbose, add_args_key, add_args_interactive, \
     add_args_cui
@@ -69,7 +69,7 @@ def test_loadlib(filetype):
     parser.add_argument('file', help='input file')
     parser.add_argument('-t', '--type')
     args = parser.parse_args(['file', '-t', filetype])
-    lib = load_lib(args)
+    lib = __load_lib(args)
     assert lib is not None, f'failed to load library; {args.type}'
     if not hasattr(lib, 'show_help'):
         warnings.warn(f'showing help is not supported; {args.type}')
