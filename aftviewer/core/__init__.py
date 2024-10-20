@@ -482,6 +482,10 @@ def set_filetype(args: Args) -> None:
         __filetype = args.type
         __logger.debug(f'set file type from args: {args.type}')
         return
+    if args.file in ['config_list']:
+        __logger.debug(f'{args.file}: set defaults')
+        __filetype = 'defaults'
+        return
     fpath = Path(args.file)
     if not fpath.is_file():
         __logger.debug('file does not exists')
@@ -586,10 +590,12 @@ def get_color_names(filetype: str | None) -> list[str]:
                 return []
         else:
             res = []
+            if filetype in user_cols:
+                for cname in user_cols[filetype].keys():
+                    if cname in def_cols['defaults']:
+                        res.append(cname)
             if filetype in def_cols:
                 res += list(def_cols[filetype].keys())
-            if filetype in user_cols:
-                res += list(user_cols[filetype].keys())
             res = list(set(res))
             res.sort()
             return res
