@@ -69,14 +69,15 @@ def show_opts(filetype: str | None) -> None:
 
     opts = get_opt_keys()
     if filetype is not None:
-        print_key('config')
         print_key(filetype)
+        print_key('config')
         keys = list(set(opts['defaults'] + opts[filetype]))
         for key in keys:
             val = get_config(key, filetype)
             print(f'  {key}: {val}')
         print_key('colors')
-        cnames = list(set(get_color_names('defaults') + get_color_names(filetype)))
+        cnames = list(set(get_color_names('defaults')
+                          + get_color_names(filetype)))
         cnames.sort()
         for cname in cnames:
             show_col(cname, filetype)
@@ -99,6 +100,7 @@ def show_opts(filetype: str | None) -> None:
         if len(opts[ft]) != 0:
             print_key(ft)
             for key in opts[ft]:
+                val = get_config(key, ft)
                 print(f'  {key}: {val}')
     print_key('colors')
     print_key('defaults')
