@@ -59,30 +59,27 @@ def get_args() -> Args:
 
 
 def show_opts(filetype: str | None) -> None:
-    def show_key(key, val, filetype):
-        if key == 'colors':
-            print('  colors:')
-            for cname in val:
-                try:
-                    fg, bg = get_col(cname, filetype)
-                    print(f'    {cname}: ', end='')
-                    cprint(f'{fg}, {bg}', '', fg=fg, bg=bg)
-                except Exception as e:
-                    print(f'Failed to display color {cname} ({e})')
-        else:
-            print(f'  {key}: {val}')
+    def show_col(cname, filetype):
+        try:
+            fg, bg = get_col(cname, filetype)
+            print(f'  {cname}: ', end='')
+            cprint(f'{fg}, {bg}', '', fg=fg, bg=bg)
+        except Exception as e:
+            print(f'Failed to display color {cname} ({e})')
+
     opts = get_opt_keys()
     if filetype is not None:
+        print_key('config')
         print_key(filetype)
         keys = list(set(opts['defaults'] + opts[filetype]))
         for key in keys:
-            if key == 'colors':
-                val = list(set(get_color_names(None)
-                               + get_color_names(filetype)))
-                val.sort()
-            else:
-                val = get_config(key, filetype)
-            show_key(key, val, filetype)
+            val = get_config(key, filetype)
+            print(f'  {key}: {val}')
+        print_key('colors')
+        cnames = list(set(get_color_names('defaults') + get_color_names(filetype)))
+        cnames.sort()
+        for cname in cnames:
+            show_col(cname, filetype)
         return
 
     # filetype is None -> show all.
@@ -92,22 +89,27 @@ def show_opts(filetype: str | None) -> None:
         for ft in opts[at]:
             print(f'  {ft}: {opts[at][ft]}')
         opts.pop(at)
+    print_key('config')
     print_key('defaults')
     for key in opts['defaults']:
-        if key == 'colors':
-            val = get_color_names(None)
-        else:
-            val = get_config(key, 'defaults')
-        show_key(key, val, 'defaults')
+        val = get_config(key, 'defaults')
+        print(f'  {key}: {val}')
     opts.pop('defaults')
     for ft in opts:
-        print_key(ft)
-        for key in opts[ft]:
-            if key == 'colors':
-                val = get_color_names(ft)
-            else:
-                val = get_config(key, ft)
-            show_key(key, val, ft)
+        if len(opts[ft]) != 0:
+            print_key(ft)
+            for key in opts[ft]:
+                print(f'  {key}: {val}')
+    print_key('colors')
+    print_key('defaults')
+    for cname in get_color_names('defaults'):
+        show_col(cname, 'defaults')
+    for ft in opts:
+        cnames = get_color_names(ft)
+        if len(cnames) != 0:
+            print_key(ft)
+            for cname in cnames:
+                show_col(cname, ft)
 
 
 def set_shell_comp(args: Args) -> None:
