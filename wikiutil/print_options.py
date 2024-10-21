@@ -6,6 +6,19 @@ from pathlib import Path
 with open(Path(__file__).parent.parent/'aftviewer/core/default.json') as f:
     default = json.load(f)
 
+
+def get_def_val(val):
+    if type(val) is str:
+        return f'"{val}"'
+    else:
+        val_str = f'{val}'
+        val_str = val_str.replace("'", '"')
+        val_str = val_str.replace('None', 'null')
+        val_str = val_str.replace('True', 'true')
+        val_str = val_str.replace('False', 'false')
+        return val_str
+
+
 # "config"
 #      |__ key
 #            |__ parameter: value
@@ -149,8 +162,10 @@ assert default['config']['defaults'].keys() == config_desc['defaults'].keys()
 print('### "defaults"')
 for para in config_desc['defaults']:
     t, desc = config_desc['defaults'][para]
-    print(f'\n#### "{para}"')
+    def_val = get_def_val(default["config"]["defaults"][para])
+    print(f'\n- **"{para}"**  ')
     print(f'**type: {t}**  ')
+    print(f'*default: {def_val}*  ')
     print(desc)
 config_desc.pop('defaults')
 
@@ -159,8 +174,10 @@ for ft in config_desc:
     print(f'\n### "{ft}"')
     for para in config_desc[ft]:
         t, desc = config_desc[ft][para]
-        print(f'\n#### "{para}"')
+        def_val = get_def_val(default["config"][ft][para])
+        print(f'\n- **"{para}"**  ')
         print(f'**type: {t}**  ')
+        print(f'*default: {def_val}*  ')
         print(desc)
 
 print("""## "colors"
@@ -182,7 +199,9 @@ assert default['colors']['defaults'].keys() == color_desc['defaults'].keys()
 print('### defaults')
 for para in color_desc['defaults']:
     desc = color_desc['defaults'][para]
-    print(f'\n#### "{para}"')
+    def_val = get_def_val(default["colors"]["defaults"][para])
+    print(f'\n- **"{para}"**  ')
+    print(f'*default: {def_val}*  ')
     print(desc)
 color_desc.pop('defaults')
 
@@ -191,5 +210,7 @@ for ft in color_desc:
     assert default['colors'][ft].keys() == color_desc[ft].keys()
     for para in color_desc[ft]:
         desc = color_desc[ft][para]
-        print(f'\n#### "{para}"')
+        def_val = get_def_val(default["colors"][ft][para])
+        print(f'\n- **"{para}"**  ')
+        print(f'*default: {def_val}*  ')
         print(desc)
