@@ -3,15 +3,17 @@
         "show_image": "png jpeg jpg"
     },
     "config": {
-        "image_viewer": "open",
-        "iv_exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
-        "system_cmd": "open",
-        "system_cmd_args": ["%c", "%s"]
-    },
-    "pickle": {
-        "encoding": "ASCII"
-    },
-    "numpy": {
-        "print_option": {"edgeitems": 10, "threshold": 100}
+        "defaults": {
+            "image_viewer": "open",
+            "iv_exec_cmd": ["%c", "%s", "-a", "Google Chrome"],
+            "system_cmd": "open",
+            "system_cmd_args": ["%c", "%s"]
+        },
+        "pickle": {
+            "encoding": "ascii"
+        },
+        "show_image": {
+            "image_viewer": "matplotlib"
+        }
     }
 }

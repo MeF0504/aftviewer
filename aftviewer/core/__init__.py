@@ -169,23 +169,28 @@ def get_config(key: str, filetype: str | None = None) -> Any:
         filetype = __filetype
     if filetype is None:
         __logger.warning(f'filetype is not set? (get_config, {key})')
+    if 'config' in __user_opts:
+        user_opts = __user_opts['config']
+    else:
+        user_opts = {}
+    def_opts = __def_opts['config']
 
-    if filetype in __user_opts and key in __user_opts[filetype]:
+    if filetype in user_opts and key in user_opts[filetype]:
         __logger.debug(f'"{key}" in user ft "{filetype}".')
-        return __user_opts[filetype][key]
-    elif 'defaults' in __user_opts and \
-         key in __def_opts['defaults'] and \
-         key in __user_opts['defaults']:
+        return user_opts[filetype][key]
+    elif 'defaults' in user_opts and \
+         key in def_opts['defaults'] and \
+         key in user_opts['defaults']:
         # check that key is in "defaults" of both default file and user file.
         __logger.debug(f'"{key}" in user settings.')
-        return __user_opts['defaults'][key]
-    elif filetype in __def_opts and key in __def_opts[filetype]:
+        return user_opts['defaults'][key]
+    elif filetype in def_opts and key in def_opts[filetype]:
         __logger.debug(f'"{key}" in default ft "{filetype}".')
-        return __def_opts[filetype][key]
-    elif 'defaults' in __def_opts:
-        if key in __def_opts['defaults']:
+        return def_opts[filetype][key]
+    elif 'defaults' in def_opts:
+        if key in def_opts['defaults']:
             __logger.debug(f'"{key}" in default settings.')
-            return __def_opts['defaults'][key]
+            return def_opts['defaults'][key]
         else:
             __logger.error(f'"{key}" not found in settings.')
             return None
@@ -274,22 +279,22 @@ def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
         filetype = __filetype
     if filetype is None:
         __logger.warning(f'filetype is not set? (get_col, {name})')
+    if 'colors' in __user_opts:
+        user_cols = __user_opts['colors']
+    else:
+        user_cols = {}
+    def_cols = __def_opts['colors']
 
-    if filetype in __user_opts and \
-       'colors' in __user_opts[filetype] and \
-       name in __user_opts[filetype]['colors']:
-        return __user_opts[filetype]['colors'][name]
-    elif 'defaults' in __user_opts and \
-         'colors' in __user_opts['defaults'] and \
-         name in __def_opts['defaults']['colors'] and \
-         name in __user_opts['defaults']['colors']:
-        return __user_opts['defaults']['colors'][name]
-    elif filetype in __def_opts and \
-         'colors' in __def_opts[filetype] and \
-         name in __def_opts[filetype]['colors']:
-        return __def_opts[filetype]['colors'][name]
-    elif name in __def_opts['defaults']['colors']:
-        return __def_opts['defaults']['colors'][name]
+    if filetype in user_cols and name in user_cols[filetype]:
+        return user_cols[filetype][name]
+    elif 'defaults' in user_cols and \
+         name in def_cols['defaults'] and \
+         name in user_cols['defaults']:
+        return user_cols['defaults'][name]
+    elif filetype in def_cols and name in def_cols[filetype]:
+        return def_cols[filetype][name]
+    elif name in def_cols['defaults']:
+        return def_cols['defaults'][name]
     else:
         __logger.error(f'color name "{name}" not found in default file.')
         return None, None
@@ -477,6 +482,10 @@ def __set_filetype(args: Args) -> None:
         __filetype = args.type
         __logger.debug(f'set file type from args: {args.type}')
         return
+    if args.file in ['config_list']:
+        __logger.debug(f'{args.file}: set defaults')
+        __filetype = 'defaults'
+        return
     fpath = Path(args.file)
     if not fpath.is_file():
         __logger.debug('file does not exists')
@@ -536,24 +545,29 @@ def __load_lib(args: Args) -> None | ModuleType:
 
 
 def __get_opt_keys() -> list[str]:
+    def_opts = __def_opts['config']
+    if 'config' in __user_opts:
+        user_opts = __user_opts['config']
+    else:
+        user_opts = {}
     res = {}
     if len(__add_types.keys()) != 0:
         res['additional_types'] = __add_types
-    res['defaults'] = list(__def_opts['defaults'].keys())
+    res['defaults'] = list(def_opts['defaults'].keys())
     for t in __type_config:
         if t in __add_types:
             # only user_set config
             res[t] = []
-            if t in __user_opts:
-                res[t] += list(__user_opts[t].keys())
+            if t in user_opts:
+                res[t] += list(user_opts[t].keys())
         else:
             # def + user_set (if in 'config') config
             res[t] = []
-            if t in __def_opts:
-                res[t] += list(__def_opts[t].keys())
-            if t in __user_opts:
-                for k in __user_opts[t]:
-                    if k in __def_opts['defaults']:
+            if t in def_opts:
+                res[t] += list(def_opts[t].keys())
+            if t in user_opts:
+                for k in user_opts[t]:
+                    if k in def_opts['defaults']:
                         res[t].append(k)
             res[t] = list(set(res[t]))
         res[t].sort()
@@ -561,20 +575,27 @@ def __get_opt_keys() -> list[str]:
 
 
 def __get_color_names(filetype: str | None) -> list[str]:
+    def_cols = __def_opts['colors']
+    if 'colors' in __user_opts:
+        user_cols = __user_opts['colors']
+    else:
+        user_cols = {}
     if filetype is None:
-        return list(__def_opts['defaults']['colors'].keys())
+        return list(def_cols['defaults'].keys())
     else:
         if filetype in __add_types:
-            if filetype in __user_opts and 'colors' in __user_opts[filetype]:
-                return list(__user_opts[filetype]['colors'].keys())
+            if filetype in user_cols:
+                return list(user_cols[filetype].keys())
             else:
                 return []
         else:
             res = []
-            if filetype in __def_opts and 'colors' in __def_opts[filetype]:
-                res += list(__def_opts[filetype]['colors'].keys())
-            if filetype in __user_opts and 'colors' in __user_opts[filetype]:
-                res += list(__user_opts[filetype]['colors'].keys())
+            if filetype in user_cols:
+                for cname in user_cols[filetype].keys():
+                    if cname in def_cols['defaults']:
+                        res.append(cname)
+            if filetype in def_cols:
+                res += list(def_cols[filetype].keys())
             res = list(set(res))
             res.sort()
             return res
