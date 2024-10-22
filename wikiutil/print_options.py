@@ -31,11 +31,9 @@ If "PIL", "matplotlib", or "cv2" are set, use
 [matplotlib.pyplot.imshow()](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html),
 or [cv2.imshow()](https://docs.opencv.org/) respectively.
 If another string is given, it is treated as a shell command.
-The detailed behavior of this shell command can be set by
-the "iv_exec_cmd" option.
+The detailed behavior of this shell command can be set by the "iv_exec_cmd" option.
 If null is set, search the possible modules from "PIL", "matplotlib", and "cv2".
-If the image viewer is specified in both the json file and
-a command-line argument, the command-line argument is applied."""],
+If the image viewer is specified in both the json file and a command-line argument, the command-line argument is applied."""],
         "image_viewer_cui": ['string/null', """This is the same as "image_viewer", but used when opening a file with CUI mode.
 If both "image_viewer" and "image_viewer_cui" are set, the value of "image_viewer_cui" is used in CUI mode and that of "image_viewer" is used in other cases.
 If this option is not set and "image_viewer" is set, the value of "image_viewer" is used in CUI mode and other cases.
@@ -50,10 +48,9 @@ In some types, an image file is extracted in a temporary directory."""],
         "system_cmd": ['string/null', """A command called when opening a file with a system command.
 In interactive_cui mode, you can open a file with the system (shell) command through the [subprocess.run()](https://docs.python.org//3/library/subprocess.html#subprocess.run) function by shift+↓ key.
 If set to null, "start", "open" or "xdg-open" is set in Windows OS, macOS, and Linux OS respectively."""],
-        "system_cmd_args": ['list of string', """A setting to control the behavior when opening a file in interactive_cui mode.
-This setting can specify the command and arguments of that.
-Arguments used when opening a file with system command in interactive_cui mode.
-"%c" and "%s" are replaced like "iv_exec_cmd" case."""],
+        "system_cmd_args": ['list of string', """Arguments used when opening a file with system command in interactive_cui mode.
+"%c" and "%s" are replaced like "iv_exec_cmd" case,
+"%c" is replaced by "system_cmd" and "%s" is replaced by the file path to open."""],
         "pp_kwargs": ['dictionary', """A dictionary passed to the `pprint.pprint()` or `pprint.pformat()` functions as a keyword arguments.
 Please see [Python document](https://docs.python.org/3/library/pprint.html#pprint.PrettyPrinter) for available options."""],
         "numpy_printoptions": ['dictionary', """A dictionary to specify the NumPy print format.
@@ -68,7 +65,7 @@ If you mainly use pickle files made by Python2 script, please set "latin1".
 This option is overwritten by the '--encoding' command-line option."""],
         },
     "np_pickle": {
-        "encoding": ['string', """The encoding used to load the pickle file.
+        "encoding": ['string', """The encoding used to load the Npz file.
 If you mainly use pickle files made by Python2 script, please set "latin1".
 This option is overwritten by the '--encoding' command-line option."""],
         },
@@ -118,23 +115,22 @@ color_desc = {
 print("""
 # Introduction
 
-This page explain how to customize the AFTViewer command.
+This page explain how to customize the appearance/behavior of the AFTViewer command.
 
 ## setting.json
 
 You can change some setting values by creating `setting.json` file in the configuration directory.
-If AFTViewer find `$XDG_CONFIG_HOME` variable, the configuration dictionary is
+If AFTViewer find `$XDG_CONFIG_HOME` variable, the configuration directory is
 `$XDG_CONFIG_HOME/aftviewer`.
-Otherwise the path is
-`~/.config/aftviewer`.
+Otherwise the directory is `~/.config/aftviewer`.
 
 Sample: [sample.json](https://github.com/MeF0504/aftviewer/blob/main/samples/setting_sample.json)  
 Default values: [default.json](https://github.com/MeF0504/aftviewer/blob/main/aftviewer/core/default.json)
 
 # parameters
 
-This json file should contain one dictionary.
-The keys could ne specified in this dictionary are "additional_types", "config", and "colors".  
+This json file should be consist of one dictionary.
+The keys could be specified in this dictionary are "additional_types", "config", and "colors".  
 The details are following.
 """)
 
@@ -153,7 +149,7 @@ This dictionary define default values of configuration parameters.
 Possible keys in this dictionary are "defaults" or file-type names.
 The "defaults" set the values used by multiple file types if the parameter is not set on each file type.
 Keys of file types set the values only used in this file type.
-In this key, values of both parameters in "defaults" and file-type-specific parameters are able to set.
+In the case that the key is file type, values of both parameters in "defaults" and file-type-specific parameters are able to set.
 The parameters that can be set are as follows.
 """)
 
@@ -180,6 +176,8 @@ for ft in config_desc:
         print(f'*default: {def_val}*  ')
         print(desc)
 
+print("\n")
+
 print("""## "colors"
 **type: dictionary**  
 This dictionary defines color settings.
@@ -192,7 +190,8 @@ Available values are following:
 or None (not set)  
 Keys of this dictionary is same as "config" dictionary: "defaults" or file-type names.
 Parametes and values in each key also works as the same.
-The parameters that can be set are as follows.""")
+The parameters that can be set are as follows.
+""")
 
 assert default['colors'].keys() == color_desc.keys()
 assert default['colors']['defaults'].keys() == color_desc['defaults'].keys()
@@ -214,3 +213,4 @@ for ft in color_desc:
         print(f'\n- **"{para}"**  ')
         print(f'*default: {def_val}*  ')
         print(desc)
+print()
