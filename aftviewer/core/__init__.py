@@ -476,7 +476,7 @@ def run_system_cmd(fname: str) -> bool:
         return True
 
 
-def set_filetype(args: Args) -> None:
+def __set_filetype(args: Args) -> None:
     global __filetype
     if args.type is not None:
         __filetype = args.type
@@ -512,7 +512,7 @@ def set_filetype(args: Args) -> None:
     __logger.debug('file type is not set.')
 
 
-def load_lib(args: Args) -> None | ModuleType:
+def __load_lib(args: Args) -> None | ModuleType:
     if args.type is None:
         __logger.debug('file type is None')
         return None
@@ -544,7 +544,7 @@ def load_lib(args: Args) -> None | ModuleType:
     return lib
 
 
-def get_opt_keys() -> list[str]:
+def __get_opt_keys() -> list[str]:
     def_opts = __def_opts['config']
     if 'config' in __user_opts:
         user_opts = __user_opts['config']
@@ -574,7 +574,7 @@ def get_opt_keys() -> list[str]:
     return res
 
 
-def get_color_names(filetype: str | None) -> list[str]:
+def __get_color_names(filetype: str | None) -> list[str]:
     def_cols = __def_opts['colors']
     if 'colors' in __user_opts:
         user_cols = __user_opts['colors']

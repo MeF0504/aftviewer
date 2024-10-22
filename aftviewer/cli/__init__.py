@@ -9,9 +9,10 @@ from types import FunctionType
 from logging import getLogger
 import subprocess
 
-from ..core import (GLOBAL_CONF, set_filetype, load_lib, args_chk,
-                    print_key, print_error, cprint, get_config, get_col,
-                    get_opt_keys, get_color_names)
+from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
+                    __get_opt_keys, __get_color_names,
+                    print_key, print_error, cprint,
+                    args_chk, get_config, get_col)
 from ..core.__version__ import VERSION
 from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
@@ -49,8 +50,8 @@ def get_args() -> Args:
         add_args_shell_cmp(parser)
     elif tmpargs.file == 'update':
         add_args_update(parser)
-    set_filetype(tmpargs)
-    lib = load_lib(tmpargs)
+    __set_filetype(tmpargs)
+    lib = __load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
     args = parser.parse_args()
@@ -67,7 +68,7 @@ def show_opts(filetype: str | None) -> None:
         except Exception as e:
             print(f'Failed to display color {cname} ({e})')
 
-    opts = get_opt_keys()
+    opts = __get_opt_keys()
     if filetype is not None:
         print_key(filetype)
         print_key('config')
@@ -76,8 +77,8 @@ def show_opts(filetype: str | None) -> None:
             val = get_config(key, filetype)
             print(f'  {key}: {val}')
         print_key('colors')
-        cnames = list(set(get_color_names('defaults')
-                          + get_color_names(filetype)))
+        cnames = list(set(__get_color_names('defaults')
+                          + __get_color_names(filetype)))
         cnames.sort()
         for cname in cnames:
             show_col(cname, filetype)
@@ -104,10 +105,10 @@ def show_opts(filetype: str | None) -> None:
                 print(f'  {key}: {val}')
     print_key('colors')
     print_key('defaults')
-    for cname in get_color_names('defaults'):
+    for cname in __get_color_names('defaults'):
         show_col(cname, 'defaults')
     for ft in opts:
-        cnames = get_color_names(ft)
+        cnames = __get_color_names(ft)
         if len(cnames) != 0:
             print_key(ft)
             for cname in cnames:
@@ -180,7 +181,7 @@ def main() -> None:
         if not args_chk(args, 'type'):
             print('please set --type to see the details.')
             return
-        lib = load_lib(args)
+        lib = __load_lib(args)
         if lib is None:
             print('Library file is not found.')
         else:
@@ -199,7 +200,7 @@ def main() -> None:
         print("{} is a directory.".format(fpath))
         return
 
-    set_filetype(args)
+    __set_filetype(args)
 
     if args.type == 'text':
         if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
@@ -211,7 +212,7 @@ def main() -> None:
         print('This is not a supported file type.')
         return
 
-    lib = load_lib(args)
+    lib = __load_lib(args)
     if lib is None:
         print(f'The library file for "{args.type}" is not found.')
     else:
