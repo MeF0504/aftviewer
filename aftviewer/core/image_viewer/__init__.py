@@ -25,7 +25,7 @@ __set_ImgViewer = False
 
 def __get_exec_cmds(image_viewer, fname):
     res = []
-    for cmd in get_config('config', 'iv_exec_cmd'):
+    for cmd in get_config('iv_exec_cmd'):
         if cmd == '%s':
             res.append(fname)
         elif cmd == '%c':
@@ -83,8 +83,8 @@ def __get_mod(img_viewer: None | str) -> None | ModuleType:
 def __set_image_viewer(args: Args) -> None:
     global __ImgViewer, __set_ImgViewer
     img_viewers = __collect_image_viewers()
-    iv_config = get_config('config', 'image_viewer')
-    iv_cui_config = get_config('config', 'image_viewer_cui')
+    iv_config = get_config('image_viewer')
+    iv_cui_config = get_config('image_viewer_cui')
 
     tmp_iv = None
     if args_chk(args, 'image_viewer'):

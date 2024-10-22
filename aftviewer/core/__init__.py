@@ -22,6 +22,9 @@ from .types import CONF, Args, SF, COLType
 
 
 __debug = False
+__add_types = {}
+__user_opts = {}
+__filetype: str | None = None
 if 'XDG_CONFIG_HOME' in os.environ:
     __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'aftviewer'
 else:
@@ -31,34 +34,16 @@ if not __conf_dir.exists():
 
 # load config file.
 with (Path(__file__).parent/'default.json').open('r') as f:
-    __json_opts = json.load(f)
+    __def_opts = json.load(f)
 if (__conf_dir/'setting.json').is_file():
     with open(__conf_dir/'setting.json') as f:
-        load_opts = json.load(f)
-        if 'debug' in load_opts:
-            __debug = bool(load_opts['debug'])
-        if 'force_default' in load_opts and load_opts['force_default']:
-            load_opts = {}
-        if 'additional_types' in load_opts:
-            __add_types = load_opts['additional_types']
-            __json_opts['additional_types'] = __add_types
-        else:
-            __add_types = {}
-        for key in list(__json_opts.keys()) + list(__add_types.keys()):
-            if key == 'additional_types':
-                continue
-            if key in load_opts:
-                if key in __json_opts:
-                    # update values in default.json
-                    for k2, v2 in load_opts[key].items():
-                        if k2 in __json_opts[key]:
-                            __json_opts[key][k2] = v2
-                else:
-                    # create settings for new file type
-                    __json_opts[key] = load_opts[key]
-    del load_opts
-else:
-    __add_types = {}
+        __user_opts = json.load(f)
+        if 'debug' in __user_opts:
+            __debug = bool(__user_opts['debug'])
+        if 'force_default' in __user_opts and __user_opts['force_default']:
+            __user_opts = {}
+        if 'additional_types' in __user_opts:
+            __add_types = __user_opts['additional_types']
 
 # set supported file types
 __type_config = {
@@ -114,7 +99,6 @@ __logger.debug(f'src: {__file__}')
 # global variables
 GLOBAL_CONF = CONF(__debug,
                    __conf_dir,
-                   __json_opts,
                    __type_config,
                    __logname)
 
@@ -162,32 +146,57 @@ def args_chk(args: Args, attr: str) -> bool:
         return False
 
 
-def get_config(key1: str, key2: str) -> Any:
+def get_config(key: str, filetype: str | None = None) -> Any:
     """
     get the current configuration value.
 
     Parameters
     ----------
-    key1: str
-        Main key name. Selected one from "config", "colors", and type names.
-    key2: str
+    key: str
         configuration key name.
+    filetype: str or None
+        set file type name of the script calling this function
+        to return proper value.
+        if None, use the file type set from command arguments or
+        got from the file extension.
 
     Returns
     -------
     Any
         Return specified configuration value. If it is not set, return None.
     """
-    assert key1 in ["config", "colors"] + list(__type_config.keys()), \
-        f'incorrect key name: {key1}'
-    if key1 not in __json_opts:
-        # type name is not set in setting.json.
-        return None
-    val1 = __json_opts[key1]
-    if key2 not in val1:
-        return None
+    if filetype is None:
+        filetype = __filetype
+    if filetype is None:
+        __logger.warning(f'filetype is not set? (get_config, {key})')
+    if 'config' in __user_opts:
+        user_opts = __user_opts['config']
     else:
-        return val1[key2]
+        user_opts = {}
+    def_opts = __def_opts['config']
+
+    if filetype in user_opts and key in user_opts[filetype]:
+        __logger.debug(f'"{key}" in user ft "{filetype}".')
+        return user_opts[filetype][key]
+    elif 'defaults' in user_opts and \
+         key in def_opts['defaults'] and \
+         key in user_opts['defaults']:
+        # check that key is in "defaults" of both default file and user file.
+        __logger.debug(f'"{key}" in user settings.')
+        return user_opts['defaults'][key]
+    elif filetype in def_opts and key in def_opts[filetype]:
+        __logger.debug(f'"{key}" in default ft "{filetype}".')
+        return def_opts[filetype][key]
+    elif 'defaults' in def_opts:
+        if key in def_opts['defaults']:
+            __logger.debug(f'"{key}" in default settings.')
+            return def_opts['defaults'][key]
+        else:
+            __logger.error(f'"{key}" not found in settings.')
+            return None
+    else:
+        __logger.error('something wrong; no "defaults" key in default file.')
+    return None
 
 
 def cprint(str1: str, str2: str = '',
@@ -243,16 +252,21 @@ def cprint(str1: str, str2: str = '',
     print(print_str, **kwargs)
 
 
-def get_col(name: str) -> tuple[COLType,
-                                COLType]:
+def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
     """
     get the color id of a given name.
 
     Parameters
     ----------
     name: str
-        A name of the option. This name should be included in
-        "color_config" in configuration options.
+        A name of the color. Please see wiki
+        (https://github.com/MeF0504/aftviewer/wiki/Customization#colors)
+        for details.
+    filetype: str or None
+        set file type name of the script calling this function
+        to return proper value.
+        if None, use the file type set from command arguments or
+        got from the file extension.
 
     Returns
     -------
@@ -261,12 +275,29 @@ def get_col(name: str) -> tuple[COLType,
     str, int, or None
         foreground color id. If the name is incorrect, return None.
     """
-    col_conf = get_config('colors', name)
-    if name is None:
-        __logger.warning(f'incorrect color set name: {name}')
-        return None, None
+    if filetype is None:
+        filetype = __filetype
+    if filetype is None:
+        __logger.warning(f'filetype is not set? (get_col, {name})')
+    if 'colors' in __user_opts:
+        user_cols = __user_opts['colors']
     else:
-        return col_conf
+        user_cols = {}
+    def_cols = __def_opts['colors']
+
+    if filetype in user_cols and name in user_cols[filetype]:
+        return user_cols[filetype][name]
+    elif 'defaults' in user_cols and \
+         name in def_cols['defaults'] and \
+         name in user_cols['defaults']:
+        return user_cols['defaults'][name]
+    elif filetype in def_cols and name in def_cols[filetype]:
+        return def_cols[filetype][name]
+    elif name in def_cols['defaults']:
+        return def_cols['defaults'][name]
+    else:
+        __logger.error(f'color name "{name}" not found in default file.')
+        return None, None
 
 
 def interactive_view(fname: str, get_contents: GC, show_func: SF,
@@ -414,7 +445,7 @@ def run_system_cmd(fname: str) -> bool:
     bool
         Return True if the command succeeded, otherwise False.
     """
-    cmd = get_config('config', 'system_cmd')
+    cmd = get_config('system_cmd')
     if cmd is None:
         if platform.system() == 'Windows':
             cmd = 'start'
@@ -426,7 +457,7 @@ def run_system_cmd(fname: str) -> bool:
             print('Unsupported platform')
             return False
     res = []
-    for arg in get_config('config', 'system_cmd_args'):
+    for arg in get_config('system_cmd_args'):
         if arg == '%s':
             res.append(fname)
         elif arg == '%c':
@@ -445,43 +476,40 @@ def run_system_cmd(fname: str) -> bool:
         return True
 
 
-def set_numpy_format(numpy: Any) -> None:
-    """
-    set NumPy format following the given configuration option.
-
-    Parameters
-    ----------
-    numpy: module
-        NumPy module. (This file is designed not to call anything other than
-        standard modules, so the NumPy module is used as an argument.)
-
-    Returns
-    -------
-    None
-    """
-    opts = get_config('numpy', 'print_option')
-    numpy.set_printoptions(**opts)
-
-
-def get_filetype(fpath: Path) -> None | str:
+def set_filetype(args: Args) -> None:
+    global __filetype
+    if args.type is not None:
+        __filetype = args.type
+        __logger.debug(f'set file type from args: {args.type}')
+        return
+    if args.file in ['config_list']:
+        __logger.debug(f'{args.file}: set defaults')
+        __filetype = 'defaults'
+        return
+    fpath = Path(args.file)
     if not fpath.is_file():
         __logger.debug('file does not exists')
-        return None
+        return
     ext = fpath.suffix[1:].lower()
     if tarfile.is_tarfile(fpath):
         __logger.debug('set file type: tar')
-        return 'tar'
+        args.type = 'tar'
+        __filetype = args.type
+        return
     else:
         for typ, exts in __type_config.items():
             if ext in exts.split():
                 __logger.debug(f'set file type: {typ}')
-                return typ
+                args.type = typ
+                __filetype = args.type
+                return
         mt = mimetypes.guess_type(fpath)[0]
         __logger.info(f'get mimetype: {mt}')
         if mt is not None and mt.split('/')[0] == 'text':
-            return 'text'
+            args.type = 'text'
+            __filetype = args.type
+            return
     __logger.debug('file type is not set.')
-    return None
 
 
 def load_lib(args: Args) -> None | ModuleType:
@@ -510,6 +538,64 @@ def load_lib(args: Args) -> None | ModuleType:
     try:
         lib = import_module(lib_path)
     except ImportError as e:
-        __logger.error(f'Failed to load library (lib: {lib_path2}, error: {e})')
+        __logger.error('Failed to load library '
+                       f'(lib: {lib_path2}, error: {e})')
         return None
     return lib
+
+
+def get_opt_keys() -> list[str]:
+    def_opts = __def_opts['config']
+    if 'config' in __user_opts:
+        user_opts = __user_opts['config']
+    else:
+        user_opts = {}
+    res = {}
+    if len(__add_types.keys()) != 0:
+        res['additional_types'] = __add_types
+    res['defaults'] = list(def_opts['defaults'].keys())
+    for t in __type_config:
+        if t in __add_types:
+            # only user_set config
+            res[t] = []
+            if t in user_opts:
+                res[t] += list(user_opts[t].keys())
+        else:
+            # def + user_set (if in 'config') config
+            res[t] = []
+            if t in def_opts:
+                res[t] += list(def_opts[t].keys())
+            if t in user_opts:
+                for k in user_opts[t]:
+                    if k in def_opts['defaults']:
+                        res[t].append(k)
+            res[t] = list(set(res[t]))
+        res[t].sort()
+    return res
+
+
+def get_color_names(filetype: str | None) -> list[str]:
+    def_cols = __def_opts['colors']
+    if 'colors' in __user_opts:
+        user_cols = __user_opts['colors']
+    else:
+        user_cols = {}
+    if filetype is None:
+        return list(def_cols['defaults'].keys())
+    else:
+        if filetype in __add_types:
+            if filetype in user_cols:
+                return list(user_cols[filetype].keys())
+            else:
+                return []
+        else:
+            res = []
+            if filetype in user_cols:
+                for cname in user_cols[filetype].keys():
+                    if cname in def_cols['defaults']:
+                        res.append(cname)
+            if filetype in def_cols:
+                res += list(def_cols[filetype].keys())
+            res = list(set(res))
+            res.sort()
+            return res

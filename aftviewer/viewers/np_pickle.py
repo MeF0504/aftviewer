@@ -6,13 +6,12 @@ from logging import getLogger
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from .. import GLOBAL_CONF, args_chk, print_key, set_numpy_format, \
-    get_config, interactive_view, interactive_cui, help_template, \
-    add_args_specification, add_args_encoding
+from .. import (GLOBAL_CONF, args_chk, print_key, get_config,
+                interactive_view, interactive_cui, help_template,
+                add_args_specification, add_args_encoding)
 from .. import ReturnMessage as RM
 from .numpy import show_numpy
 from .pickle import show_func as show_pickle, get_contents as get_pickle
-set_numpy_format(np)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -76,8 +75,10 @@ def main(fpath, args):
         logger.info('set encoding from args')
         encoding = args.encoding
     else:
-        encoding = get_config('pickle', 'encoding')
+        encoding = get_config('encoding')
     logger.info(f'encoding: {encoding}')
+    opts = get_config('numpy_printoptions')
+    np.set_printoptions(**opts)
 
     data = np.load(fpath, allow_pickle=True, encoding=encoding)
     if type(data) is not NpzFile:

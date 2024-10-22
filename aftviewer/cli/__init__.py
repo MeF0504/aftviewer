@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+from __future__ import annotations
 
 import os
 import sys
@@ -8,9 +9,9 @@ from types import FunctionType
 from logging import getLogger
 import subprocess
 
-from ..core import (GLOBAL_CONF,
-                    get_filetype, load_lib, args_chk, print_key, print_error
-                    )
+from ..core import (GLOBAL_CONF, set_filetype, load_lib, args_chk,
+                    print_key, print_error, cprint, get_config, get_col,
+                    get_opt_keys, get_color_names)
 from ..core.__version__ import VERSION
 from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
@@ -48,8 +49,7 @@ def get_args() -> Args:
         add_args_shell_cmp(parser)
     elif tmpargs.file == 'update':
         add_args_update(parser)
-    if not args_chk(tmpargs, 'type'):
-        tmpargs.type = get_filetype(Path(tmpargs.file))
+    set_filetype(tmpargs)
     lib = load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
@@ -58,15 +58,60 @@ def get_args() -> Args:
     return args
 
 
-def show_opts() -> None:
-    for key, val in GLOBAL_CONF.opts.items():
-        if type(val) is dict:
-            print_key(key)
-            for k2, v2 in val.items():
-                print(f'  {k2}: {v2}')
-        else:
-            print_key(key)
-            print(val)
+def show_opts(filetype: str | None) -> None:
+    def show_col(cname, filetype):
+        try:
+            fg, bg = get_col(cname, filetype)
+            print(f'  {cname}: ', end='')
+            cprint(f'{fg}, {bg}', '', fg=fg, bg=bg)
+        except Exception as e:
+            print(f'Failed to display color {cname} ({e})')
+
+    opts = get_opt_keys()
+    if filetype is not None:
+        print_key(filetype)
+        print_key('config')
+        keys = list(set(opts['defaults'] + opts[filetype]))
+        for key in keys:
+            val = get_config(key, filetype)
+            print(f'  {key}: {val}')
+        print_key('colors')
+        cnames = list(set(get_color_names('defaults')
+                          + get_color_names(filetype)))
+        cnames.sort()
+        for cname in cnames:
+            show_col(cname, filetype)
+        return
+
+    # filetype is None -> show all.
+    at = 'additional_types'
+    if at in opts:
+        print_key(at)
+        for ft in opts[at]:
+            print(f'  {ft}: {opts[at][ft]}')
+        opts.pop(at)
+    print_key('config')
+    print_key('defaults')
+    for key in opts['defaults']:
+        val = get_config(key, 'defaults')
+        print(f'  {key}: {val}')
+    opts.pop('defaults')
+    for ft in opts:
+        if len(opts[ft]) != 0:
+            print_key(ft)
+            for key in opts[ft]:
+                val = get_config(key, ft)
+                print(f'  {key}: {val}')
+    print_key('colors')
+    print_key('defaults')
+    for cname in get_color_names('defaults'):
+        show_col(cname, 'defaults')
+    for ft in opts:
+        cnames = get_color_names(ft)
+        if len(cnames) != 0:
+            print_key(ft)
+            for cname in cnames:
+                show_col(cname, ft)
 
 
 def set_shell_comp(args: Args) -> None:
@@ -120,7 +165,7 @@ def main() -> None:
         return
 
     if args.file == 'config_list':
-        show_opts()
+        show_opts(args.type)
         return
 
     if args.file == 'shell_completion':
@@ -154,8 +199,7 @@ def main() -> None:
         print("{} is a directory.".format(fpath))
         return
 
-    if not args_chk(args, 'type'):
-        args.type = get_filetype(fpath)
+    set_filetype(args)
 
     if args.type == 'text':
         if ('LANG' in os.environ) and ('ja_JP' in os.environ['LANG']):
