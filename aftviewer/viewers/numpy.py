@@ -5,7 +5,7 @@ from .. import args_chk, print_key, get_config, help_template, \
     add_args_specification
 
 
-def show_numpy(data):
+def show_numpy(data: np.ndarray):
     # shape
     dtype = data.dtype
     print('type     : {}'.format(dtype))
@@ -16,45 +16,45 @@ def show_numpy(data):
         return
     # other information
     try:
-        if np.any(np.isnan(data)):
-            # including np.nan
-            try:
+        isnan = np.any(np.isnan(data))
+        try:
+            if isnan:
                 d_mean = np.nanmean(data)
-            except Exception as e:
-                d_mean = '{}: {}'.format(str(type(e)).split("'")[1], e)
-            try:
-                d_max = np.nanmax(data)
-            except Exception as e:
-                d_max = '{}: {}'.format(str(type(e)).split("'")[1], e)
-            try:
-                d_min = np.nanmin(data)
-            except Exception as e:
-                d_min = '{}: {}'.format(str(type(e)).split("'")[1], e)
-            try:
-                nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
-            except Exception as e:
-                nan_rate = '{}: {}'.format(str(type(e)).split("'")[1], e)
-            prt_str = '''mean     : {}
-max      : {}
-min      : {}
-nan rate : {:.1f}%'''.format(d_mean, d_max, d_min, 100*nan_rate)
-        else:
-            # normal data
-            try:
+            else:
                 d_mean = np.mean(data)
-            except Exception as e:
-                d_mean = '{}: {}'.format(str(type(e)).split("'")[1], e)
-            try:
+        except Exception as e:
+            d_mean = f'{type(e).__name__}: {e}'
+        try:
+            if isnan:
+                d_max = np.nanmax(data)
+            else:
                 d_max = np.max(data)
-            except Exception as e:
-                d_max = '{}: {}'.format(str(type(e)).split("'")[1], e)
-            try:
+        except Exception as e:
+            d_max = f'{type(e).__name__}: {e}'
+        try:
+            if isnan:
+                d_min = np.nanmin(data)
+            else:
                 d_min = np.min(data)
-            except Exception as e:
-                d_min = '{}: {}'.format(str(type(e)).split("'")[1], e)
-            prt_str = '''mean     : {}
-max      : {}
-min      : {}'''.format(d_mean, d_max, d_min)
+        except Exception as e:
+            d_min = f'{type(e).__name__}: {e}'
+        try:
+            if isnan:
+                nan_rate = np.sum(np.isnan(data))/np.prod(data.shape)
+                nan_rate = f'{100*nan_rate:.1f}%'
+            else:
+                nan_rate = ''
+        except Exception as e:
+            nan_rate = f'{type(e).__name__}: {e}'
+        if isnan:
+            prt_str = f'''mean     : {d_mean}
+max      : {d_max}
+min      : {d_min}
+nan rate : {nan_rate}'''
+        else:
+            prt_str = f'''mean     : {d_mean}
+max      : {d_max}
+min      : {d_min}'''
     except TypeError:
         # string list or something
         prt_str = 'not a array of number'
@@ -67,7 +67,8 @@ def add_args(parser):
 
 
 def show_help():
-    helpmsg = help_template('numpy', 'show the contents of a NumPy-compressed file.' +
+    helpmsg = help_template('numpy',
+                            'show the contents of a NumPy-compressed file.'
                             ' If the file is "npz", you can specify the key name.',
                             add_args)
     print(helpmsg)
