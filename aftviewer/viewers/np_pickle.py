@@ -10,7 +10,7 @@ from .. import (GLOBAL_CONF, args_chk, print_key, get_config,
                 interactive_view, interactive_cui, help_template,
                 add_args_specification, add_args_encoding)
 from .. import ReturnMessage as RM
-from .numpy import show_numpy
+from .numpy import show_summary as show_numpy
 from .pickle import show_func as show_pickle, get_contents as get_pickle
 logger = getLogger(GLOBAL_CONF.logname)
 

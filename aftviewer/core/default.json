@@ -7,7 +7,7 @@
             "system_cmd": null,
             "system_cmd_args": ["%c", "%s"],
             "pp_kwargs": {"compact": true},
-            "numpy_printoptions": {},
+            "numpy_printoptions": {"threshold": 300},
             "cui_linenumber": false,
             "cui_wrap": false
         },
