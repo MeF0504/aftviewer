@@ -1,4 +1,4 @@
-# test functions in viewers/core/__init__.py
+# test functions in aftviewer/core/__init__.py
 import argparse
 import warnings
 
