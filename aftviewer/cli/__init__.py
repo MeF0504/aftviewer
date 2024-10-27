@@ -129,7 +129,7 @@ def set_shell_comp(args: Args) -> None:
             print(line, end='')
 
 
-def update(branch: str) -> None:
+def update(branch: str, test: bool = False) -> None:
     py_cmd = None
     py_version = f'{sys.version_info.major}.{sys.version_info.minor}'
     for rel_path in [f'bin/python{py_version}',
@@ -147,14 +147,19 @@ def update(branch: str) -> None:
     if py_cmd is None:
         print_error('failed to find python command.')
         logger.error(f'python not found in {sys.base_prefix}')
-        return
+        return False
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   'aftviewer @ '
                   f'git+https://github.com/MeF0504/aftviewer@{branch}'
                   ]
     logger.debug(f'update command: {update_cmd}')
-    out = subprocess.run(update_cmd, capture_output=False)
-    logger.debug(f'update command results; return code {out.returncode}')
+    if not test:
+        out = subprocess.run(update_cmd, capture_output=False)
+        ret = out.returncode == 0
+        logger.debug(f'update command results; return code {out.returncode}')
+    else:
+        ret = True
+    return ret
 
 
 def main() -> None:
