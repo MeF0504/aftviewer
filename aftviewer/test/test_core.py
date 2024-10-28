@@ -61,7 +61,7 @@ def test_args_chk(attr, arg_list, expected):
     ('stl'),
     ('fits'),
     ])
-def test_loadlib(filetype):
+def test_load_lib(filetype):
     if not chk_deps(filetype):
         warnings.warn(f'skip cheking {filetype}')
         return
@@ -74,3 +74,48 @@ def test_loadlib(filetype):
     if not hasattr(lib, 'show_help'):
         warnings.warn(f'showing help is not supported; {args.type}')
     assert hasattr(lib, 'main')
+
+
+def test_get_config(key, filetype):
+    pass
+
+
+def test_cprint():
+    pass
+
+
+def test_get_col():
+    pass
+
+
+def test_interactive_view():
+    # impossible to test?
+    pass
+
+
+def test_print_error():
+    pass
+
+
+def test_print_warning():
+    pass
+
+
+def test_print_key():
+    pass
+
+
+def test_run_system_command():
+    pass
+
+
+def test_set_filetype():
+    pass
+
+
+def test_get_opt_keys():
+    pass
+
+
+def test_get_color_names():
+    pass
