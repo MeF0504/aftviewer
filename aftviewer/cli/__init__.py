@@ -123,10 +123,11 @@ def set_shell_comp(args: Args) -> None:
         sh_cmp_file = base_dir/'shell-completion/completion.zsh'
     else:
         print('Please specify shell (--bash or --zsh).')
-        return
+        return False
     with open(sh_cmp_file, 'r') as f:
         for line in f:
             print(line, end='')
+    return True
 
 
 def update(branch: str, test: bool = False) -> None:
