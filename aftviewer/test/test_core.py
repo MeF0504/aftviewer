@@ -6,10 +6,15 @@ import pytest
 
 from . import chk_deps
 
-from aftviewer.core import args_chk, __load_lib
-from aftviewer.core.helpmsg import add_args_imageviewer, add_args_encoding, \
-    add_args_output, add_args_verbose, add_args_key, add_args_interactive, \
-    add_args_cui
+from aftviewer.core import (args_chk, __load_lib, get_config, cprint,
+                            get_col, interactive_view, print_error,
+                            print_warning, print_key, run_system_cmd,
+                            __set_filetype, __get_opt_keys, __get_color_names,
+                            __def_opts, __user_opts)
+from aftviewer.core.helpmsg import (add_args_imageviewer, add_args_encoding,
+                                    add_args_output, add_args_verbose,
+                                    add_args_key, add_args_interactive,
+                                    add_args_cui)
 
 
 @pytest.mark.parametrize(('attr', 'arg_list', 'expected'), [
@@ -76,12 +81,33 @@ def test_load_lib(filetype):
     assert hasattr(lib, 'main')
 
 
-def test_get_config(key, filetype):
+def test_def_get_config():
+    __user_opts['config'] = {}
+    def_opts = __def_opts['config']
+    for ft in def_opts:
+        if ft == 'defaults':
+            ft2 = None
+        else:
+            ft2 = ft
+        for key in def_opts[ft]:
+            def1 = def_opts[ft][key]
+            def2 = get_config(key, ft2)
+            assert def1 == def2, f'"{ft}"-"{key}" is not much: {def1}, {def2}'
+
+
+@pytest.mark.parametrize(('key', 'filetype'), [
+    ])
+def test_user_get_config(key, filetype):
     pass
 
 
 def test_cprint():
-    pass
+    keys = [0, 100, 200, 255]
+    keys += list('wrbgcmyb')
+    keys += [None]
+    for fkey in keys:
+        for bkey in keys:
+            cprint('test1', 'test2', fg=fkey, bg=bkey)
 
 
 def test_get_col():

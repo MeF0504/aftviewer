@@ -11,7 +11,7 @@ import mimetypes
 import pprint
 from importlib import import_module
 from pathlib import Path, PurePath
-from typing import Any
+from typing import Any, Literal
 from types import ModuleType
 from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
     Formatter, DEBUG as logDEBUG, INFO as logINFO
@@ -226,24 +226,48 @@ def cprint(str1: str, str2: str = '',
     -------
     None
     """
-    if type(fg) is str and fg in FG:
-        fg_str = FG[fg]
-    elif type(fg) is int and 0 <= fg <= 255:
-        fg_str = FG256(fg)
-    elif fg is None:
-        fg_str = ''
-    else:
-        __logger.warning(f'incorrect type for fg: {fg}')
-        fg_str = ''
-    if type(bg) is str and bg in BG:
-        bg_str = BG[bg]
-    elif type(bg) is int and 0 <= bg <= 255:
-        bg_str = BG256(bg)
-    elif bg is None:
-        bg_str = ''
-    else:
-        __logger.warning(f'incorrect type for bg: {bg}')
-        bg_str = ''
+    def get_str(key: COLType, fgbg: Literal["fg", "bg"]) -> str:
+        if fgbg == "fg":
+            XG = FG
+            XG256 = FG256
+        elif fgbg == 'bg':
+            XG = BG
+            XG256 = BG256
+        else:
+            __logger.error(f'something wrong: get_str({fgbg}')
+            return ''
+
+        if type(key) is str and key in XG:
+            ret_str = XG[key]
+        elif type(key) is int and 0 <= key <= 255:
+            ret_str = XG256(key)
+        elif key is None:
+            ret_str = ''
+        else:
+            __logger.warning(f'incorrect type for {fgbg} key: {key}')
+            ret_str = ''
+        return ret_str
+
+    # if type(fg) is str and fg in FG:
+    #     fg_str = FG[fg]
+    # elif type(fg) is int and 0 <= fg <= 255:
+    #     fg_str = FG256(fg)
+    # elif fg is None:
+    #     fg_str = ''
+    # else:
+    #     __logger.warning(f'incorrect type for fg: {fg}')
+    #     fg_str = ''
+    # if type(bg) is str and bg in BG:
+    #     bg_str = BG[bg]
+    # elif type(bg) is int and 0 <= bg <= 255:
+    #     bg_str = BG256(bg)
+    # elif bg is None:
+    #     bg_str = ''
+    # else:
+    #     __logger.warning(f'incorrect type for bg: {bg}')
+    #     bg_str = ''
+    fg_str = get_str(fg, 'fg')
+    bg_str = get_str(bg, 'bg')
     if len(fg_str+bg_str) != 0:
         end_str = END
     else:
