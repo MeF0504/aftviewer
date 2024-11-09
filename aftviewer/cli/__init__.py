@@ -10,7 +10,7 @@ from logging import getLogger
 import subprocess
 
 from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
-                    __get_opt_keys, __get_color_names,
+                    __add_types, __get_opt_keys, __get_color_names,
                     print_key, print_error, cprint,
                     args_chk, get_config, get_col)
 from ..core.__version__ import VERSION
@@ -85,12 +85,10 @@ def show_opts(filetype: str | None) -> None:
         return
 
     # filetype is None -> show all.
-    at = 'additional_types'
-    if at in opts:
-        print_key(at)
-        for ft in opts[at]:
-            print(f'  {ft}: {opts[at][ft]}')
-        opts.pop(at)
+    if len(__add_types.keys()) != 0:
+        print_key('additional_types')
+        for ft in __add_types:
+            print(f'  {ft}: {__add_types[ft]}')
     print_key('config')
     print_key('defaults')
     for key in opts['defaults']:
@@ -115,7 +113,7 @@ def show_opts(filetype: str | None) -> None:
                 show_col(cname, ft)
 
 
-def set_shell_comp(args: Args) -> None:
+def set_shell_comp(args: Args) -> bool:
     base_dir = Path(__file__).parent.parent
     if args_chk(args, 'bash'):
         sh_cmp_file = base_dir/'shell-completion/completion.bash'
@@ -130,7 +128,7 @@ def set_shell_comp(args: Args) -> None:
     return True
 
 
-def update(branch: str, test: bool = False) -> None:
+def update(branch: str, test: bool = False) -> bool:
     py_cmd = None
     py_version = f'{sys.version_info.major}.{sys.version_info.minor}'
     for rel_path in [f'bin/python{py_version}',

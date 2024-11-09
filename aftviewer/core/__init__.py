@@ -568,15 +568,13 @@ def __load_lib(args: Args) -> None | ModuleType:
     return lib
 
 
-def __get_opt_keys() -> list[str]:
+def __get_opt_keys() -> dict[str, list[str]]:
     def_opts = __def_opts['config']
     if 'config' in __user_opts:
         user_opts = __user_opts['config']
     else:
         user_opts = {}
-    res = {}
-    if len(__add_types.keys()) != 0:
-        res['additional_types'] = __add_types
+    res: dict[str, list[str]] = {}
     res['defaults'] = list(def_opts['defaults'].keys())
     for t in __type_config:
         if t in __add_types:
