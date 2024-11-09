@@ -95,10 +95,28 @@ def test_def_get_config():
             assert def1 == def2, f'"{ft}"-"{key}" is not much: {def1}, {def2}'
 
 
-@pytest.mark.parametrize(('key', 'filetype'), [
+@pytest.mark.parametrize(('key', 'val', 'filetype'), [
+    ('image_viewer', 'display', 'defaults'),
+    ('system_cmd', 'ls', 'hdf5'),
+    ('iv_exec_cmd', ['%c', '%s', '-v'], 'raw_image'),
+    ('numpy_printoptions', {}, 'numpy'),
+    ('encoding', 'utf-8', 'pickle'),
+    ('facecolor', '#505050', 'stl'),
     ])
-def test_user_get_config(key, filetype):
-    pass
+def test_user_get_config(key, val, filetype):
+    def_opts = __def_opts['config']['defaults']
+    __user_opts['config'] = {}
+    __user_opts['config'][filetype] = {key: val}
+    res1 = get_config(key, filetype)
+    assert res1 == val, f'get config ({filetype}) is not match, {res1}, {val}'
+    res2 = get_config(key)
+    if filetype == 'defaults':
+        def1 = val
+    elif key in def_opts:
+        def1 = def_opts[key]
+    else:
+        return
+    assert res2 == def1, f'get config (def) is not match, {res2}, {def1}'
 
 
 def test_cprint():
