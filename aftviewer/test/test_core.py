@@ -128,8 +128,51 @@ def test_cprint():
             cprint('test1', 'test2', fg=fkey, bg=bkey)
 
 
-def test_get_col():
-    pass
+def test_def_get_col():
+    __user_opts['colors'] = {}
+    def_colors = __def_opts['colors']
+    col_type = (int, str, type(None))
+    for ft in def_colors:
+        if ft == 'defaults':
+            ft2 = None
+        else:
+            ft2 = ft
+        for key in def_colors[ft]:
+            def1 = def_colors[ft][key]
+            def2 = get_col(key, ft2)
+            assert len(def2) == 2, 'len(color) is not 2'
+            assert type(def2[0]) in col_type, 'incorrect type (fg)'
+            assert type(def2[1]) in col_type, 'incorrect type (bg)'
+            assert def1 == def2, f'"{ft}"-"{key}" is not much: {def1}, {def2}'
+
+
+@pytest.mark.parametrize(('key', 'val', 'filetype'), [
+    ('msg_error', [0, None], 'defaults'),
+    ('cui_main', [255, 'k'], 'defaults'),
+    ('input_color', ['r', 150], 'jupyter'),
+    ('interactive_path', [None, 'm'], 'tar'),
+    ])
+def test_user_get_col(key, val, filetype):
+    def_colors = __def_opts['colors']['defaults']
+    __user_opts['colors'] = {}
+    __user_opts['colors'][filetype] = {key: val}
+    col_type = (int, str, type(None))
+    res1 = get_col(key, filetype)
+    assert len(res1) == 2, 'len(color) is not 2 @ 1'
+    assert type(res1[0]) in col_type, 'incorrect type (fg) @ 1'
+    assert type(res1[1]) in col_type, 'incorrect type (bg) @ 1'
+    assert res1 == val, f'get colors ({filetype}) is not match, {res1}, {val}'
+    res2 = get_col(key)
+    if filetype == 'defaults':
+        def1 = val
+    elif key in def_colors:
+        def1 = def_colors[key]
+    else:
+        return
+    assert len(res2) == 2, 'len(color) is not 2 @ 2'
+    assert type(res2[0]) in col_type, 'incorrect type (fg) @ 2'
+    assert type(res2[1]) in col_type, 'incorrect type (bg) @ 2'
+    assert res2 == def1, f'get colors (def) is not match, {res2}, {def1}'
 
 
 def test_interactive_view():
