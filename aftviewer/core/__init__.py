@@ -96,6 +96,15 @@ def __set_logger():
 __set_logger()
 __logger.debug(f'src: {__file__}')
 
+
+def __set_user_opts(config: None | dict[str, Any],
+                    colors: None | dict[str, tuple[COLType, COLType]]) -> None:
+    if config is not None:
+        __user_opts['config'] = config
+    if colors is not None:
+        __user_opts['colors'] = colors
+
+
 # global variables
 GLOBAL_CONF = CONF(__debug,
                    __conf_dir,
