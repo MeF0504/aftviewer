@@ -216,6 +216,9 @@ def test_get_opt_keys():
     if user_optfile.is_file():
         with open(user_optfile) as f:
             user_opts = json.load(f)
+    else:
+        user_opts = {}
+    if 'config' in user_opts:
         for ft in user_opts['config']:
             if ft not in aftviewer.core.__type_config:
                 continue
@@ -230,7 +233,8 @@ def test_get_opt_keys():
     # check key in opt_keys are in settings.
     for ft in opt_keys:
         for opt in opt_keys[ft]:
-            if ft in user_opts['config'] and opt in user_opts['config'][ft]:
+            if 'config' in user_opts and \
+               ft in user_opts['config'] and opt in user_opts['config'][ft]:
                 pass
             elif ft in opts['config'] and opt in opts['config'][ft]:
                 pass
