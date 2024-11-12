@@ -13,11 +13,13 @@ import aftviewer.core
 from aftviewer.core import (args_chk, __load_lib, get_config, cprint,
                             get_col, print_error, print_warning, print_key,
                             __set_filetype, __get_opt_keys, __get_color_names,
-                            __set_user_opts, __def_opts)
+                            __set_user_opts, __def_opts, __type_config)
 from aftviewer.core.helpmsg import (add_args_imageviewer, add_args_encoding,
                                     add_args_output, add_args_verbose,
                                     add_args_key, add_args_interactive,
                                     add_args_cui)
+
+fts = [(ft) for ft in __type_config]
 
 
 @pytest.mark.parametrize(('attr', 'arg_list', 'expected'), [
@@ -55,20 +57,7 @@ def test_args_chk(attr, arg_list, expected):
     assert args_chk(args, attr) is expected
 
 
-@pytest.mark.parametrize(('filetype'), [
-    ('hdf5'),
-    ('pickle'),
-    ('sqlite3'),
-    ('np_pickle'),
-    ('tar'),
-    ('zip'),
-    ('jupyter'),
-    ('numpy'),
-    ('raw_image'),
-    ('xpm'),
-    ('stl'),
-    ('fits'),
-    ])
+@pytest.mark.parametrize(('filetype'), fts)
 def test_load_lib(filetype):
     if not chk_deps(filetype):
         warnings.warn(f'skip cheking {filetype}')
@@ -215,6 +204,7 @@ def test_set_filetype():
 
 def test_get_opt_keys():
     reload(aftviewer.core)
+    # check keys in setting files are in opt_keys.
     with open(Path(__file__).parent.parent/'core/default.json') as f:
         opts = json.load(f)
     opt_keys = __get_opt_keys()
@@ -237,6 +227,66 @@ def test_get_opt_keys():
                     assert opt in opt_keys[ft], \
                         f'user opt ({ft}) {ft}-{opt} not found.'
 
+    # check key in opt_keys are in settings.
+    for ft in opt_keys:
+        for opt in opt_keys[ft]:
+            if ft in user_opts['config'] and opt in user_opts['config'][ft]:
+                pass
+            elif ft in opts['config'] and opt in opts['config'][ft]:
+                pass
+            elif opt in opts['config']['defaults']:
+                pass
+            else:
+                raise AssertionError(
+                        f'unlisted option {opt} got by __get_opt_keys')
+
 
 def test_get_color_names():
-    pass
+    reload(aftviewer.core)
+    # check col in setting files are in col_names.
+    with open(Path(__file__).parent.parent/'core/default.json') as f:
+        opts = json.load(f)
+    col_names = __get_color_names(None)
+    for colname in opts['colors']['defaults']:
+        assert colname in col_names, f'{colname} not found in defaults.'
+
+    user_optfile = Path('~/.config/aftviewer/setting.json').expanduser()
+    if user_optfile.is_file():
+        with open(user_optfile) as f:
+            user_opts = json.load(f)
+    else:
+        user_opts = {}
+
+    for ft in __type_config:
+        col_names = __get_color_names(ft)
+        if ft in opts['colors']:
+            for colname in opts['colors'][ft]:
+                assert colname in col_names, f'{colname} not found in {ft}.'
+        if 'colors' in user_opts and ft in user_opts['colors']:
+            for colname in user_opts['colors'][ft]:
+                assert colname in col_names, f'user {colname} not found in {ft}.'
+
+
+@pytest.mark.parametrize(('filetype'), fts)
+def test_get_color_names_ft(filetype):
+    col_names = __get_color_names(filetype)
+    with open(Path(__file__).parent.parent/'core/default.json') as f:
+        opts = json.load(f)
+    user_optfile = Path('~/.config/aftviewer/setting.json').expanduser()
+    if user_optfile.is_file():
+        with open(user_optfile) as f:
+            user_opts = json.load(f)
+    else:
+        user_opts = {}
+
+    for colname in col_names:
+        if colname in opts['colors']['defaults']:
+            pass
+        elif filetype in opts['colors'] and \
+             colname in opts['colors'][filetype]:
+            pass
+        elif 'colors' in user_opts and filetype in user_opts['colors'] and \
+             colname in user_opts['colors'][filetype]:
+            pass
+        else:
+            AssertionError(f'{colname} in {filetype} not found.')
