@@ -243,7 +243,7 @@ def cprint(str1: str, str2: str = '',
             XG = BG
             XG256 = BG256
         else:
-            __logger.error(f'something wrong: get_str({fgbg}')
+            __logger.error(f'something wrong: get_str({fgbg})')
             return ''
 
         if type(key) is str and key in XG:
@@ -257,24 +257,6 @@ def cprint(str1: str, str2: str = '',
             ret_str = ''
         return ret_str
 
-    # if type(fg) is str and fg in FG:
-    #     fg_str = FG[fg]
-    # elif type(fg) is int and 0 <= fg <= 255:
-    #     fg_str = FG256(fg)
-    # elif fg is None:
-    #     fg_str = ''
-    # else:
-    #     __logger.warning(f'incorrect type for fg: {fg}')
-    #     fg_str = ''
-    # if type(bg) is str and bg in BG:
-    #     bg_str = BG[bg]
-    # elif type(bg) is int and 0 <= bg <= 255:
-    #     bg_str = BG256(bg)
-    # elif bg is None:
-    #     bg_str = ''
-    # else:
-    #     __logger.warning(f'incorrect type for bg: {bg}')
-    #     bg_str = ''
     fg_str = get_str(fg, 'fg')
     bg_str = get_str(bg, 'bg')
     if len(fg_str+bg_str) != 0:
