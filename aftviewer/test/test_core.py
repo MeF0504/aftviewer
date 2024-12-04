@@ -218,6 +218,8 @@ def test_get_opt_keys():
             user_opts = json.load(f)
     else:
         user_opts = {}
+    if 'force_default' in user_opts and user_opts['force_default']:
+        user_opts = {}
     if 'config' in user_opts:
         for ft in user_opts['config']:
             if ft not in aftviewer.core.__type_config:
@@ -259,6 +261,8 @@ def test_get_color_names():
         with open(user_optfile) as f:
             user_opts = json.load(f)
     else:
+        user_opts = {}
+    if 'force_default' in user_opts and user_opts['force_default']:
         user_opts = {}
 
     for ft in __type_config:
