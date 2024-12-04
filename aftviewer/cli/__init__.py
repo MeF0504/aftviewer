@@ -10,7 +10,7 @@ from logging import getLogger
 import subprocess
 
 from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
-                    __get_opt_keys, __get_color_names,
+                    __add_types, __get_opt_keys, __get_color_names,
                     print_key, print_error, cprint,
                     args_chk, get_config, get_col)
 from ..core.__version__ import VERSION
@@ -85,12 +85,10 @@ def show_opts(filetype: str | None) -> None:
         return
 
     # filetype is None -> show all.
-    at = 'additional_types'
-    if at in opts:
-        print_key(at)
-        for ft in opts[at]:
-            print(f'  {ft}: {opts[at][ft]}')
-        opts.pop(at)
+    if len(__add_types.keys()) != 0:
+        print_key('additional_types')
+        for ft in __add_types:
+            print(f'  {ft}: {__add_types[ft]}')
     print_key('config')
     print_key('defaults')
     for key in opts['defaults']:
@@ -115,7 +113,7 @@ def show_opts(filetype: str | None) -> None:
                 show_col(cname, ft)
 
 
-def set_shell_comp(args: Args) -> None:
+def set_shell_comp(args: Args) -> bool:
     base_dir = Path(__file__).parent.parent
     if args_chk(args, 'bash'):
         sh_cmp_file = base_dir/'shell-completion/completion.bash'
@@ -123,13 +121,14 @@ def set_shell_comp(args: Args) -> None:
         sh_cmp_file = base_dir/'shell-completion/completion.zsh'
     else:
         print('Please specify shell (--bash or --zsh).')
-        return
+        return False
     with open(sh_cmp_file, 'r') as f:
         for line in f:
             print(line, end='')
+    return True
 
 
-def update(branch: str) -> None:
+def update(branch: str, test: bool = False) -> bool:
     py_cmd = None
     py_version = f'{sys.version_info.major}.{sys.version_info.minor}'
     for rel_path in [f'bin/python{py_version}',
@@ -147,14 +146,19 @@ def update(branch: str) -> None:
     if py_cmd is None:
         print_error('failed to find python command.')
         logger.error(f'python not found in {sys.base_prefix}')
-        return
+        return False
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   'aftviewer @ '
                   f'git+https://github.com/MeF0504/aftviewer@{branch}'
                   ]
     logger.debug(f'update command: {update_cmd}')
-    out = subprocess.run(update_cmd, capture_output=False)
-    logger.debug(f'update command results; return code {out.returncode}')
+    if not test:
+        out = subprocess.run(update_cmd, capture_output=False)
+        ret = out.returncode == 0
+        logger.debug(f'update command results; return code {out.returncode}')
+    else:
+        ret = True
+    return ret
 
 
 def main() -> None:

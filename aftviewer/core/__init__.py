@@ -11,7 +11,7 @@ import mimetypes
 import pprint
 from importlib import import_module
 from pathlib import Path, PurePath
-from typing import Any
+from typing import Any, Literal
 from types import ModuleType
 from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
     Formatter, DEBUG as logDEBUG, INFO as logINFO
@@ -95,6 +95,15 @@ def __set_logger():
 
 __set_logger()
 __logger.debug(f'src: {__file__}')
+
+
+def __set_user_opts(config: None | dict[str, Any],
+                    colors: None | dict[str, tuple[COLType, COLType]]) -> None:
+    if config is not None:
+        __user_opts['config'] = config
+    if colors is not None:
+        __user_opts['colors'] = colors
+
 
 # global variables
 GLOBAL_CONF = CONF(__debug,
@@ -226,24 +235,30 @@ def cprint(str1: str, str2: str = '',
     -------
     None
     """
-    if type(fg) is str and fg in FG:
-        fg_str = FG[fg]
-    elif type(fg) is int and 0 <= fg <= 255:
-        fg_str = FG256(fg)
-    elif fg is None:
-        fg_str = ''
-    else:
-        __logger.warning(f'incorrect type for fg: {fg}')
-        fg_str = ''
-    if type(bg) is str and bg in BG:
-        bg_str = BG[bg]
-    elif type(bg) is int and 0 <= bg <= 255:
-        bg_str = BG256(bg)
-    elif bg is None:
-        bg_str = ''
-    else:
-        __logger.warning(f'incorrect type for bg: {bg}')
-        bg_str = ''
+    def get_str(key: COLType, fgbg: Literal["fg", "bg"]) -> str:
+        if fgbg == "fg":
+            XG = FG
+            XG256 = FG256
+        elif fgbg == 'bg':
+            XG = BG
+            XG256 = BG256
+        else:
+            __logger.error(f'something wrong: get_str({fgbg})')
+            return ''
+
+        if type(key) is str and key in XG:
+            ret_str = XG[key]
+        elif type(key) is int and 0 <= key <= 255:
+            ret_str = XG256(key)
+        elif key is None:
+            ret_str = ''
+        else:
+            __logger.warning(f'incorrect type for {fgbg} key: {key}')
+            ret_str = ''
+        return ret_str
+
+    fg_str = get_str(fg, 'fg')
+    bg_str = get_str(bg, 'bg')
     if len(fg_str+bg_str) != 0:
         end_str = END
     else:
@@ -544,15 +559,13 @@ def __load_lib(args: Args) -> None | ModuleType:
     return lib
 
 
-def __get_opt_keys() -> list[str]:
+def __get_opt_keys() -> dict[str, list[str]]:
     def_opts = __def_opts['config']
     if 'config' in __user_opts:
         user_opts = __user_opts['config']
     else:
         user_opts = {}
-    res = {}
-    if len(__add_types.keys()) != 0:
-        res['additional_types'] = __add_types
+    res: dict[str, list[str]] = {}
     res['defaults'] = list(def_opts['defaults'].keys())
     for t in __type_config:
         if t in __add_types:

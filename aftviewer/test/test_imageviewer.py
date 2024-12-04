@@ -8,7 +8,7 @@ from types import ModuleType
 
 import pytest
 
-from aftviewer.core import image_viewer, __def_opts, __user_opts
+from aftviewer.core import image_viewer, __set_user_opts
 from aftviewer.core.helpmsg import add_args_imageviewer, add_args_cui
 
 uname = platform.system()
@@ -73,8 +73,7 @@ def test_get_image_viewer_cui(iv):
         return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    __def_opts['config']['defaults']['image_viewer_cui'] = iv
-    __user_opts['config'] = {}
+    __set_user_opts({'defaults': {'image_viewer_cui': iv}}, None)
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
@@ -108,8 +107,7 @@ def test_get_image_viewer_conf(iv):
         return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    __def_opts['config']['defaults']['image_viewer'] = iv
-    __user_opts['config'] = {}
+    __set_user_opts({'defaults': {'image_viewer': iv}}, None)
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
@@ -137,8 +135,7 @@ def test_get_image_viewer_conf(iv):
 def test_get_image_viewer_search():
     # not set case
     image_viewer.__set_ImgViewer = False
-    __def_opts['config']['defaults']['image_viewer'] = None
-    __user_opts['config'] = {}
+    __set_user_opts({'defaults': {'image_viewer': None}}, None)
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
