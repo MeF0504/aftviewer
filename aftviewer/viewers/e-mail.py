@@ -2,8 +2,10 @@ import argparse
 from pathlib import Path
 from email.parser import BytesParser
 from email import policy
+from logging import getLogger
 
-from aftviewer import Args, help_template, print_key
+from .. import GLOBAL_CONF, Args, help_template, print_key, add_args_encoding
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
@@ -15,10 +17,11 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                         help='Show all header names and its values.',
                         dest='verbose',
                         action='store_true')
+    add_args_encoding(parser)
 
 
 def show_help() -> None:
-    helpmsg = help_template('e-mail', 'Open and read e-mail file.',
+    helpmsg = help_template('e-mail', 'Read an e-mail file.',
                             add_args)
     print(helpmsg)
 
@@ -27,7 +30,34 @@ def main(fpath: Path, args: Args):
     with open(fpath, 'rb') as f:
         msg = BytesParser(policy=policy.default).parse(f)
 
+    if args.encoding is None:
+        encoding = 'utf-8'
+    else:
+        encoding = args.encoding
+
     if args.verbose:
         for key, val in msg.items():
             print_key(key)
             print(val)
+    else:
+        if msg.is_multipart():
+            logger.info('multi part')
+            for part in msg.walk():
+                cont_type = part.get_content_type()
+                print(cont_type)
+                # if cont_type == 'text/plain':
+                #     print(part)
+                # content_type = part.get_content_type()
+                # https://www.cfxlog.com/python-read-emlfile/
+                # Content-Dispositionヘッダの内容を取得する
+                content_disposition = str(part.get("Content-Disposition"))
+                print(content_disposition)
+
+                if cont_type == "text/plain" and "attachment" not in content_disposition:
+                    payload = part.get_payload(decode=True)
+                    # エラーの場合は文字化けしてでも文字列を出力
+                    print(payload.decode(encoding, errors="replace"))
+        else:
+            logger.info('single part')
+            payload = msg.get_payload(decode=True)
+            print(payload.decode(encoding, errors="replace"))
