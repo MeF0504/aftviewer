@@ -44,18 +44,12 @@ def main(fpath: Path, args: Args):
             logger.info('multi part')
             for part in msg.walk():
                 cont_type = part.get_content_type()
-                print(cont_type)
-                # if cont_type == 'text/plain':
-                #     print(part)
-                # content_type = part.get_content_type()
-                # https://www.cfxlog.com/python-read-emlfile/
-                # Content-Dispositionヘッダの内容を取得する
-                content_disposition = str(part.get("Content-Disposition"))
-                print(content_disposition)
+                cont_dp = str(part.get("Content-Disposition"))
+                logger.info(f'type: {cont_type}, disposition: {cont_dp}')
 
-                if cont_type == "text/plain" and "attachment" not in content_disposition:
+                if cont_type == "text/plain" and \
+                   "attachment" not in cont_dp:
                     payload = part.get_payload(decode=True)
-                    # エラーの場合は文字化けしてでも文字列を出力
                     print(payload.decode(encoding, errors="replace"))
         else:
             logger.info('single part')
