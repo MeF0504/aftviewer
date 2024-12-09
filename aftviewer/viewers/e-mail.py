@@ -4,19 +4,18 @@ from email.parser import BytesParser
 from email import policy
 from logging import getLogger
 
-from .. import GLOBAL_CONF, Args, help_template, print_key, add_args_encoding
+from .. import (GLOBAL_CONF, Args, help_template, print_key,
+                add_args_encoding, get_config)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('-k', '--key',
                         help='Specify the key of header info.',
-                        dest='key',
-                        nargs='*')
+                        dest='key', nargs='*')
     parser.add_argument('-v', '--verbose',
                         help='Show all header names and its values.',
-                        dest='verbose',
-                        action='store_true')
+                        dest='verbose', action='store_true')
     add_args_encoding(parser)
 
 
@@ -40,6 +39,14 @@ def main(fpath: Path, args: Args):
             print_key(key)
             print(val)
     else:
+        keys = args.key
+        if keys is None:
+            keys = get_config('headers')
+        for k in keys:
+            if k in msg:
+                print(f'{k}: {msg[k]}')
+            else:
+                logger.error(f'"{k}" not found in the email header.')
         if msg.is_multipart():
             logger.info('multi part')
             for part in msg.walk():

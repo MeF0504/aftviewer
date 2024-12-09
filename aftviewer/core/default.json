@@ -24,6 +24,9 @@
             "viewer": null,
             "facecolors": null,
             "edgecolors": "black"
+        },
+        "e-mail": {
+            "headers": ["Subject", "From", "To", "Date"]
         }
     },
     "colors": {
