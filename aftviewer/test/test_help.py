@@ -17,6 +17,7 @@ from . import chk_deps
     ('tar'),
     ('zip'),
     ('jupyter'),
+    ('e-mail'),
     ('numpy'),
     ('raw_image'),
     ('xpm'),
