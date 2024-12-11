@@ -31,6 +31,7 @@ def test_get_args():
     ('tar'),
     ('zip'),
     ('jupyter'),
+    ('e-mail'),
     ('numpy'),
     ('raw_image'),
     ('xpm'),
