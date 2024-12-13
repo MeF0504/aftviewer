@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from typing import Callable
+from typing import Callable, Any
 from logging import getLogger
 
 from . import GLOBAL_CONF
@@ -9,8 +9,7 @@ from . import GLOBAL_CONF
 logger = getLogger(GLOBAL_CONF.logname)
 
 
-def add_args_imageviewer(parser: argparse.ArgumentParser,
-                         msg: str | None = None) -> None:
+def add_args_imageviewer(parser: argparse.ArgumentParser, **kwargs) -> None:
     """
     add optional argument --image_viewer.
 
@@ -18,26 +17,27 @@ def add_args_imageviewer(parser: argparse.ArgumentParser,
     ----------
     parser: ArgumentParser
         ArgumentParser which optional arguments will be added.
-    msg: str or None
-        help message. If None, default message will be used.
+    kwargs:
+        keyword arguments passed to parser.add_argument function.
 
     Returns
     -------
     None
     """
-    if msg is None:
-        msg = "set image viewer. Supported args are " \
-            "'None' (do not show any images), " \
-            "'matplotlib' (use matplotlib.pyplot.imshow), " \
-            "'PIL' (use PIL.Image.show), " \
-            "'cv2' (use cv2.imshow), " \
-            "and other string is treated as an external command " \
-            "(e.g. display, eog, open)."
-    parser.add_argument('-iv', '--image_viewer', help=msg, type=str)
+    args = dict(help="set image viewer. Supported args are "
+                "'None' (do not show any images), "
+                "'matplotlib' (use matplotlib.pyplot.imshow), "
+                "'PIL' (use PIL.Image.show), "
+                "'cv2' (use cv2.imshow), "
+                "and other string is treated as an external command "
+                "(e.g. display, eog, open).",
+                type=str
+                )
+    args.update(kwargs)
+    parser.add_argument('-iv', '--image_viewer', **args)
 
 
-def add_args_encoding(parser: argparse.ArgumentParser,
-                      msg: str | None = None) -> None:
+def add_args_encoding(parser: argparse.ArgumentParser, **kwargs) -> None:
     """
     add optional argument --encoding.
 
@@ -45,20 +45,20 @@ def add_args_encoding(parser: argparse.ArgumentParser,
     ----------
     parser: ArgumentParser
         ArgumentParser which optional arguments will be added.
-    msg: str or None
-        help message. If None, default message will be used.
+    kwargs:
+        keyword arguments passed to parser.add_argument function.
 
     Returns
     -------
     None
     """
-    if msg is None:
-        msg = 'specify the encoding format.'
-    parser.add_argument('--encoding', help=msg, dest='encoding', type=str)
+    args = dict(help='specify the encoding format.',
+                dest='encoding', type=str)
+    args.update(kwargs)
+    parser.add_argument('--encoding', **args)
 
 
-def add_args_output(parser: argparse.ArgumentParser,
-                    msg: str | None = None) -> None:
+def add_args_output(parser: argparse.ArgumentParser, **kwargs) -> None:
     """
     add optional argument --output.
 
@@ -66,21 +66,21 @@ def add_args_output(parser: argparse.ArgumentParser,
     ----------
     parser: ArgumentParser
         ArgumentParser which optional arguments will be added.
-    msg: str or None
-        help message. If None, default message will be used.
+    kwargs:
+        keyword arguments passed to parser.add_argument function.
 
     Returns
     -------
     None
     """
-    if msg is None:
-        msg = 'specify the output file if supported.'
-    parser.add_argument('-o', '--output', help=msg, type=str)
+    args = dict(help='specify the output file if supported.', type=str)
+    args.update(kwargs)
+    parser.add_argument('-o', '--output', **args)
 
 
 def add_args_verbose(parser: argparse.ArgumentParser |
                      argparse._MutuallyExclusiveGroup,
-                     msg: str | None = None) -> None:
+                     **kwargs) -> None:
     """
     add optional argument --verbose.
 
@@ -88,22 +88,21 @@ def add_args_verbose(parser: argparse.ArgumentParser |
     ----------
     parser: ArgumentParser
         ArgumentParser which optional arguments will be added.
-    msg: str or None
-        help message. If None, default message will be used.
+    kwargs:
+        keyword arguments passed to parser.add_argument function.
 
     Returns
     -------
     None
     """
-    if msg is None:
-        msg = 'show details'
-    parser.add_argument('-v', '--verbose', help=msg, dest='verbose',
-                        action='store_true')
+    args = dict(help='show details', dest='verbose', action='store_true')
+    args.update(kwargs)
+    parser.add_argument('-v', '--verbose', **args)
 
 
 def add_args_key(parser: argparse.ArgumentParser |
                  argparse._MutuallyExclusiveGroup,
-                 msg: str | None = None) -> None:
+                 **kwargs) -> None:
     """
     add optional argument --key.
 
@@ -111,22 +110,23 @@ def add_args_key(parser: argparse.ArgumentParser |
     ----------
     parser: ArgumentParser
         ArgumentParser which optional arguments will be added.
-    msg: str or None
-        help message. If None, default message will be used.
+    kwargs:
+        keyword arguments passed to parser.add_argument function.
 
     Returns
     -------
     None
     """
-    if msg is None:
-        msg = 'specify the key name to show. ' \
-            'If no key is specified, return the list of keys.'
-    parser.add_argument('-k', '--key', help=msg, dest='key', nargs='*')
+    args = dict(help='specify the key name to show. '
+                'If no key is specified, return the list of keys.',
+                dest='key', nargs='*')
+    args.update(kwargs)
+    parser.add_argument('-k', '--key', **args)
 
 
 def add_args_interactive(parser: argparse.ArgumentParser |
                          argparse._MutuallyExclusiveGroup,
-                         msg: str | None = None) -> None:
+                         **kwargs) -> None:
     """
     add optional argument --interactive.
 
@@ -134,22 +134,22 @@ def add_args_interactive(parser: argparse.ArgumentParser |
     ----------
     parser: ArgumentParser
         ArgumentParser which optional arguments will be added.
-    msg: str or None
-        help message. If None, default message will be used.
+    kwargs:
+        keyword arguments passed to parser.add_argument function.
 
     Returns
     -------
     None
     """
-    if msg is None:
-        msg = 'open a file with interactive mode.'
-    parser.add_argument('-i', '--interactive', help=msg, dest='interactive',
-                        action='store_true')
+    args = dict(help='open a file with interactive mode.',
+                dest='interactive', action='store_true')
+    args.update(kwargs)
+    parser.add_argument('-i', '--interactive', **args)
 
 
 def add_args_cui(parser: argparse.ArgumentParser |
                  argparse._MutuallyExclusiveGroup,
-                 msg: str | None = None) -> None:
+                 **kwargs) -> None:
     """
     add optional argument --interactive_cui.
 
@@ -157,24 +157,26 @@ def add_args_cui(parser: argparse.ArgumentParser |
     ----------
     parser: ArgumentParser
         ArgumentParser which optional arguments will be added.
-    msg: str or None
-        help message. If None, default message will be used.
+    kwargs:
+        keyword arguments passed to parser.add_argument function.
 
     Returns
     -------
     None
     """
-    if msg is None:
-        msg = 'open a file with interactive CUI mode.'
-    parser.add_argument('-c', '--interactive_cui', help=msg, dest='cui',
-                        action='store_true')
+    args = dict(help='open a file with interactive CUI mode.',
+                dest='cui', action='store_true')
+    args.update(kwargs)
+    parser.add_argument('-c', '--interactive_cui', **args)
 
 
 def add_args_specification(parser: argparse.ArgumentParser,
                            verbose: bool, key: bool,
                            interactive: bool, cui: bool,
-                           msg_v: str | None = None, msg_k: str | None = None,
-                           msg_i: str | None = None, msg_c: str | None = None,
+                           kwargs_v: dict[str, Any] = {},
+                           kwargs_k: dict[str, Any] = {},
+                           kwargs_i: dict[str, Any] = {},
+                           kwargs_c: dict[str, Any] = {},
                            ):
     """
     add optional arguments that are used to specify items.
@@ -191,14 +193,14 @@ def add_args_specification(parser: argparse.ArgumentParser,
         add optional argument --interactive
     cui: bool
         add optional argument --interactive_cui
-    msg_v: str | None
-        help message for verbose option.
-    msg_k: str | None
-        help message for key option.
-    msg_i: str | None
-        help message for interactive option.
-    msg_c: str | None
-        help message for interactive_cui option.
+    kwargs_v: dict
+        keyword arguments passed to add_argument for verbose option.
+    kwargs_k: dict
+        keyword arguments passed to add_argument for key option.
+    kwargs_i: dict
+        keyword arguments passed to add_argument for interactive option.
+    kwargs_c: dict
+        keyword arguments passed to add_argument for interactive_cui option.
 
     Returns
     -------
@@ -206,13 +208,13 @@ def add_args_specification(parser: argparse.ArgumentParser,
     """
     group = parser.add_mutually_exclusive_group()
     if verbose:
-        add_args_verbose(group, msg_v)
+        add_args_verbose(group, **kwargs_v)
     if key:
-        add_args_key(group, msg_k)
+        add_args_key(group, **kwargs_k)
     if interactive:
-        add_args_interactive(group, msg_i)
+        add_args_interactive(group, **kwargs_i)
     if cui:
-        add_args_cui(group, msg_c)
+        add_args_cui(group, **kwargs_c)
 
 
 def add_args_shell_cmp(parser: argparse.ArgumentParser) -> None:
