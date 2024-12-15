@@ -61,14 +61,13 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
 
 def add_args(parser):
     add_args_imageviewer(parser)
-    add_args_output(parser)
-    add_args_verbose(parser)
+    add_args_verbose(parser, help='Show all cells at once.')
+    add_args_output(parser, help='Output the information to'
+                    ' the specified file as a Python script.')
 
 
 def show_help():
-    helpmsg = help_template('jupyter', 'show the saved jupyter notebook.' +
-                            ' NOTE: If the --output option is specified,' +
-                            ' the output file is saved as the python script.',
+    helpmsg = help_template('jupyter', 'show the saved jupyter notebook.',
                             add_args)
     print(helpmsg)
 

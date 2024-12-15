@@ -135,13 +135,17 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: None | bytes,
 
 def add_args(parser):
     add_args_imageviewer(parser)
-    add_args_output(parser)
     parser.add_argument('--ask_password', '-p',
                         help='ask for the password for the file if needed.',
                         action='store_true',
                         )
+    add_args_output(parser, help='Output files to the specified directory.'
+                    ' NOTE: --output works only with --key.')
+    kwargs_k = dict(help='Specify the file/directory path to show.'
+                    ' If no key is provided, return the list of files.')
     add_args_specification(parser, verbose=True, key=True,
-                           interactive=True, cui=True)
+                           interactive=True, cui=True,
+                           kwargs_k=kwargs_k)
 
 
 def show_help():
