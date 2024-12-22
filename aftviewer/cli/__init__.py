@@ -8,6 +8,8 @@ from pathlib import Path
 from types import FunctionType
 from logging import getLogger
 import subprocess
+import shutil
+import textwrap
 
 from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
                     __add_types, __get_opt_keys, __get_color_names,
@@ -18,24 +20,40 @@ from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args
 
+if GLOBAL_CONF.debug:
+    term_width = 80-2
+else:
+    term_width = shutil.get_terminal_size().columns-2
+
 logger = getLogger(GLOBAL_CONF.logname)
+
+
+class MyHelpFormatter(argparse.RawDescriptionHelpFormatter):
+    def __init__(self, prog, indent_increment=2,
+                 max_help_position=24, width=term_width):
+        super().__init__(prog, indent_increment, max_help_position, width)
 
 
 def get_args() -> Args:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
+    args_desc_ori = f"""show the constitution of a file.
+Supported file types ... {', '.join(supported_type)}."""
+    args_ep_ori = """AFTViewer has some subcommands,
+  - 'aftviewer help -t TYPE' shows detailed help and available options for TYPE,
+  - 'aftviewer update' run the update command of AFTViewer,
+  - 'aftviewer config_list' shows the current optional configuration,
+  - 'aftviewer shell_completion --bash >> ~/.bashrc' or 'aftviewer shell_completion --zsh >> ~/.zshrc' set the completion script for bash/zsh."""
+    args_desc = ''
+    args_ep = ''
+    for ad in args_desc_ori.splitlines():
+        args_desc += '\n'.join(textwrap.wrap(ad, width=term_width))+'\n'
+    for ae in args_ep_ori.splitlines():
+        args_ep += '\n'.join(textwrap.wrap(ae, width=term_width))+'\n'
     parser = argparse.ArgumentParser(
             prog='aftviewer',
-            description="show the constitution of a file."
-            f" Supported file types ... {', '.join(supported_type)}."
-            " To see the detailed help of each type, "
-            " type 'aftviewer help -t TYPE'.",
-            epilog=" AFTViewer has some subcommands,"
-            " 'aftviewer help -t TYPE' shows detailed help,"
-            " 'aftviewer update' run the update command of AFTViewer,"
-            " 'aftviewer config_list' shows the current optional configuration,"
-            " 'aftviewer shell_completion --bash >> ~/.bashrc' or"
-            " 'aftviewer shell_completion --zsh >> ~/.zshrc'"
-            " set the completion script for bash/zsh."
+            description=args_desc,
+            epilog=args_ep,
+            formatter_class=MyHelpFormatter,
             )
     parser.add_argument('file', help='input file')
     parser.add_argument('--version', '-V', action='version',
