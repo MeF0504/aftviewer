@@ -13,7 +13,9 @@ logger = getLogger(GLOBAL_CONF.logname)
 
 def add_args(parser: argparse.ArgumentParser) -> None:
     add_args_imageviewer(parser)
-    add_args_key(parser)
+    add_args_key(parser,
+                 help='Specify an index of HDU (Header Data Unit) list.'
+                 ' If no key is specified, show the summary of the HDU info.')
     parser.add_argument('--header', help='display the header info.',
                         action='store_true')
     parser.add_argument('--log_scale', help='scale color in log.',
@@ -21,12 +23,8 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
 
 def show_help() -> None:
-    helpmsg = help_template('fits', 'show the image of fits file.' +
-                            ' -k/--key specifies an index of HDU' +
-                            ' (Header Data Unit) list, and' +
-                            ' if no key is specified, show the HDU info.' +
-                            ' Note that the values of each pixel are' +
-                            ' subtracted by min value.',
+    helpmsg = help_template('fits', 'show the image of fits file.'
+                            ' Pixels with minus value are replaced with zero.',
                             add_args)
     print(helpmsg)
 

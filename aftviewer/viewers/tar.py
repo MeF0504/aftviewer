@@ -127,16 +127,19 @@ def get_contents(tar_file: tarfile.TarFile, path: PurePosixPath):
 
 def add_args(parser):
     add_args_imageviewer(parser)
-    add_args_output(parser)
+    add_args_output(parser, help='Output files to the specified directory.'
+                    ' NOTE: --output works only with --key.')
+    kwargs_k = dict(help='Specify the file/directory path to show.'
+                    ' If no key is provided, return the list of files.')
     add_args_specification(parser, verbose=True, key=True,
-                           interactive=True, cui=True)
+                           interactive=True, cui=True,
+                           kwargs_k=kwargs_k)
 
 
 def show_help():
-    helpmsg = help_template('tar', 'show the contents of a tar file.' +
+    helpmsg = help_template('tar', 'show the contents of a tar file.'
                             ' The tar file type is identified by the'
-                            ' "tarfile" module, not the extension of a file.' +
-                            ' NOTE: --output works only with --key.',
+                            ' "tarfile" module, not the extension of a file.',
                             add_args)
     print(helpmsg)
 

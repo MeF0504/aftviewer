@@ -5,17 +5,16 @@ from email import policy
 from logging import getLogger
 
 from .. import (GLOBAL_CONF, Args, help_template, print_key,
-                add_args_encoding, get_config)
+                add_args_encoding, add_args_specification, get_config)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument('-k', '--key',
-                        help='Specify the key of header info.',
-                        dest='key', nargs='*')
-    parser.add_argument('-v', '--verbose',
-                        help='Show all header names and its values.',
-                        dest='verbose', action='store_true')
+    kwargs_k = dict(help='Specify the key of header info.')
+    kwargs_v = dict(help='Show all header names and its values.')
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=False, cui=False,
+                           kwargs_k=kwargs_k, kwargs_v=kwargs_v)
     add_args_encoding(parser)
 
 

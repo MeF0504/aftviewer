@@ -125,8 +125,11 @@ def get_contents(h5_file, path):
 
 
 def add_args(parser):
+    kwargs_k = dict(help='Specify the path to the data to show.'
+                    ' If no key is provided, return the list of datasets.')
     add_args_specification(parser, verbose=True, key=True,
-                           interactive=True, cui=True)
+                           interactive=True, cui=True,
+                           kwargs_k=kwargs_k)
 
 
 def show_help():

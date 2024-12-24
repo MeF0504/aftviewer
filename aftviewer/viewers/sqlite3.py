@@ -206,19 +206,23 @@ def init_outfile(output):
 
 
 def add_args(parser):
-    add_args_output(parser)
+    kwargs_k = dict(help='Specify the tables/columns to show.'
+                    ' You can specify multiple columns by'
+                    ' "-k table/col1,col2".')
+    kwargs_v = dict(help='Show all tables and columns.')
     add_args_specification(parser, verbose=True, key=True,
-                           interactive=True, cui=True)
+                           interactive=True, cui=True,
+                           kwargs_k=kwargs_k, kwargs_v=kwargs_v)
+    add_args_output(parser, help='Output database information to'
+                    ' the specified file.'
+                    ' This option can be used when --verbose or'
+                    ' --key is specified.'
+                    ' If the file extension is ".csv", it is saved as'
+                    ' a CSV file. Otherwise, it is saved as a text file.')
 
 
 def show_help():
-    helpmsg = help_template('sqlite3', 'show the contents of the database. '
-                            'In this type, you can specify multiple columns '
-                            'by "-k table/col,col2". '
-                            'NOTE: --output is supported when --verbose or '
-                            '--key is specified. '
-                            'If extension of the output file is".csv",'
-                            'it is saved as the CSV file.',
+    helpmsg = help_template('sqlite3', 'show the contents of the database.',
                             add_args)
     print(helpmsg)
 
