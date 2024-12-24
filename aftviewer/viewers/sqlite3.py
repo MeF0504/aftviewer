@@ -222,7 +222,7 @@ def add_args(parser):
 
 
 def show_help():
-    helpmsg = help_template('sqlite3', 'show the contents of the database. ',
+    helpmsg = help_template('sqlite3', 'show the contents of the database.',
                             add_args)
     print(helpmsg)
 
