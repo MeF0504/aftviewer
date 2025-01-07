@@ -1,8 +1,12 @@
 #! /usr/bin/env python3
 
 import json
-import tomllib
+import sys
 from pathlib import Path
+if sys.version_info.major*100+sys.version_info.minor >= 311:
+    import tomllib
+else:
+    import tomli as tomllib
 
 ROOTDIR = Path(__file__).parent.parent
 with open(ROOTDIR/'aftviewer/core/default.json') as f:
