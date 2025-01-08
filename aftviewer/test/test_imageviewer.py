@@ -8,18 +8,22 @@ from types import ModuleType
 
 import pytest
 
+from pymeflib.util import chk_cmd
 from aftviewer.core import image_viewer, __set_user_opts
 from aftviewer.core.helpmsg import add_args_imageviewer, add_args_cui
 
 uname = platform.system()
 if uname == 'Darwin':
-    cmd = 'open'
+    cmds = ['open', 'ls']
 elif uname == 'Windows':
-    cmd = 'dir'
+    cmds = ['dir']
 elif uname == 'Linux':
-    cmd = 'display'
-else:
-    cmd = None
+    cmds = ['display', 'ls']
+cmd = None
+for c in cmds:
+    if chk_cmd(c):
+        cmd = c
+        break
 
 ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), (cmd), ('not a command')]
 
