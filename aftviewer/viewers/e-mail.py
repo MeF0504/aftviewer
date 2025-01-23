@@ -1,11 +1,15 @@
 import argparse
+import tempfile
+import base64
 from pathlib import Path
 from email.parser import BytesParser
 from email import policy
 from logging import getLogger
 
 from .. import (GLOBAL_CONF, Args, help_template, print_key,
-                add_args_encoding, add_args_specification, get_config)
+                show_image_file, get_config,
+                add_args_encoding, add_args_specification,
+                add_args_imageviewer)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -15,6 +19,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     add_args_specification(parser, verbose=True, key=True,
                            interactive=False, cui=False,
                            kwargs_k=kwargs_k, kwargs_v=kwargs_v)
+    add_args_imageviewer(parser)
     add_args_encoding(parser)
 
 
@@ -48,6 +53,8 @@ def main(fpath: Path, args: Args):
                 logger.error(f'"{k}" not found in the email header.')
         if msg.is_multipart():
             logger.info('multi part')
+            tmpdir = tempfile.TemporaryDirectory()
+            idx = 1
             for part in msg.walk():
                 cont_type = part.get_content_type()
                 cont_dp = str(part.get("Content-Disposition"))
@@ -57,6 +64,20 @@ def main(fpath: Path, args: Args):
                    "attachment" not in cont_dp:
                     payload = part.get_payload(decode=True)
                     print(payload.decode(encoding, errors="replace"))
+                elif cont_type.startswith('image'):
+                    payload = part.get_payload(decode=False)
+                    img_bin = base64.b64decode(payload.encode())
+                    ex = cont_type.split('/')[1]
+                    fname = f'{tmpdir.name}/image{idx}.{ex}'
+                    idx += 1
+                    with open(fname, 'wb') as tmp:
+                        tmp.write(img_bin)
+                    ret = show_image_file(fname, args, wait=True)
+                    if ret is None:
+                        print('image viewer is not found.')
+                    elif not ret:
+                        print('failed to open an image.')
+            tmpdir.cleanup()
         else:
             logger.info('single part')
             payload = msg.get_payload(decode=True)
