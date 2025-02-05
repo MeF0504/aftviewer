@@ -7,7 +7,7 @@ from email import policy
 from logging import getLogger
 
 from .. import (GLOBAL_CONF, Args, help_template, print_key,
-                show_image_file, get_config,
+                show_image_file, get_config, run_system_cmd,
                 add_args_encoding, add_args_specification,
                 add_args_imageviewer)
 logger = getLogger(GLOBAL_CONF.logname)
@@ -21,6 +21,9 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                            kwargs_k=kwargs_k, kwargs_v=kwargs_v)
     add_args_imageviewer(parser)
     add_args_encoding(parser)
+    parser.add_argument('--html',
+                        help='output mail as html file if it possible.',
+                        action='store_true')
 
 
 def show_help() -> None:
@@ -61,7 +64,7 @@ def main(fpath: Path, args: Args):
                 logger.info(f'type: {cont_type}, disposition: {cont_dp}')
 
                 if cont_type == "text/plain" and \
-                   "attachment" not in cont_dp:
+                   "attachment" not in cont_dp and not args.html:
                     payload = part.get_payload(decode=True)
                     print(payload.decode(encoding, errors="replace"))
                 elif cont_type.startswith('image'):
@@ -77,6 +80,15 @@ def main(fpath: Path, args: Args):
                         print('image viewer is not found.')
                     elif not ret:
                         print('failed to open an image.')
+                elif args.html and cont_type == 'text/html':
+                    fname = f'{tmpdir.name}/out{idx}.html'
+                    idx += 1
+                    payload = part.get_payload(decode=True)
+                    with open(fname, 'w') as f:
+                        f.write(payload.decode(encoding, errors="replace"))
+                    run_system_cmd(fname)
+            if args.html:
+                input('Enter to close')
             tmpdir.cleanup()
         else:
             logger.info('single part')
