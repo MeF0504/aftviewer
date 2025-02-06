@@ -1,7 +1,10 @@
 import os
+from logging import getLogger
 
-from .. import show_image_ndarray, help_template, add_args_imageviewer
+from .. import (GLOBAL_CONF, show_image_ndarray, help_template,
+                add_args_imageviewer)
 from pymeflib.xpm_loader import XPMLoader
+logger = getLogger(GLOBAL_CONF.logname)
 
 
 def add_args(parser):
@@ -14,7 +17,7 @@ def show_help():
 
 
 def main(fpath, args):
-    xpm = XPMLoader(fpath)
+    xpm = XPMLoader(fpath, logger=logger)
     xpm.xpm_to_ndarray()
     data = xpm.ndarray
 
