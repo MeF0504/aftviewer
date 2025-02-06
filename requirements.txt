@@ -1,1 +1,1 @@
-pymeflib @ git+https://github.com/MeF0504/pymeflib@main#egg=main
+pymeflib @ git+https://github.com/MeF0504/pymeflib@main
