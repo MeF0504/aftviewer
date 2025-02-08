@@ -1,5 +1,7 @@
 # aftviewer completion setting for zsh
 
+zstyle ':completion:*:aftviewer:*' sort false
+
 _aftviewer_cmp()
 {
     _arguments \
