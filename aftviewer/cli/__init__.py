@@ -168,7 +168,6 @@ def update(branch: str, test: bool = False) -> bool:
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   'aftviewer @ '
                   f'git+https://github.com/MeF0504/aftviewer@{branch}',
-                  'pymeflib @ git+https://github.com/MeF0504/pymeflib@main',
                   ]
     logger.debug(f'update command: {update_cmd}')
     if not test:
