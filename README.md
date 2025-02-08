@@ -47,27 +47,31 @@ py -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
 
 ## Usage
 ```bash
-usage: aftviewer [-h] [--version] [-t TYPE] file
-
-show the constitution of a file. Supported file types ... hdf5, pickle, numpy,
-np_pickle, tar, zip, sqlite3, raw_image, jupyter, xpm, stl, fits. To see the
-detailed help of each type, type 'aftviewer help -t TYPE'.
-
-positional arguments:
-  file                  input file
-
-options:
-  -h, --help            show this help message and exit
-  --version, -V         show program's version number and exit
-  -t TYPE, --type TYPE  specify the file type. Available types are hdf5,
-                        pickle, numpy, np_pickle, tar, zip, sqlite3,
-                        raw_image, jupyter, xpm, stl, fits. "aftviewer help -t
-                        TYPE" will show the detailed help.
-
-AFTViewer has some subcommands, 'aftviewer help -t TYPE' shows detailed help,
-'aftviewer update' run the update command of AFTViewer, 'aftviewer
-config_list' shows the current optional configuration, 'aftviewer
-shell_completion --bash >> ~/.bashrc' or 'aftviewer shell_completion --zsh >>
-~/.zshrc' set the completion script for bash/zsh.
+aftviewer [-t TYPE] file
+```
+shows the constitution of a file.
+To see the detailed options, subcommands, and supported file types, type
+```bash
+aftviewer -h
 ```
 
+---
+To see the details of available options for each file type, type
+```bash
+aftviewer help -t TYPE
+```
+To update this command, type
+```bash
+aftviewer update
+```
+To show the list of current [configurations](https://github.com/MeF0504/aftviewer/wiki/Customization#parameters), type
+```bash
+aftviewer config_list
+```
+To set the shell completion, type
+```bash
+# bash
+aftviewer shell_completion --bash >> ~/.bashrc
+# zsh
+aftviewer shell_completion --zsh >> ~/.zshrc
+```
