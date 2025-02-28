@@ -7,7 +7,7 @@ import subprocess
 import mimetypes
 from typing import Any
 from types import ModuleType
-from importlib import import_module, metadata
+from importlib import import_module
 from pathlib import Path
 from logging import getLogger
 
@@ -16,9 +16,6 @@ from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
 logger = getLogger(GLOBAL_CONF.logname)
-__imped_libs = [dst.metadata['Name'] for dst in metadata.distributions()]
-__il_str = '\n'.join([f'  {x}' for x in __imped_libs])
-logger.debug(f'imported libs: {__il_str}')
 
 # image viewer
 # not set, module in this package, or external command.
@@ -66,24 +63,19 @@ def __collect_image_viewers() -> list[str]:
 
 def __get_mod(img_viewer: None | str) -> None | ModuleType:
     add_lib_str = str(GLOBAL_CONF.conf_dir/'.lib')
-    add_path = GLOBAL_CONF.conf_dir/f'.lib/add_image_viewers/{img_viewer}.py'
-    lib_path = Path(__file__).parent/f'{img_viewer}.py'
-    if img_viewer in __imped_libs:
-        if add_path.is_file():
+    try:
+        add_path = GLOBAL_CONF.conf_dir/f'.lib/add_image_viewers/{img_viewer}.py'
+        if (Path(__file__).parent/f'{img_viewer}.py').is_file():
+            mod = import_module(f'aftviewer.core.image_viewer.{img_viewer}')
+        elif add_path.is_file():
             if add_lib_str not in sys.path:
                 logger.debug(f'add {add_lib_str} to sys.path (iv).')
                 sys.path.insert(0, add_lib_str)
-            lib_path = add_path
-            lib_path2 = f'add_image_viewers.{img_viewer}'
-        elif lib_path.is_file():
-            lib_path2 = f'aftviewer.core.image_viewer.{img_viewer}'
+            mod = import_module(f'add_image_viewers.{img_viewer}')
         else:
-            logger.error(f'library {img_viewer} is not found.')
-    try:
-        mod = import_module(lib_path2)
-    except ImportError as e:
-        logger.error(f'load image viewer @ {lib_path}'
-                     f' failed({type(e).__name__}: {e})')
+            raise OSError(f'library {img_viewer} is not found.')
+    except Exception as e:
+        logger.error(f'load image viewer failed({type(e).__name__}: {e})')
         return None
     return mod
 
