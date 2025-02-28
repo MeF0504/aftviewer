@@ -31,7 +31,7 @@ if 'XDG_CONFIG_HOME' in os.environ:
 else:
     __conf_dir = Path(os.path.expanduser('~/.config'))/'aftviewer'
 if not __conf_dir.exists():
-    os.makedirs(__conf_dir, mode=0o755)
+    (__conf_dir/'.lib').mkdir(mode=0o755, parents=True)
 
 # load config file.
 with (Path(__file__).parent/'default.json').open('r') as f:
@@ -544,12 +544,13 @@ def __load_lib(args: Args) -> None | ModuleType:
 
     # lib_path  -> python import style
     # lib_path2 -> file path
+    add_lib_str = str(__conf_dir/'.lib')
     if args.type in __add_types:
-        if str(__conf_dir) not in sys.path:
-            __logger.debug(f'add {str(__conf_dir)} to sys.path.')
-            sys.path.insert(0, str(__conf_dir))
-        lib_path = f'additional_types.{args.type}'
-        lib_path2 = __conf_dir/f'additional_types/{args.type}.py'
+        if add_lib_str not in sys.path:
+            __logger.debug(f'add {add_lib_str} to sys.path.')
+            sys.path.insert(0, add_lib_str)
+        lib_path = f'add_viewers.{args.type}'
+        lib_path2 = __conf_dir/f'.lib/add_viewers/{args.type}.py'
     else:
         lib_path = f'aftviewer.viewers.{args.type}'
         lib_path2 = Path(__file__).parent.parent

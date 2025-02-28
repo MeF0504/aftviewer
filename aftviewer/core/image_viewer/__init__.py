@@ -48,7 +48,7 @@ def __collect_image_viewers() -> list[str]:
         logger.debug(f'add {iv_name} to img_viewers')
         # arbitary setting?
         img_viewers.insert(0, iv_name)
-    add_dir = Path(GLOBAL_CONF.conf_dir/'additional_ivs')
+    add_dir = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
     for fy in add_dir.glob('*'):
         if not fy.is_file():
             continue
@@ -62,16 +62,17 @@ def __collect_image_viewers() -> list[str]:
 
 
 def __get_mod(img_viewer: None | str) -> None | ModuleType:
+    add_lib_str = str(GLOBAL_CONF.conf_dir/'.lib')
     try:
-        add_path = GLOBAL_CONF.conf_dir/f'additional_ivs/{img_viewer}.py'
+        add_path = GLOBAL_CONF.conf_dir/f'.lib/add_image_viewers/{img_viewer}.py'
         if (Path(__file__).parent/f'{img_viewer}.py').is_file():
             mod = import_module(f'aftviewer.core.image_viewer.{img_viewer}')
         elif add_path.is_file():
-            if str(GLOBAL_CONF.conf_dir) not in sys.path:
-                logger.debug(f'add {str(GLOBAL_CONF.conf_dir)}'
+            if add_lib_str not in sys.path:
+                logger.debug(f'add {add_lib_str}'
                              ' to sys.path (iv).')
-                sys.path.insert(0, str(GLOBAL_CONF.conf_dir))
-            mod = import_module(f'additional_ivs.{img_viewer}')
+                sys.path.insert(0, add_lib_str)
+            mod = import_module(f'add_image_viewers.{img_viewer}')
         else:
             raise OSError(f'library {img_viewer} is not found.')
     except Exception as e:
