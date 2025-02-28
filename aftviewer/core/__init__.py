@@ -9,6 +9,7 @@ import subprocess
 import tarfile
 import mimetypes
 import pprint
+import inspect
 from importlib import import_module
 from pathlib import Path, PurePath
 from typing import Any, Literal
@@ -64,8 +65,13 @@ __type_config = {
 __type_config.update(__add_types)
 
 # logger setting
-__logname = 'AFTViewerLog'
-__log_file = __conf_dir/'debug.log'
+__logname = inspect.stack()[-1].filename  # command path
+if '_get_aftviewer_types' in __logname:
+    __log_file = __conf_dir/'debug2.log'
+elif 'aftviewer' in __logname:
+    __log_file = __conf_dir/'debug1.log'
+else:
+    __log_file = __conf_dir/'debug0.log'
 __logger = getLogger(__logname)
 # (NOTSET <) DEBUG < INFO < WARNING < ERROR < CRITICAL
 # see https://docs.python.org/3/library/logging.html#logging-levels
