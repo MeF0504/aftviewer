@@ -43,26 +43,6 @@ if (__conf_dir/'setting.json').is_file():
             __debug = bool(__user_opts['debug'])
         if 'force_default' in __user_opts and __user_opts['force_default']:
             __user_opts = {}
-        if 'additional_types' in __user_opts:
-            __add_types = __user_opts['additional_types']
-
-# set supported file types
-__type_config = {
-    "hdf5": "hdf5",
-    "pickle": "pkl pickle",
-    "numpy": "npy npz",
-    "np_pickle": "",
-    "tar": "",  # tar is identified by tarfile module.
-    "zip": "zip",
-    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
-    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
-    "jupyter": "ipynb",
-    "e-mail": "eml",
-    "xpm": "xpm",
-    "stl": "stl",
-    "fits": "fits fit",
-}
-__type_config.update(__add_types)
 
 # logger setting
 __logname = inspect.stack()[-1].filename  # command path
@@ -102,6 +82,38 @@ def __set_logger():
 
 __set_logger()
 __logger.debug(f'src: {__file__}')
+
+
+def __update_add_types():
+    if (__conf_dir/'.lib/add_types.txt').is_file():
+        with open(__conf_dir/'.lib/add_types.txt', 'r') as f:
+            for line in f:
+                line = line.replace('\n', '')
+                add_type, exts = line.split('\t')
+                __add_types[add_type] = exts
+                __logger.debug(f'add {add_type}, "{exts}" in add_types.')
+    else:
+        __logger.info('add_types is not found.')
+
+
+# set supported file types
+__type_config = {
+    "hdf5": "hdf5",
+    "pickle": "pkl pickle",
+    "numpy": "npy npz",
+    "np_pickle": "",
+    "tar": "",  # tar is identified by tarfile module.
+    "zip": "zip",
+    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
+    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
+    "jupyter": "ipynb",
+    "e-mail": "eml",
+    "xpm": "xpm",
+    "stl": "stl",
+    "fits": "fits fit",
+}
+__update_add_types()
+__type_config.update(__add_types)
 
 
 def __set_user_opts(config: None | dict[str, Any],
