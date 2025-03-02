@@ -534,6 +534,13 @@ def __set_filetype(args: Args) -> None:
     __logger.debug('file type is not set.')
 
 
+def __add_lib2path():
+    add_lib_str = str(__conf_dir/'.lib')
+    if add_lib_str not in sys.path:
+        __logger.debug(f'add {add_lib_str} to sys.path.')
+        sys.path.insert(0, add_lib_str)
+
+
 def __load_lib(args: Args) -> None | ModuleType:
     if args.type is None:
         __logger.debug('file type is None')
@@ -544,11 +551,8 @@ def __load_lib(args: Args) -> None | ModuleType:
 
     # lib_path  -> python import style
     # lib_path2 -> file path
-    add_lib_str = str(__conf_dir/'.lib')
     if args.type in __add_types:
-        if add_lib_str not in sys.path:
-            __logger.debug(f'add {add_lib_str} to sys.path.')
-            sys.path.insert(0, add_lib_str)
+        __add_lib2path()
         lib_path = f'add_viewers.{args.type}'
         lib_path2 = __conf_dir/f'.lib/add_viewers/{args.type}.py'
     else:

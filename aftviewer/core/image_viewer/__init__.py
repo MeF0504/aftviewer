@@ -11,7 +11,7 @@ from importlib import import_module
 from pathlib import Path
 from logging import getLogger
 
-from .. import GLOBAL_CONF, args_chk, get_config, Args
+from .. import GLOBAL_CONF, args_chk, get_config, Args, __add_lib2path
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
@@ -62,15 +62,12 @@ def __collect_image_viewers() -> list[str]:
 
 
 def __get_mod(img_viewer: None | str) -> None | ModuleType:
-    add_lib_str = str(GLOBAL_CONF.conf_dir/'.lib')
+    __add_lib2path()
     try:
         add_path = GLOBAL_CONF.conf_dir/f'.lib/add_image_viewers/{img_viewer}.py'
         if (Path(__file__).parent/f'{img_viewer}.py').is_file():
             mod = import_module(f'aftviewer.core.image_viewer.{img_viewer}')
         elif add_path.is_file():
-            if add_lib_str not in sys.path:
-                logger.debug(f'add {add_lib_str} to sys.path (iv).')
-                sys.path.insert(0, add_lib_str)
             mod = import_module(f'add_image_viewers.{img_viewer}')
         else:
             raise OSError(f'library {img_viewer} is not found.')
