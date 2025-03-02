@@ -22,7 +22,7 @@ documentation = "https://github.com/MeF0504/aftviewer/wiki"
 repository = "https://github.com/MeF0504/aftviewer"
 [project.scripts]
 aftviewer = "aftviewer.cli:main"
-_get_aftviewer_types = "aftviewer.cli:get_types"
+_get_aftviewer_types = "aftviewer.cli.get_types:main"
 [project.optional-dependencies]
 # https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies
 numpy = ["numpy"]

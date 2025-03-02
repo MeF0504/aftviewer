@@ -16,7 +16,6 @@ from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
                     print_key, print_error, cprint,
                     args_chk, get_config, get_col)
 from ..core.__version__ import VERSION
-from ..core.image_viewer import __collect_image_viewers
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args
 
@@ -240,13 +239,3 @@ def main() -> None:
     else:
         lib.main(fpath, args)
     return
-
-
-def get_types():
-    if len(sys.argv) < 2:
-        return ""
-    elif sys.argv[1] == 'type':
-        supported_type = list(GLOBAL_CONF.types.keys()).copy()
-        print(' '.join(supported_type))
-    elif sys.argv[1] == 'image_viewer':
-        print(' '.join(__collect_image_viewers()))
