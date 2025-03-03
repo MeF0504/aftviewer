@@ -57,5 +57,13 @@ def main():
         print_warning('Number of arguments of add_args is not 1.')
 
     add_txt = GLOBAL_CONF.conf_dir/'.lib/add_types.txt'
-    with open(add_txt, 'a') as f:
+    add_types = {}
+    with open(add_txt, 'r') as f:
+        for line in f:
+            line = line.replace('\n', '')
+            add_type, exts = line.split('\t')
+            add_types[add_type] = exts
+    with open(add_txt, 'w') as f:
+        for t, e in add_types.items():
+            f.write(f'{t}\t{e}\n')
         f.write(f'{type_name}\t{" ".join(args.ext)}\n')
