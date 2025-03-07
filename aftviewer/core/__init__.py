@@ -248,7 +248,7 @@ def cprint(str1: str, str2: str = '',
     bg: str, int, or None
         The key of the background color. Possible values are the same as fg.
     **kwargs:
-        Keyword arguments passed to the print function.
+        Keyword arguments to be passed to the print function.
 
     Returns
     -------
@@ -414,24 +414,26 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
                 print_error(f'"{key_name}" is not a correct name')
 
 
-def print_error(msg: str) -> None:
+def print_error(msg: str, **kwargs) -> None:
     """
     print error message.
 
     Parameters
     ----------
     msg: string
-        error message.
+        Error message.
+    **kwargs
+        Keyword arguments to be passed to the print function.
 
     Returns
     -------
     None
     """
     fg, bg = get_col('msg_error')
-    cprint(msg, fg=fg, bg=bg)
+    cprint(msg, fg=fg, bg=bg, **kwargs)
 
 
-def print_warning(msg: str) -> None:
+def print_warning(msg: str, **kwargs) -> None:
     """
     print warning message.
 
@@ -439,16 +441,18 @@ def print_warning(msg: str) -> None:
     ----------
     msg: string
         warning message.
+    **kwargs
+        Keyword arguments to be passed to the print function.
 
     Returns
     -------
     None
     """
     fg, bg = get_col('msg_warn')
-    cprint(msg, fg=fg, bg=bg)
+    cprint(msg, fg=fg, bg=bg, **kwargs)
 
 
-def print_key(key_name: str) -> None:
+def print_key(key_name: str, **kwargs) -> None:
     """
     print the key name with emphasis.
 
@@ -456,13 +460,15 @@ def print_key(key_name: str) -> None:
     ----------
     key_name: str
         the key name.
+    **kwargs
+        Keyword arguments to be passed to the print function.
 
     Returns
     -------
     None
     """
     fg, bg = get_col('msg_key_name')
-    cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg)
+    cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg, **kwargs)
 
 
 def run_system_cmd(fname: str) -> bool:
