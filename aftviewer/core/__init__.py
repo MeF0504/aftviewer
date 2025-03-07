@@ -48,6 +48,8 @@ if (__conf_dir/'setting.json').is_file():
 __logname = inspect.stack()[-1].filename  # command path
 if '_get_aftviewer_types' in __logname:
     __log_file = __conf_dir/'debug2.log'
+elif 'aftviewer-libinstaller' in __logname:
+    __log_file = __conf_dir/'debug3.log'
 elif 'aftviewer' in __logname:
     __log_file = __conf_dir/'debug1.log'
 else:
