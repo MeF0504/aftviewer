@@ -17,18 +17,9 @@ Default values: [default.json](https://github.com/MeF0504/aftviewer/blob/main/af
 # parameters
 
 This json file should be consist of one dictionary.
-The keys could be specified in this dictionary are "additional_types", "config", and "colors".  
+The keys could be specified in this dictionary are "config", and "colors".  
 The details are following.
 """
-add_types = """## "additional_types"
-**type: dictionary**  
-A dictionary to define the additional supporting file types and their extension of files.
-A module name of an additional type is the key name of the dictionary, and the value is the string of extensions with separated by space.
-e.g. `"png_sample": "png jpeg jpg"`.  
-Note that you need to put the script corresponding to this file type in the `additional_types` in the configuration directory.
-See the [[Extension page|Extension]] for detail.
-"""
-
 config = """## "config"
 **type: dictionary**  
 This dictionary define default values of configuration parameters.
