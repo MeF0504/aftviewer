@@ -23,6 +23,7 @@ from .types import CONF, Args, SF, COLType
 
 
 __debug = False
+__def = False
 __add_types = {}
 __user_opts = {}
 __filetype: str | None = None
@@ -42,6 +43,7 @@ if (__conf_dir/'setting.json').is_file():
         if 'debug' in __user_opts:
             __debug = bool(__user_opts['debug'])
         if 'force_default' in __user_opts and __user_opts['force_default']:
+            __def = True
             __user_opts = {}
 
 # logger setting
@@ -87,6 +89,9 @@ __logger.debug(f'src: {__file__}')
 
 
 def __update_add_types():
+    if __def:
+        __logger.info('force default.')
+        return
     if (__conf_dir/'.lib/add_types.txt').is_file():
         with open(__conf_dir/'.lib/add_types.txt', 'r') as f:
             for line in f:
@@ -120,6 +125,9 @@ __type_config.update(__add_types)
 
 def __set_user_opts(config: None | dict[str, Any],
                     colors: None | dict[str, tuple[COLType, COLType]]) -> None:
+    if __def:
+        __logger.info('force default.')
+        return
     if config is not None:
         __user_opts['config'] = config
     if colors is not None:
