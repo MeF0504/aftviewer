@@ -3,8 +3,9 @@ import argparse
 
 import pytest
 
-from aftviewer.cli import (main, get_types,
-                           get_args, show_opts, set_shell_comp, update)
+from aftviewer.cli import main, get_args, show_opts, set_shell_comp, update
+from aftviewer.cli.get_types import main as get_types
+from aftviewer.cli.installer import main as libinstaller
 
 
 def test_main():
@@ -15,6 +16,11 @@ def test_main():
 def test_get_types():
     # syntax check?
     get_types()
+
+
+def test_libinstaller():
+    # syntax check?
+    libinstaller()
 
 
 def test_get_args():

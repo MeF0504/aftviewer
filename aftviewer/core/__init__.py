@@ -9,6 +9,7 @@ import subprocess
 import tarfile
 import mimetypes
 import pprint
+import inspect
 from importlib import import_module
 from pathlib import Path, PurePath
 from typing import Any, Literal
@@ -22,6 +23,7 @@ from .types import CONF, Args, SF, COLType
 
 
 __debug = False
+__def = False
 __add_types = {}
 __user_opts = {}
 __filetype: str | None = None
@@ -30,7 +32,7 @@ if 'XDG_CONFIG_HOME' in os.environ:
 else:
     __conf_dir = Path(os.path.expanduser('~/.config'))/'aftviewer'
 if not __conf_dir.exists():
-    os.makedirs(__conf_dir, mode=0o755)
+    (__conf_dir/'.lib').mkdir(mode=0o755, parents=True)
 
 # load config file.
 with (Path(__file__).parent/'default.json').open('r') as f:
@@ -41,31 +43,19 @@ if (__conf_dir/'setting.json').is_file():
         if 'debug' in __user_opts:
             __debug = bool(__user_opts['debug'])
         if 'force_default' in __user_opts and __user_opts['force_default']:
+            __def = True
             __user_opts = {}
-        if 'additional_types' in __user_opts:
-            __add_types = __user_opts['additional_types']
-
-# set supported file types
-__type_config = {
-    "hdf5": "hdf5",
-    "pickle": "pkl pickle",
-    "numpy": "npy npz",
-    "np_pickle": "",
-    "tar": "",  # tar is identified by tarfile module.
-    "zip": "zip",
-    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
-    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
-    "jupyter": "ipynb",
-    "e-mail": "eml",
-    "xpm": "xpm",
-    "stl": "stl",
-    "fits": "fits fit",
-}
-__type_config.update(__add_types)
 
 # logger setting
-__logname = 'AFTViewerLog'
-__log_file = __conf_dir/'debug.log'
+__logname = inspect.stack()[-1].filename  # command path
+if '_get_aftviewer_types' in __logname:
+    __log_file = __conf_dir/'debug2.log'
+elif 'aftviewer-libinstaller' in __logname:
+    __log_file = __conf_dir/'debug3.log'
+elif 'aftviewer' in __logname:
+    __log_file = __conf_dir/'debug1.log'
+else:
+    __log_file = __conf_dir/'debug0.log'
 __logger = getLogger(__logname)
 # (NOTSET <) DEBUG < INFO < WARNING < ERROR < CRITICAL
 # see https://docs.python.org/3/library/logging.html#logging-levels
@@ -98,8 +88,46 @@ __set_logger()
 __logger.debug(f'src: {__file__}')
 
 
+def __update_add_types():
+    if __def:
+        __logger.info('force default.')
+        return
+    if (__conf_dir/'.lib/add_types.txt').is_file():
+        with open(__conf_dir/'.lib/add_types.txt', 'r') as f:
+            for line in f:
+                line = line.replace('\n', '')
+                add_type, exts = line.split('\t')
+                __add_types[add_type] = exts
+                __logger.debug(f'add {add_type}, "{exts}" in add_types.')
+    else:
+        __logger.info('add_types is not found.')
+
+
+# set supported file types
+__type_config = {
+    "hdf5": "hdf5",
+    "pickle": "pkl pickle",
+    "numpy": "npy npz",
+    "np_pickle": "",
+    "tar": "",  # tar is identified by tarfile module.
+    "zip": "zip",
+    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
+    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
+    "jupyter": "ipynb",
+    "e-mail": "eml",
+    "xpm": "xpm",
+    "stl": "stl",
+    "fits": "fits fit",
+}
+__update_add_types()
+__type_config.update(__add_types)
+
+
 def __set_user_opts(config: None | dict[str, Any],
                     colors: None | dict[str, tuple[COLType, COLType]]) -> None:
+    if __def:
+        __logger.info('force default.')
+        return
     if config is not None:
         __user_opts['config'] = config
     if colors is not None:
@@ -230,7 +258,7 @@ def cprint(str1: str, str2: str = '',
     bg: str, int, or None
         The key of the background color. Possible values are the same as fg.
     **kwargs:
-        Keyword arguments passed to the print function.
+        Keyword arguments to be passed to the print function.
 
     Returns
     -------
@@ -396,24 +424,26 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
                 print_error(f'"{key_name}" is not a correct name')
 
 
-def print_error(msg: str) -> None:
+def print_error(msg: str, **kwargs) -> None:
     """
     print error message.
 
     Parameters
     ----------
     msg: string
-        error message.
+        Error message.
+    **kwargs
+        Keyword arguments to be passed to the print function.
 
     Returns
     -------
     None
     """
     fg, bg = get_col('msg_error')
-    cprint(msg, fg=fg, bg=bg)
+    cprint(msg, fg=fg, bg=bg, **kwargs)
 
 
-def print_warning(msg: str) -> None:
+def print_warning(msg: str, **kwargs) -> None:
     """
     print warning message.
 
@@ -421,16 +451,18 @@ def print_warning(msg: str) -> None:
     ----------
     msg: string
         warning message.
+    **kwargs
+        Keyword arguments to be passed to the print function.
 
     Returns
     -------
     None
     """
     fg, bg = get_col('msg_warn')
-    cprint(msg, fg=fg, bg=bg)
+    cprint(msg, fg=fg, bg=bg, **kwargs)
 
 
-def print_key(key_name: str) -> None:
+def print_key(key_name: str, **kwargs) -> None:
     """
     print the key name with emphasis.
 
@@ -438,13 +470,15 @@ def print_key(key_name: str) -> None:
     ----------
     key_name: str
         the key name.
+    **kwargs
+        Keyword arguments to be passed to the print function.
 
     Returns
     -------
     None
     """
     fg, bg = get_col('msg_key_name')
-    cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg)
+    cprint('<<< {} >>>'.format(key_name), '', fg=fg, bg=bg, **kwargs)
 
 
 def run_system_cmd(fname: str) -> bool:
@@ -528,6 +562,13 @@ def __set_filetype(args: Args) -> None:
     __logger.debug('file type is not set.')
 
 
+def __add_lib2path():
+    add_lib_str = str(__conf_dir/'.lib')
+    if add_lib_str not in sys.path:
+        __logger.debug(f'add {add_lib_str} to sys.path.')
+        sys.path.insert(0, add_lib_str)
+
+
 def __load_lib(args: Args) -> None | ModuleType:
     if args.type is None:
         __logger.debug('file type is None')
@@ -539,11 +580,9 @@ def __load_lib(args: Args) -> None | ModuleType:
     # lib_path  -> python import style
     # lib_path2 -> file path
     if args.type in __add_types:
-        if str(__conf_dir) not in sys.path:
-            __logger.debug(f'add {str(__conf_dir)} to sys.path.')
-            sys.path.insert(0, str(__conf_dir))
-        lib_path = f'additional_types.{args.type}'
-        lib_path2 = __conf_dir/f'additional_types/{args.type}.py'
+        __add_lib2path()
+        lib_path = f'add_viewers.{args.type}'
+        lib_path2 = __conf_dir/f'.lib/add_viewers/{args.type}.py'
     else:
         lib_path = f'aftviewer.viewers.{args.type}'
         lib_path2 = Path(__file__).parent.parent

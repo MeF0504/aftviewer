@@ -34,8 +34,6 @@ def get_def_val(val):
 
 print(root_desc['intro'])
 
-print(root_desc['add_types'])
-
 print(root_desc['config'])
 
 assert default['config'].keys() == config_desc.keys(), "config key not match."
