@@ -10,3 +10,11 @@ def test_api_doc():
 
 def test_options():
     from wikiutil import print_options
+
+
+def test_intro():
+    try:
+        from wikiutil import print_intro
+    except AssertionError:
+        # assert error is acceptable.
+        pass
