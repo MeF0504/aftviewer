@@ -3,11 +3,11 @@ import tempfile
 import base64
 from pathlib import Path
 from email.parser import BytesParser
-from email import policy
+from email import policy, message
 from logging import getLogger
 
 from .. import (GLOBAL_CONF, Args, help_template, print_key,
-                show_image_file, get_config, run_system_cmd,
+                show_image_file, get_config, run_system_cmd, get_timezone,
                 add_args_encoding, add_args_specification,
                 add_args_imageviewer)
 logger = getLogger(GLOBAL_CONF.logname)
@@ -32,6 +32,21 @@ def show_help() -> None:
     print(helpmsg)
 
 
+def show_headers(keys: list[str], msg: message.Message) -> None:
+    for k in keys:
+        if k in msg:
+            info = msg[k]
+            if hasattr(info, 'datetime'):
+                date_fmt = get_config('date_format')
+                tz = get_timezone()
+                date = info.datetime.astimezone(tz)
+                print(f'{k}: {date.strftime(date_fmt)}')
+            else:
+                print(f'{k}: {info}')
+        else:
+            logger.error(f'"{k}" not found in the email header.')
+
+
 def main(fpath: Path, args: Args):
     with open(fpath, 'rb') as f:
         msg = BytesParser(policy=policy.default).parse(f)
@@ -49,11 +64,7 @@ def main(fpath: Path, args: Args):
         keys = args.key
         if keys is None:
             keys = get_config('headers')
-        for k in keys:
-            if k in msg:
-                print(f'{k}: {msg[k]}')
-            else:
-                logger.error(f'"{k}" not found in the email header.')
+        show_headers(keys, msg)
         if msg.is_multipart():
             logger.info('multi part')
             tmpdir = tempfile.TemporaryDirectory()

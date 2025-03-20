@@ -87,6 +87,19 @@ desc = """Arguments used when opening a file with system command in interactive_
 "%c" and "%s" are replaced like "iv_exec_cmd" case,
 "%c" is replaced by "system_cmd" and "%s" is replaced by the file path to open."""
 
+[config.defaults.timezone]
+type = "null/string"
+desc = """Timezone of the current system.
+If null is set, use the system default timezone.
+Available timezone names are based on [zoneinfo](https://docs.python.org/ja/3/library/zoneinfo.html).
+"""
+
+[config.defaults.date_format]
+type = "string"
+desc = """String format to show the datetime objects.
+See https://docs.python.org/ja/3/library/datetime.html#format-codes for more information.
+"""
+
 [config.defaults.pp_kwargs]
 type = "dictionary"
 desc = """A dictionary passed to the `pprint.pprint()` or `pprint.pformat()` functions as a keyword arguments.
