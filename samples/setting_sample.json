@@ -1,7 +1,4 @@
 {
-    "additional_types": {
-        "show_image": "png jpeg jpg"
-    },
     "config": {
         "defaults": {
             "image_viewer": "open",
