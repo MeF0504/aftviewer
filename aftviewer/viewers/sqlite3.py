@@ -3,6 +3,7 @@ import sqlite3
 from functools import partial
 from pathlib import PurePosixPath
 from logging import getLogger
+# curses is not supported on Windows by default.
 try:
     import curses
 except ImportError:
@@ -16,15 +17,15 @@ from .. import (GLOBAL_CONF, args_chk, print_key, cprint, print_error,
 from .. import ReturnMessage as RM
 from pymeflib.tree2 import branch_str, TreeViewer
 from ..core.cui import CursesCUI
-try:
+if 'tabulate' in GLOBAL_CONF.pack_list:
     from tabulate import tabulate
-except ImportError:
+    is_tabulate = True
+else:
     print("I can't find tabulate library.")
     is_tabulate = False
-else:
-    is_tabulate = True
 sel_items = ''
 logger = getLogger(GLOBAL_CONF.logname)
+logger.info(f'use tabulate: {is_tabulate}')
 
 
 def show_table(cursor, tables, table_path,

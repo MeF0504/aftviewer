@@ -14,16 +14,16 @@ from .. import (GLOBAL_CONF, args_chk, print_key, print_error,
 from .. import ReturnMessage as RM
 from pymeflib.tree2 import show_tree
 
-try:
+if 'numpy' in GLOBAL_CONF.pack_list:
     import numpy as np
-except ImportError:
-    imp_np = False
-else:
     imp_np = True
     opts = get_config('numpy_printoptions')
     np.set_printoptions(**opts)
+else:
+    imp_np = False
 logger = getLogger(GLOBAL_CONF.logname)
 pargs = get_config('pp_kwargs')
+logger.info(f'use numpy: {imp_np}')
 
 
 def show_hdf5(h5_file, cpath, **kwargs):

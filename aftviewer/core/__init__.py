@@ -10,7 +10,7 @@ import tarfile
 import mimetypes
 import pprint
 import inspect
-from importlib import import_module
+from importlib import import_module, metadata
 from pathlib import Path, PurePath
 from typing import Any, Literal
 from types import ModuleType
@@ -134,11 +134,22 @@ def __set_user_opts(config: None | dict[str, Any],
         __user_opts['colors'] = colors
 
 
+def __get_packs() -> list[str]:
+    pack_list = []
+    for dst in metadata.distributions():
+        pack_list.append(dst.metadata['Name'])
+    __logger.debug('installed packages:\n'
+                   f'{pprint.pformat(pack_list, compact=True)}')
+    return pack_list
+
+
 # global variables
 GLOBAL_CONF = CONF(__debug,
                    __conf_dir,
                    __type_config,
-                   __logname)
+                   __logname,
+                   __get_packs(),
+                   )
 
 
 def args_chk(args: Args, attr: str) -> bool:
