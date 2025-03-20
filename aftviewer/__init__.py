@@ -4,7 +4,7 @@ from pymeflib.color import FG, BG, FG256, BG256, END
 from .core.types import Args, ReturnMessage
 from .core import GLOBAL_CONF
 from .core import (get_config, args_chk, cprint, print_key, get_col,
-                   interactive_view, run_system_cmd,
+                   get_timezone, interactive_view, run_system_cmd,
                    print_error, print_warning)
 from .core.image_viewer import is_image, show_image_file, show_image_ndarray
 from .core.helpmsg import (help_template,

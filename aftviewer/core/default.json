@@ -6,6 +6,8 @@
             "iv_exec_cmd": ["%c", "%s"],
             "system_cmd": null,
             "system_cmd_args": ["%c", "%s"],
+            "timezone": null,
+            "date_format": "%x-%X (%Z)",
             "pp_kwargs": {"compact": true},
             "numpy_printoptions": {"threshold": 300},
             "cui_linenumber": false,

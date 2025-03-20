@@ -14,8 +14,9 @@ from importlib import import_module, metadata
 from pathlib import Path, PurePath
 from typing import Any, Literal
 from types import ModuleType
-from logging import getLogger, StreamHandler, FileHandler, NullHandler, \
-    Formatter, DEBUG as logDEBUG, INFO as logINFO
+from logging import (getLogger, StreamHandler, FileHandler, NullHandler,
+                     Formatter, DEBUG as logDEBUG, INFO as logINFO)
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer, GC, PPath
@@ -353,6 +354,33 @@ def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
     else:
         __logger.error(f'color name "{name}" not found in default file.')
         return None, None
+
+
+def get_timezone() -> None | ZoneInfo:
+    """
+    Return the timezone variable based on the option "timezone".
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None | zoneinfo.ZoneInfo
+        Return ZoneInfo if the "timezone" option is not None and acceptable
+        for the ZoneInfo function.
+        Otherwise, return None.
+    """
+    tz = get_config('timezone')
+    if tz is None:
+        ret = None
+    else:
+        try:
+            ret = ZoneInfo(tz)
+        except ZoneInfoNotFoundError as e:
+            __logger.warning(f'timezone "{tz}" is not found; {e}')
+            ret = None
+    return ret
 
 
 def interactive_view(fname: str, get_contents: GC, show_func: SF,
