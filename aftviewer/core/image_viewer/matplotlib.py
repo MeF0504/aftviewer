@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 
 from .. import GLOBAL_CONF
 
-try:
+if "screeninfo" in GLOBAL_CONF.pack_list:
     from screeninfo import get_monitors
-except ImportError:
-    get_screen = False
-else:
     get_screen = True
+else:
+    get_screen = False
 logger = getLogger(GLOBAL_CONF.logname)
+logger.info(f'use screeninfo: {get_screen}')
 
 
 def clear_mpl_axes(axes):

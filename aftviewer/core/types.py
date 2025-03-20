@@ -19,14 +19,16 @@ class CONF:
         default: "$XDG_CONFIG_HOME/aftviewer" or "~/.config/aftviewer"
     types: dict
         Supported file types and its extensions.
-        This dictionary is overridden by "additional_types" in opts.
     logname: str
         Log name used in logger.
+    pack_list: list[str]
+        List of package names that are installed.
     """
     debug: bool
     conf_dir: Path
     types: dict
     logname: str
+    pack_list: list[str]
 
 
 @dataclass
