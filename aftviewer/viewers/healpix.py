@@ -29,6 +29,8 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                         action='store_true')
     parser.add_argument('--norm', help='specify color normalization',
                         choices=['hist', 'log', 'None'])
+    parser.add_argument('--nest', help='read map as NEST ordering.',
+                        action='store_true')
     parser.add_argument('--coord', help='Either one of "G", "E" or "C"'
                         ' to describe the coordinate system of the map,'
                         ' or a sequence of 2 of these to rotate the map from'
@@ -117,6 +119,12 @@ def main(fpath: Path, args: Args):
     if len(coord) == 0:
         coord = None
 
+    # nest
+    if hasattr(args, 'nest'):
+        nest = args.nest
+    else:
+        nest = False
+
     # show C_\ell or not
     if hasattr(args, 'cl'):
         cl = args.cl
@@ -124,7 +132,7 @@ def main(fpath: Path, args: Args):
         cl = False
 
     # get and show maps
-    heal_maps, headers = hp.read_map(fpath, field=fields, h=True)
+    heal_maps, headers = hp.read_map(fpath, field=fields, h=True, nest=nest)
     # get field names
     logger.debug(f'fields: {fields}')
     names = []
