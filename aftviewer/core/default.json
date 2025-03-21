@@ -29,6 +29,12 @@
         },
         "e-mail": {
             "headers": ["Subject", "From", "To", "Date"]
+        },
+        "healpix": {
+            "projection": "mollweide",
+            "map_limit": [null, null],
+            "norm": "None",
+            "coord": null
         }
     },
     "colors": {
@@ -55,12 +61,6 @@
             "input_color": ["c", null],
             "output_color": ["r", null],
             "type_color": ["g", null]
-        },
-        "healpix": {
-            "projection": "mollweide",
-            "map_limit": [null, null],
-            "norm": "None",
-            "coord": null
         }
     }
 }
