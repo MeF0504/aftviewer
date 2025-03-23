@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 from pymeflib import plot as mefplot
 from aftviewer import (GLOBAL_CONF, Args,
-                       args_chk, help_template, get_config, add_args_key,
-                       print_error,
+                       args_chk, get_config, print_error,
+                       help_template, add_args_key, add_args_output,
                        )
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -19,15 +19,17 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                  help='Specify the index to show.'
                       ' If no key is specified, show the list of map types.',
                  type=int, default=None)
+    add_args_output(parser,
+                    help='Save image files at OUTPUT directory.')
     parser.add_argument('--projection', help='specify the projection',
                         choices=['mollweide', 'gnomonic',
                                  'cartesian', 'orthographic'],
                         )
-    parser.add_argument('--cl', help='show power spectra',
+    parser.add_argument('--cl', help='Calculate and show power spectra.',
                         action='store_true')
-    parser.add_argument('--norm', help='specify color normalization',
+    parser.add_argument('--norm', help='Specify color normalization.',
                         choices=['hist', 'log', 'None'])
-    parser.add_argument('--nest', help='read map as NEST ordering.',
+    parser.add_argument('--nest', help='Read map as NEST ordering.',
                         action='store_true')
     parser.add_argument('--coord', help='Either one of "G", "E" or "C"'
                         ' to describe the coordinate system of the map,'
@@ -139,6 +141,13 @@ def main(fpath: Path, args: Args):
     else:
         idcs = None
 
+    if args_chk(args, 'output'):
+        save_dir = Path(args.output)
+        if not save_dir.is_dir():
+            save_dir.mkdir(parents=True)
+    else:
+        save_dir = None
+
     # set viewer (visualization function)
     projection = set_projection(args)
     if projection == 'mollweide':
@@ -204,6 +213,9 @@ def main(fpath: Path, args: Args):
         viewer(heal_map_plot, title=f'{fname} ({name})',
                min=tmpmin, max=tmpmax,
                coord=coord, norm=norm, fig=1, sub=(Lmaps, 1, i+1))
+    if save_dir is not None:
+        fig1 = plt.gcf()
+        fig1.savefig(save_dir/'healpix_maps.pdf')
 
     if cl:
         if Lmaps in (1, 3):
@@ -211,7 +223,6 @@ def main(fpath: Path, args: Args):
             # assume I map or  I, Q, U maps
             # to TT or TT, EE, BB, TE, EB, TB
             cls = hp.anafast(heal_maps[map_idcs], pol=True)
-            print(cls.shape)
             if len(cls.shape) == 1:
                 cls = [cls]
             Lcl = len(cls)
@@ -227,7 +238,12 @@ def main(fpath: Path, args: Args):
                     ax2s[i].set_xlabel(r'$\ell$')
                 else:
                     ax2s[i].set_xticklabels([])
+            if save_dir is not None:
+                fig2.savefig(save_dir/'healpix_power_spectra.pdf')
         else:
             print_error('To calculate Cl,'
                         f' the number of maps should be 1 or 3. Now {Lmaps}.')
-    plt.show()
+    if save_dir is None:
+        plt.show()
+    else:
+        plt.close()
