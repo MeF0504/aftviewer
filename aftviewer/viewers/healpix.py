@@ -101,7 +101,7 @@ def set_coordinate(args: Args) -> list[str] | None:
 
 
 def show_header(fpath: Path):
-    _, headers = hp.read_map(fpath, h=True)
+    _, headers = hp.read_map(fpath, h=True, field=None)
     info = {}
     for name, val in headers:
         if 'TTYPE' in name:
@@ -121,7 +121,11 @@ def show_header(fpath: Path):
     idcs = list(info.keys())
     idcs.sort()
     for i in idcs:
-        print(f'{i}: {info[i][0]} [{info[i][1]}]')
+        if len(info[i]) == 1:
+            msg = f'{i}: {info[i][0]}'
+        else:
+            msg = f'{i}: {info[i][0]} [{info[i][1]}]'
+        print(msg)
 
 
 def main(fpath: Path, args: Args):
@@ -177,6 +181,9 @@ def main(fpath: Path, args: Args):
     else:
         map_idcs = np.array(idcs)-1
     Lmaps = len(map_idcs)
+    if np.any(map_idcs < 0) or np.any(map_idcs >= Lmaps):
+        print_error(f'The acceptable range of --key is 1 <= KEY < {Lmaps}.')
+        return
     for i in map_idcs:
         name = names[i]
         if norm == 'log':
@@ -199,29 +206,28 @@ def main(fpath: Path, args: Args):
                coord=coord, norm=norm, fig=1, sub=(Lmaps, 1, i+1))
 
     if cl:
-        fig2 = plt.figure(figsize=(10, 5))
-        if Lmaps == 1:
-            # assume I map
-            cls = [hp.anafast(heal_maps[0], pol=False)]
-        elif Lmaps == 3:
-            # assume I, Q, U map
-            cls = hp.anafast(heal_maps[:3], pol=True)
-            # to TT, EE, BB, TE, EB, TB
+        if Lmaps in (1, 3):
+            fig2 = plt.figure(figsize=(10, 5))
+            # assume I map or  I, Q, U maps
+            # to TT or TT, EE, BB, TE, EB, TB
+            cls = hp.anafast(heal_maps[map_idcs], pol=True)
+            print(cls.shape)
+            if len(cls.shape) == 1:
+                cls = [cls]
+            Lcl = len(cls)
+            ax2s = mefplot.share_plot(fig2, len(cls), 1)
+            for i, cl in enumerate(cls):
+                ell = np.arange(len(cl))
+                dl = ell*(ell+1)/(2*np.pi)*cl
+                ax2s[i].plot(ell[2:], dl[2:], '-')
+                # ax2s[i].set_yscale('log')
+                if i == int(Lcl/2):
+                    ax2s[i].set_ylabel(r'$\ell(\ell+1)/2\pi\ C_{\ell}$')
+                if i == Lcl-1:
+                    ax2s[i].set_xlabel(r'$\ell$')
+                else:
+                    ax2s[i].set_xticklabels([])
         else:
-            print_error(f'Number of maps should be 1 or 3. Now {Lmaps}.')
-            plt.show()
-            return
-        Lcl = len(cls)
-        ax2s = mefplot.share_plot(fig2, len(cls), 1)
-        for i, cl in enumerate(cls):
-            ell = np.arange(len(cl))
-            dl = ell*(ell+1)/(2*np.pi)*cl
-            ax2s[i].plot(ell[2:], dl[2:], '-')
-            # ax2s[i].set_yscale('log')
-            if i == int(Lcl/2):
-                ax2s[i].set_ylabel(r'$\ell(\ell+1)/2\pi\ C_{\ell}$')
-            if i == Lcl-1:
-                ax2s[i].set_xlabel(r'$\ell$')
-            else:
-                ax2s[i].set_xticklabels([])
+            print_error('To calculate Cl,'
+                        f' the number of maps should be 1 or 3. Now {Lmaps}.')
     plt.show()
