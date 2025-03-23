@@ -177,7 +177,7 @@ def main(fpath: Path, args: Args):
     assert len(names) == len(heal_maps), 'Number of names and maps' \
         f' does not match: {len(names)}, {len(heal_maps)}.'
     if idcs is None:
-        map_idcs = range(len(names))
+        map_idcs = np.arange(len(names))
     else:
         map_idcs = np.array(idcs)-1
     Lmaps = len(map_idcs)
