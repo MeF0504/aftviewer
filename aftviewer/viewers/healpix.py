@@ -18,7 +18,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     add_args_key(parser,
                  help='Specify the index to show.'
                       ' If no key is specified, show the list of map types.',
-                 type=int, default=None)
+                 default=None)
     add_args_output(parser,
                     help='Save image files at OUTPUT directory.')
     parser.add_argument('--projection', help='specify the projection',
@@ -137,7 +137,12 @@ def main(fpath: Path, args: Args):
             show_header(fpath)
             return
         else:
-            idcs = args.key
+            try:
+                idcs = [int(k) for k in args.key]
+            except ValueError as e:
+                print_error('--key arguments should be indices (numbers).')
+                logger.debug(f'failed to convert int, {type(e).__name__}, {e}')
+                return
     else:
         idcs = None
 
