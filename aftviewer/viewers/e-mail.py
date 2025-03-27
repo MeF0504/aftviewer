@@ -4,9 +4,10 @@ import base64
 from pathlib import Path
 from email.parser import BytesParser
 from email import policy, message
+import mailbox
 from logging import getLogger
 
-from .. import (GLOBAL_CONF, Args, help_template, print_key,
+from .. import (GLOBAL_CONF, Args, help_template, print_key, print_error,
                 show_image_file, get_config, run_system_cmd, get_timezone,
                 add_args_encoding, add_args_specification,
                 add_args_imageviewer)
@@ -21,6 +22,12 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                            kwargs_k=kwargs_k, kwargs_v=kwargs_v)
     add_args_imageviewer(parser)
     add_args_encoding(parser)
+    type_group = parser.add_mutually_exclusive_group()
+    type_group.add_argument('--eml', help='Fource read the file'
+                            ' using the email package.', action='store_true')
+    type_group.add_argument('--mbox', help='Fource read the file'
+                            ' using the mailbox.mbox package.',
+                            action='store_true')
     parser.add_argument('--html',
                         help='output mail as html file if it possible.',
                         action='store_true')
@@ -47,7 +54,7 @@ def show_headers(keys: list[str], msg: message.Message) -> None:
             logger.error(f'"{k}" not found in the email header.')
 
 
-def main(fpath: Path, args: Args):
+def show_eml(fpath: Path, args: Args):
     with open(fpath, 'rb') as f:
         msg = BytesParser(policy=policy.default).parse(f)
 
@@ -105,3 +112,20 @@ def main(fpath: Path, args: Args):
             logger.info('single part')
             payload = msg.get_payload(decode=True)
             print(payload.decode(encoding, errors="replace"))
+
+
+def show_mbox(fpath: Path, args: Args):
+    pass
+
+
+def main(fpath: Path, args: Args):
+    if args.eml:
+        show_eml(fpath, args)
+    elif args.mbox:
+        show_mbox(fpath, args)
+    elif fpath.name.endswith('.eml'):
+        show_eml(fpath, args)
+    elif fpath.name.endswith('.mbox'):
+        show_mbox(fpath, args)
+    else:
+        print_error(f'Not supported file extension: {fpath}.')

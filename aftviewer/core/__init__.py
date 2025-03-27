@@ -115,7 +115,7 @@ __type_config = {
     "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
     "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
     "jupyter": "ipynb",
-    "e-mail": "eml",
+    "e-mail": "eml mbox",
     "xpm": "xpm",
     "stl": "stl",
     "fits": "fits fit",
