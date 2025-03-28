@@ -195,18 +195,19 @@ def main(fpath: Path, args: Args):
     else:
         map_idcs = np.array(idcs)-1
     Lmaps = len(map_idcs)
-    if np.any(map_idcs < 0) or np.any(map_idcs >= Lmaps):
-        print_error(f'The acceptable range of --key is 1 <= KEY < {Lmaps}.')
+    MaxMaps = len(heal_maps)
+    if np.any(map_idcs < 0) or np.any(map_idcs >= MaxMaps):
+        print_error(f'The acceptable range of --key is 1 <= KEY < {MaxMaps}.')
         return
-    for i in map_idcs:
-        name = names[i]
+    for i, x in enumerate(map_idcs):
+        name = names[x]
         if norm == 'log':
             # is this correct?
-            heal_map_plot = np.abs(heal_maps[i])
+            heal_map_plot = np.abs(heal_maps[x])
         else:
-            heal_map_plot = heal_maps[i]
+            heal_map_plot = heal_maps[x]
         NSIDE = hp.npix2nside(len(heal_map_plot))
-        logger.info(f'map{i}: {name}, {heal_map_plot.shape} (NSIDE {NSIDE}).')
+        logger.info(f'map{x}: {name}, {heal_map_plot.shape} (NSIDE {NSIDE}).')
         if mmin is None or np.nanmin(heal_map_plot) > mmin:
             tmpmin = np.nanmin(heal_map_plot)
         else:
