@@ -12,6 +12,7 @@ from .. import (GLOBAL_CONF, Args, help_template, print_key, print_error,
                 add_args_encoding, add_args_specification,
                 add_args_imageviewer)
 logger = getLogger(GLOBAL_CONF.logname)
+READ_DIR = True
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
@@ -115,7 +116,7 @@ def show_eml(fpath: Path, args: Args):
 
 
 def show_mbox(fpath: Path, args: Args):
-    pass
+    print('mbox')
 
 
 def main(fpath: Path, args: Args):

@@ -576,11 +576,11 @@ def __set_filetype(args: Args) -> None:
         __filetype = 'defaults'
         return
     fpath = Path(args.file)
-    if not fpath.is_file():
-        __logger.debug('file does not exists')
+    if not fpath.exists():
+        __logger.error('file does not exists')
         return
     ext = fpath.suffix[1:].lower()
-    if tarfile.is_tarfile(fpath):
+    if fpath.is_file() and tarfile.is_tarfile(fpath):
         __logger.debug('set file type: tar')
         args.type = 'tar'
         __filetype = args.type
