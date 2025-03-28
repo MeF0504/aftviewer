@@ -15,6 +15,7 @@ e.g.)
 - [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
 - [numpy-stl](https://pypi.org/project/numpy-stl/) for stl.
 - [Astropy](https://www.astropy.org/) for fits.
+- [healpy](https://healpy.readthedocs.io/) for healpix.
 
 The following libraries are not always necessary but are useful if available.
 - [numpy](https://numpy.org/) for hdf5
