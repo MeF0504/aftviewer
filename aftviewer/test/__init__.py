@@ -10,6 +10,7 @@ def chk_deps(filetype: str) -> bool:
             'hdf5': ['h5py'],
             'stl': ['stl'],
             'fits': ['astropy'],
+            'healpix': ['healpy'],
             }
     if filetype not in deps:
         return True
