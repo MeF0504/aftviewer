@@ -217,6 +217,9 @@ def main() -> None:
     if not fpath.exists():
         print("file doesn't exists!")
         return
+    if fpath.is_dir():
+        print("{} is a directory.".format(fpath))
+        return
 
     __set_filetype(args)
 
@@ -231,12 +234,8 @@ def main() -> None:
         return
 
     lib = __load_lib(args)
-    sup_dir = hasattr(lib, 'READ_DIR') and lib.READ_DIR
     if lib is None:
         print(f'The library file for "{args.type}" is not found.')
-    elif (not sup_dir) and fpath.is_dir():
-        print(f"{fpath} is a directory.")
-        return
     else:
         lib.main(fpath, args)
     return

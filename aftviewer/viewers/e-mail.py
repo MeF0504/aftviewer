@@ -12,7 +12,6 @@ from .. import (GLOBAL_CONF, Args, help_template, print_key, print_error,
                 add_args_encoding, add_args_specification,
                 add_args_imageviewer)
 logger = getLogger(GLOBAL_CONF.logname)
-READ_DIR = True
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
