@@ -157,6 +157,28 @@ The available value is the same as "facecolors"."""
 type = "list of string"
 desc = """List of header names to show."""
 
+[config.healpix.projection]
+type = "mollweide, gnomonic, cartesian, or orthographic"
+desc = """The projection method used to show the map."""
+
+[config.healpix.map_limit]
+type = "[min: float or null, max: float or null]"
+desc = """The minimum and maximum values to show in the map.
+If min is null or min < minimum value of map array data, the minimum value of map array data is used.
+If max is null or max > maximum value of map array data, the maximum value of map array data is used.
+"""
+
+[config.healpix.norm]
+type = "hist, log, or None"
+desc = """The color normalization method used to show the map."""
+
+[config.healpix.coord]
+type = "null or sequence of character (G, E, or C)"
+desc = """Setting to describe the coordinate system of the map,
+or a sequence of 2 of these to rotate the map
+from the first to the second coordinate system."""
+
+
 [color.defaults]
 msg_error = "Color of error messages."
 msg_warn = "Color of warning messages."

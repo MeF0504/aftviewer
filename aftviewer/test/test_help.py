@@ -23,6 +23,7 @@ from . import chk_deps
     ('xpm'),
     ('stl'),
     ('fits'),
+    ('healpix'),
     ])
 def test_help_message(filetype):
     if not chk_deps(filetype):

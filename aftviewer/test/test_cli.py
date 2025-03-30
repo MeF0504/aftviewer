@@ -43,6 +43,7 @@ def test_get_args():
     ('xpm'),
     ('stl'),
     ('fits'),
+    ('healpix'),
     ])
 def test_show_opts(filetype):
     # check the function run correctly.

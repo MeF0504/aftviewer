@@ -119,6 +119,7 @@ __type_config = {
     "xpm": "xpm",
     "stl": "stl",
     "fits": "fits fit",
+    "healpix": "",  # extension is same as fits.
 }
 __update_add_types()
 __type_config.update(__add_types)
