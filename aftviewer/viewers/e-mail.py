@@ -3,7 +3,7 @@ import tempfile
 import base64
 from pathlib import Path
 from email.parser import BytesParser
-from email import policy, message
+from email import policy, message, header
 import mailbox
 from logging import getLogger
 
@@ -49,15 +49,17 @@ def show_headers(keys: list[str], msg: message.Message) -> None:
                 date = info.datetime.astimezone(tz)
                 print(f'{k}: {date.strftime(date_fmt)}')
             else:
-                print(f'{k}: {info}')
+                b, enc = header.decode_header(info)[0]
+                if enc is None:
+                    head = b
+                else:
+                    head = b.decode(enc)
+                print(f'{k}: {head}')
         else:
             logger.error(f'"{k}" not found in the email header.')
 
 
-def show_eml(fpath: Path, args: Args):
-    with open(fpath, 'rb') as f:
-        msg = BytesParser(policy=policy.default).parse(f)
-
+def show_msg(msg: message.Message, args: Args):
     if args.encoding is None:
         encoding = 'utf-8'
     else:
@@ -114,8 +116,15 @@ def show_eml(fpath: Path, args: Args):
             print(payload.decode(encoding, errors="replace"))
 
 
+def show_eml(fpath: Path, args: Args):
+    with open(fpath, 'rb') as f:
+        msg = BytesParser(policy=policy.default).parse(f)
+    show_msg(msg, args)
+
+
 def show_mbox(fpath: Path, args: Args):
-    print('mbox')
+    for msg in mailbox.mbox(fpath):
+        show_msg(msg, args)
 
 
 def main(fpath: Path, args: Args):
