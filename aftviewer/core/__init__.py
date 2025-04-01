@@ -49,44 +49,46 @@ if (__conf_dir/'setting.json').is_file():
 
 # logger setting
 __logname = inspect.stack()[-1].filename  # command path
-if '_get_aftviewer_types' in __logname:
-    __log_file = __conf_dir/'debug2.log'
-elif 'aftviewer-libinstaller' in __logname:
-    __log_file = __conf_dir/'debug3.log'
-elif 'aftviewer' in __logname:
-    __log_file = __conf_dir/'debug1.log'
-else:
-    __log_file = __conf_dir/'debug0.log'
-__logger = getLogger(__logname)
-# (NOTSET <) DEBUG < INFO < WARNING < ERROR < CRITICAL
-# see https://docs.python.org/3/library/logging.html#logging-levels
-# in debug mode, more than INFO is shown in stdout and
-# all logs (more than DEBUG to be exact) are saved in conf_dir/debug.log.
-__logger.setLevel(logDEBUG)
 
 
 def __set_logger():
-    global __logger, __debug, __log_file
+    if '_get_aftviewer_types' in __logname:
+        log_file = __conf_dir/'debug2.log'
+    elif 'aftviewer-libinstaller' in __logname:
+        log_file = __conf_dir/'debug3.log'
+    elif 'aftviewer' in __logname:
+        log_file = __conf_dir/'debug1.log'
+    else:
+        log_file = __conf_dir/'debug0.log'
+    logger = getLogger(__logname)
+    # (NOTSET <) DEBUG < INFO < WARNING < ERROR < CRITICAL
+    # see https://docs.python.org/3/library/logging.html#logging-levels
+    # in debug mode, more than INFO is shown in stdout and
+    # all logs (more than DEBUG to be exact) are saved in conf_dir/debug.log.
+    logger.setLevel(logDEBUG)
     if __debug:
-        st_hdlr = StreamHandler()
-        st_hdlr.setLevel(logINFO)
-        st_format = '>> %(levelname)-9s %(message)s'
-        st_hdlr.setFormatter(Formatter(st_format))
-        fy_hdlr = FileHandler(filename=__log_file, mode='w', encoding='utf-8')
+        if '_get_aftviewer_types' not in __logname:
+            # stream is off when called from completion function.
+            st_hdlr = StreamHandler()
+            st_hdlr.setLevel(logINFO)
+            st_format = '>> %(levelname)-9s %(message)s'
+            st_hdlr.setFormatter(Formatter(st_format))
+            logger.addHandler(st_hdlr)
+        fy_hdlr = FileHandler(filename=log_file, mode='w', encoding='utf-8')
         fy_hdlr.setLevel(logDEBUG)
         fy_format = '%(levelname)-9s %(asctime)s ' + \
             '[%(filename)s:%(funcName)s(%(lineno)d)]:' + \
             ' %(message)s'
         fy_hdlr.setFormatter(Formatter(fy_format))
-        __logger.addHandler(st_hdlr)
-        __logger.addHandler(fy_hdlr)
+        logger.addHandler(fy_hdlr)
     else:
         null_hdlr = NullHandler()
-        __logger.addHandler(null_hdlr)
+        logger.addHandler(null_hdlr)
+    return logger
 
 
-__set_logger()
-__logger.debug(f'src: {__file__}')
+__logger = __set_logger()
+__logger.debug(f'src: {__file__}, cmd: {__logname}')
 
 
 def __update_add_types():
@@ -137,6 +139,8 @@ def __set_user_opts(config: None | dict[str, Any],
 
 
 def __get_packs() -> list[str]:
+    if not __logname.endswith('aftviewer'):
+        return []
     pack_list = []
     for dst in metadata.distributions():
         pack_list.append(dst.metadata['Name'])
