@@ -115,7 +115,7 @@ __type_config = {
     "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
     "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
     "jupyter": "ipynb",
-    "e-mail": "eml",
+    "e-mail": "eml mbox",
     "xpm": "xpm",
     "stl": "stl",
     "fits": "fits fit",
@@ -578,10 +578,10 @@ def __set_filetype(args: Args) -> None:
         return
     fpath = Path(args.file)
     if not fpath.is_file():
-        __logger.debug('file does not exists')
+        __logger.error('file does not exists')
         return
     ext = fpath.suffix[1:].lower()
-    if tarfile.is_tarfile(fpath):
+    if fpath.is_file() and tarfile.is_tarfile(fpath):
         __logger.debug('set file type: tar')
         args.type = 'tar'
         __filetype = args.type
