@@ -577,7 +577,7 @@ def __set_filetype(args: Args) -> None:
         __filetype = 'defaults'
         return
     fpath = Path(args.file)
-    if not fpath.exists():
+    if not fpath.is_file():
         __logger.error('file does not exists')
         return
     ext = fpath.suffix[1:].lower()
