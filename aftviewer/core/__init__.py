@@ -9,7 +9,6 @@ import subprocess
 import tarfile
 import mimetypes
 import pprint
-import inspect
 from importlib import import_module, metadata
 from pathlib import Path, PurePath
 from typing import Any, Literal
@@ -48,7 +47,7 @@ if (__conf_dir/'setting.json').is_file():
             __user_opts = {}
 
 # logger setting
-__logname = inspect.stack()[-1].filename  # command path
+__logname = sys.argv[0]  # command path
 
 
 def __set_logger():
@@ -67,20 +66,23 @@ def __set_logger():
     # all logs (more than DEBUG to be exact) are saved in conf_dir/debug.log.
     logger.setLevel(logDEBUG)
     if __debug:
-        if '_get_aftviewer_types' not in __logname:
-            # stream is off when called from completion function.
-            st_hdlr = StreamHandler()
-            st_hdlr.setLevel(logINFO)
-            st_format = '>> %(levelname)-9s %(message)s'
-            st_hdlr.setFormatter(Formatter(st_format))
-            logger.addHandler(st_hdlr)
+        st_hdlr = StreamHandler()
+        st_hdlr.setLevel(logINFO)
+        st_format = '>> %(levelname)-9s %(message)s'
+        st_hdlr.setFormatter(Formatter(st_format))
         fy_hdlr = FileHandler(filename=log_file, mode='w', encoding='utf-8')
         fy_hdlr.setLevel(logDEBUG)
         fy_format = '%(levelname)-9s %(asctime)s ' + \
             '[%(filename)s:%(funcName)s(%(lineno)d)]:' + \
             ' %(message)s'
         fy_hdlr.setFormatter(Formatter(fy_format))
+        logger.addHandler(st_hdlr)
         logger.addHandler(fy_hdlr)
+        if '_get_aftviewer_types' in __logname:
+            # stream is off when called from completion function.
+            for hdlr in logger.handlers:
+                if type(hdlr) is StreamHandler:
+                    logger.removeHandler(hdlr)
     else:
         null_hdlr = NullHandler()
         logger.addHandler(null_hdlr)
@@ -139,7 +141,8 @@ def __set_user_opts(config: None | dict[str, Any],
 
 
 def __get_packs() -> list[str]:
-    if not __logname.endswith('aftviewer'):
+    if not (__logname.endswith('aftviewer')
+            or __logname.endswith('aftviewer.exe')):
         return []
     pack_list = []
     for dst in metadata.distributions():
