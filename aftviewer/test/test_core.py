@@ -18,6 +18,7 @@ from aftviewer.core.helpmsg import (add_args_imageviewer, add_args_encoding,
                                     add_args_output, add_args_verbose,
                                     add_args_key, add_args_interactive,
                                     add_args_cui)
+from aftviewer.cli import get_parser_arg
 
 fts = [(ft) for ft in __type_config]
 
@@ -43,7 +44,7 @@ fts = [(ft) for ft in __type_config]
     ('output', ['file', '-t', 'pickle'], False),
     ])
 def test_args_chk(attr, arg_list, expected):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('-t', '--type')
     add_args_imageviewer(parser)
@@ -62,7 +63,7 @@ def test_load_lib(filetype):
     if not chk_deps(filetype):
         warnings.warn(f'skip cheking {filetype}')
         return
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('-t', '--type')
     args = parser.parse_args(['file', '-t', filetype])
@@ -182,7 +183,7 @@ def test_print_key():
 
 def test_set_filetype():
     aftviewer.core.__filetype = None
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('-t', '--type')
     args = parser.parse_args(['.', '-t', 'pickle'])
