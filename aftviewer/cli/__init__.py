@@ -53,6 +53,7 @@ Supported file types ... {', '.join(supported_type)}."""
             description=args_desc,
             epilog=args_ep,
             formatter_class=MyHelpFormatter,
+            allow_abbrev=False,
             )
     parser.add_argument('file', help='input file')
     parser.add_argument('--version', '-V', action='version',

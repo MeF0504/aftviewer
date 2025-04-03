@@ -18,7 +18,7 @@ from . import chk_deps
     ('tar', [True, False, True, True, True, True, True, True, True]),
     ('zip', [True, False, True, True, True, True, True, True, True]),
     ('jupyter', [True, False, True, True, False, False, False, False, False]),
-    ('e-mail', [True, True, False, True, True, True, True, False, False]),
+    ('e-mail', [True, True, False, True, True, True, True, False, True]),
     ('numpy', [False, False, False, True, True, True, True, False, False]),
     ('raw_image',
      [True, False, False, False, False, False, False, False, False]),
@@ -46,7 +46,7 @@ def test_args_filetypes(filetype, is_args_ok):
     lib = import_module(f'aftviewer.viewers.{filetype}')
     not_ok = []
     for i, test_args in enumerate(test_args_list):
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(allow_abbrev=False)
         parser.add_argument('file', help='input file')
         parser.add_argument('-t', '--type')
         lib.add_args(parser)
