@@ -62,8 +62,7 @@ def get_contents(mbox: mailbox.mbox,
 def show_func(mbox: mailbox.mbox, args: Args,
               in_tmp: tempfile.TemporaryDirectory,
               cpath: str, **kwargs) -> RM:
-    title = PurePath(cpath).name
-    idx = int(title.split(': ')[0])
+    idx = int(cpath.split(': ')[0])
     return get_msg(mbox[idx], args, in_tmp)
 
 
