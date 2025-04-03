@@ -4,7 +4,7 @@ import argparse
 import tempfile
 import base64
 import shutil
-from pathlib import Path
+from pathlib import Path, PurePath
 from email.parser import BytesParser
 from email import policy, message, header
 import mailbox
@@ -13,7 +13,7 @@ from logging import getLogger
 from .. import (GLOBAL_CONF, Args, help_template, print_key, print_error,
                 show_image_file, get_config, run_system_cmd, get_timezone,
                 args_chk, add_args_encoding, add_args_specification,
-                add_args_imageviewer)
+                add_args_imageviewer, ReturnMessage as RM,)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -21,9 +21,12 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     kwargs_k = dict(help='Show the specified header info. '
                     'If no key is specified, show all header names and info.')
     kwargs_v = dict(help='Show the messages.')
+    kwargs_c = dict(help='Show the file with interactive CUI mode.'
+                    ' eml file is not supported.')
     add_args_specification(parser, verbose=True, key=True,
-                           interactive=False, cui=False,
-                           kwargs_k=kwargs_k, kwargs_v=kwargs_v)
+                           interactive=False, cui=True,
+                           kwargs_k=kwargs_k, kwargs_v=kwargs_v,
+                           kwargs_c=kwargs_c)
     add_args_imageviewer(parser)
     add_args_encoding(parser)
     parser.add_argument('--mailtype', '-mt',
@@ -40,15 +43,12 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def show_headers(keys: None | list[str], msg: message.Message) -> None:
-    if keys is None:
-        keys = get_config('headers')
-    elif len(keys) == 0:
-        for key, val in msg.items():
-            print_key(key)
-            print(val)
-        return
+def get_contents(path: PurePath) -> tuple[list[str], list[str]]:
+    pass
 
+
+def get_headers(keys: list[str], msg: message.Message) -> list[str]:
+    res = []
     for k in keys:
         if k in msg:
             info = msg[k]
@@ -56,7 +56,7 @@ def show_headers(keys: None | list[str], msg: message.Message) -> None:
                 date_fmt = get_config('date_format')
                 tz = get_timezone()
                 date = info.datetime.astimezone(tz)
-                print(f'{k}: {date.strftime(date_fmt)}')
+                res.append(f'{k}: {date.strftime(date_fmt)}')
             else:
                 b, enc = header.decode_header(info)[0]
                 if enc is None:
@@ -73,22 +73,40 @@ def show_headers(keys: None | list[str], msg: message.Message) -> None:
                     except LookupError as e:
                         logger.error(f'Failed to decode header 2: {e}')
                         head = info
-                print(f'{k}: {head}')
+                res.append(f'{k}: {head}')
         else:
             logger.error(f'"{k}" not found in the email header.')
+    return res
 
 
-def show_msg(msg: message.Message, args: Args):
+def show_headers(keys: None | list[str], msg: message.Message) -> None:
+    if keys is None:
+        keys = get_config('headers')
+    elif len(keys) == 0:
+        for key, val in msg.items():
+            print_key(key)
+            print(val)
+        return
+    for head in get_headers(keys, msg):
+        print(head)
+
+
+def get_msg(msg: message.Message, args: Args,
+             in_tmp: None | tempfile.TemporaryDirectory = None) -> RM:
     if args.encoding is None:
         encoding = 'utf-8'
     else:
         encoding = args.encoding
 
+    ret_msg = []
     keys = get_config('headers')
-    show_headers(keys, msg)
+    ret_msg += get_headers(keys, msg)
     if msg.is_multipart():
         logger.info('multi part')
-        tmpdir = tempfile.TemporaryDirectory()
+        if in_tmp is None:
+            tmpdir = tempfile.TemporaryDirectory()
+        else:
+            tmpdir = in_tmp
         idx = 1
         for part in msg.walk():
             cont_type = part.get_content_type()
@@ -98,7 +116,8 @@ def show_msg(msg: message.Message, args: Args):
             if cont_type == "text/plain" and \
                "attachment" not in cont_dp and not args.html:
                 payload = part.get_payload(decode=True)
-                print(payload.decode(encoding, errors="replace"))
+                logger.info('add text')
+                ret_msg.append(payload.decode(encoding, errors="replace"))
             elif cont_type.startswith('image'):
                 payload = part.get_payload(decode=False)
                 img_bin = base64.b64decode(payload.encode())
@@ -108,11 +127,13 @@ def show_msg(msg: message.Message, args: Args):
                 with open(fname, 'wb') as tmp:
                     tmp.write(img_bin)
                 ret = show_image_file(fname, args, wait=True)
+                logger.info(f'show image {ret}')
                 if ret is None:
-                    print('image viewer is not found.')
+                    ret_msg.append('image viewer is not found.')
                 elif not ret:
-                    print('failed to open an image.')
+                    ret_msg.append('failed to open an image.')
             elif args.html and cont_type == 'text/html':
+                logger.info('show html')
                 fname = f'{tmpdir.name}/out{idx}.html'
                 idx += 1
                 payload = part.get_payload(decode=True)
@@ -121,31 +142,35 @@ def show_msg(msg: message.Message, args: Args):
                 run_system_cmd(fname)
         if args.html:
             input('Enter to close')
-        tmpdir.cleanup()
+        if in_tmp is None:
+            tmpdir.cleanup()
     else:
         logger.info('single part')
         payload = msg.get_payload(decode=True)
-        print(payload.decode(encoding, errors="replace"))
+        ret_msg.append(payload.decode(encoding, errors="replace"))
+    return RM('\n'.join(ret_msg), False)
 
 
 def show_eml(fpath: Path, args: Args):
     with open(fpath, 'rb') as f:
         msg = BytesParser(policy=policy.default).parse(f)
     if args_chk(args, 'verbose') or (hasattr(args, 'html') and args.html):
-        show_msg(msg, args)
+        print(get_msg(msg, args).message)
     else:
         show_headers(args.key, msg)
 
 
 def show_mbox(fpath: Path, args: Args):
+    tmpdir = tempfile.TemporaryDirectory()
     for i, msg in enumerate(mailbox.mbox(fpath, create=False)):
         term_size = shutil.get_terminal_size()
         print(f'|{i:<d}|',
               '=-'*int((term_size.columns-8-len(str(i))*2)/2))
         if args_chk(args, 'verbose') or (hasattr(args, 'html') and args.html):
-            show_msg(msg, args)
+            print(get_msg(msg, args, tmpdir).message)
         else:
             show_headers(args.key, msg)
+    tmpdir.cleanup()
 
 
 def main(fpath: Path, args: Args):
