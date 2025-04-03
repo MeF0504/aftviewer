@@ -9,11 +9,12 @@ from email.parser import BytesParser
 from email import policy, message, header
 import mailbox
 from logging import getLogger
+from functools import partial
 
 from .. import (GLOBAL_CONF, Args, help_template, print_key, print_error,
                 show_image_file, get_config, run_system_cmd, get_timezone,
                 args_chk, add_args_encoding, add_args_specification,
-                add_args_imageviewer, ReturnMessage as RM,)
+                add_args_imageviewer, interactive_cui, ReturnMessage as RM)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -43,8 +44,27 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def get_contents(path: PurePath) -> tuple[list[str], list[str]]:
-    pass
+def get_contents(mbox: mailbox.mbox,
+                 path: PurePath) -> tuple[list[str], list[str]]:
+    if path == Path('.'):
+        file_list = []
+        for i, msg in enumerate(mbox):
+            headers = get_headers(['Subject'], msg)
+            if len(headers) > 0:
+                file_list.append(f'{i}: {headers[0]}')
+            else:
+                file_list.append(f'{i}: No Subject')
+        return [], file_list
+    else:
+        return [], []
+
+
+def show_func(mbox: mailbox.mbox, args: Args,
+              in_tmp: tempfile.TemporaryDirectory,
+              cpath: str, **kwargs) -> RM:
+    title = PurePath(cpath).name
+    idx = int(title.split(': ')[0])
+    return get_msg(mbox[idx], args, in_tmp)
 
 
 def get_headers(keys: list[str], msg: message.Message) -> list[str]:
@@ -92,7 +112,7 @@ def show_headers(keys: None | list[str], msg: message.Message) -> None:
 
 
 def get_msg(msg: message.Message, args: Args,
-             in_tmp: None | tempfile.TemporaryDirectory = None) -> RM:
+            in_tmp: None | tempfile.TemporaryDirectory = None) -> RM:
     if args.encoding is None:
         encoding = 'utf-8'
     else:
@@ -101,6 +121,7 @@ def get_msg(msg: message.Message, args: Args,
     ret_msg = []
     keys = get_config('headers')
     ret_msg += get_headers(keys, msg)
+    ret_msg.append('')
     if msg.is_multipart():
         logger.info('multi part')
         if in_tmp is None:
@@ -140,7 +161,7 @@ def get_msg(msg: message.Message, args: Args,
                 with open(fname, 'w') as f:
                     f.write(payload.decode(encoding, errors="replace"))
                 run_system_cmd(fname)
-        if args.html:
+        if args.html and not args_chk(args, 'cui'):
             input('Enter to close')
         if in_tmp is None:
             tmpdir.cleanup()
@@ -162,14 +183,21 @@ def show_eml(fpath: Path, args: Args):
 
 def show_mbox(fpath: Path, args: Args):
     tmpdir = tempfile.TemporaryDirectory()
-    for i, msg in enumerate(mailbox.mbox(fpath, create=False)):
-        term_size = shutil.get_terminal_size()
-        print(f'|{i:<d}|',
-              '=-'*int((term_size.columns-8-len(str(i))*2)/2))
-        if args_chk(args, 'verbose') or (hasattr(args, 'html') and args.html):
-            print(get_msg(msg, args, tmpdir).message)
-        else:
-            show_headers(args.key, msg)
+    if args_chk(args, 'cui'):
+        mbox = mailbox.mbox(fpath, create=False)
+        gc = partial(get_contents, mbox)
+        sf = partial(show_func, mbox, args, tmpdir)
+        interactive_cui(fpath.name, gc, sf)
+    else:
+        for i, msg in enumerate(mailbox.mbox(fpath, create=False)):
+            term_size = shutil.get_terminal_size()
+            print(f'|{i:<d}|',
+                  '=-'*int((term_size.columns-8-len(str(i))*2)/2))
+            if args_chk(args, 'verbose') \
+               or (hasattr(args, 'html') and args.html):
+                print(get_msg(msg, args, tmpdir).message)
+            else:
+                show_headers(args.key, msg)
     tmpdir.cleanup()
 
 
