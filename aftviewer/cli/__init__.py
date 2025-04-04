@@ -6,6 +6,7 @@ import sys
 import argparse
 from pathlib import Path
 from types import FunctionType
+from typing import Any
 from logging import getLogger
 import subprocess
 import shutil
@@ -33,7 +34,7 @@ class MyHelpFormatter(argparse.RawDescriptionHelpFormatter):
         super().__init__(prog, indent_increment, max_help_position, width)
 
 
-def get_args() -> Args:
+def get_parser_arg() -> dict[str, Any]:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     args_desc_ori = f"""show the constitution of a file.
 Supported file types ... {', '.join(supported_type)}."""
@@ -48,12 +49,17 @@ Supported file types ... {', '.join(supported_type)}."""
         args_desc += '\n'.join(textwrap.wrap(ad, width=term_width))+'\n'
     for ae in args_ep_ori.splitlines():
         args_ep += '\n'.join(textwrap.wrap(ae, width=term_width))+'\n'
-    parser = argparse.ArgumentParser(
-            prog='aftviewer',
-            description=args_desc,
-            epilog=args_ep,
-            formatter_class=MyHelpFormatter,
-            )
+    return dict(prog='aftviewer',
+                description=args_desc,
+                epilog=args_ep,
+                formatter_class=MyHelpFormatter,
+                allow_abbrev=False,
+                )
+
+
+def get_args(argv: None | list[str] = None) -> Args:
+    supported_type = list(GLOBAL_CONF.types.keys()).copy()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--version', '-V', action='version',
                         version=f'%(prog)s {VERSION}')

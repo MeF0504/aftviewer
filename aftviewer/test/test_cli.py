@@ -3,7 +3,8 @@ import argparse
 
 import pytest
 
-from aftviewer.cli import main, get_args, show_opts, set_shell_comp, update
+from aftviewer.cli import (main, get_args, show_opts, set_shell_comp, update,
+                           get_parser_arg)
 from aftviewer.cli.get_types import main as get_types
 from aftviewer.cli.installer import main as libinstaller
 
@@ -55,7 +56,7 @@ def test_show_opts(filetype):
     ('zsh'),
     ])
 def test_shell_comp(shell):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('-t', '--type')
     parser.add_argument(f'--{shell}', action='store_true')

@@ -11,6 +11,7 @@ import pytest
 from pymeflib.util import chk_cmd
 from aftviewer.core import image_viewer, __set_user_opts
 from aftviewer.core.helpmsg import add_args_imageviewer, add_args_cui
+from aftviewer.cli import get_parser_arg
 
 uname = platform.system()
 if uname == 'Darwin':
@@ -45,7 +46,7 @@ def test_get_image_viewer_args(iv):
         return
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
     add_args_imageviewer(parser)
@@ -78,7 +79,7 @@ def test_get_image_viewer_cui(iv):
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
     __set_user_opts({'defaults': {'image_viewer_cui': iv}}, None)
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
     add_args_imageviewer(parser)
@@ -112,7 +113,7 @@ def test_get_image_viewer_conf(iv):
     image_viewer.__set_ImgViewer = False
     image_viewers = image_viewer.__collect_image_viewers()
     __set_user_opts({'defaults': {'image_viewer': iv}}, None)
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
     add_args_imageviewer(parser)
@@ -140,7 +141,7 @@ def test_get_image_viewer_search():
     # not set case
     image_viewer.__set_ImgViewer = False
     __set_user_opts({'defaults': {'image_viewer': None}}, None)
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
     add_args_imageviewer(parser)
