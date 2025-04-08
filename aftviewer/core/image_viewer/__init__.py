@@ -10,7 +10,7 @@ from importlib import import_module
 from pathlib import Path
 from logging import getLogger
 
-from .. import GLOBAL_CONF, args_chk, get_config, Args, __add_lib2path
+from .. import GLOBAL_CONF, args_chk, get_config, Args, __add_lib2path, __def
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
@@ -47,15 +47,16 @@ def __collect_image_viewers() -> list[str]:
         logger.debug(f'add {iv_name} to img_viewers')
         # arbitary setting?
         img_viewers.insert(0, iv_name)
-    add_dir = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
-    for fy in add_dir.glob('*'):
-        if not fy.is_file():
-            continue
-        if fy.name.startswith('__'):
-            continue
-        iv_name = os.path.splitext(fy.name)[0]
-        logger.debug(f'add {iv_name} to img_viewers from additional dir')
-        img_viewers.insert(0, iv_name)
+    if not __def:
+        add_dir = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
+        for fy in add_dir.glob('*'):
+            if not fy.is_file():
+                continue
+            if fy.name.startswith('__'):
+                continue
+            iv_name = os.path.splitext(fy.name)[0]
+            logger.debug(f'add {iv_name} to img_viewers from additional dir')
+            img_viewers.insert(0, iv_name)
 
     return img_viewers
 
@@ -174,7 +175,12 @@ def show_image_file(img_file: str, args: Args,
             ret = None
     elif type(__ImgViewer) is str:
         if chk_cmd(__ImgViewer, logger=logger):
-            cmds = __get_exec_cmds(__ImgViewer, img_file)
+            if args_chk(args, 'image_viewer'):
+                # if command is set by args, just run it with the file name.
+                cmds = [__ImgViewer, img_file]
+            else:
+                # if command is set by config, run it with arguments set from config.
+                cmds = __get_exec_cmds(__ImgViewer, img_file)
             out = subprocess.run(cmds)
             if wait:
                 # wait to open file. this supports stable behavior
@@ -239,7 +245,12 @@ def show_image_ndarray(data: Any, name: str, args: Args,
         if chk_cmd(__ImgViewer, logger=logger):
             with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
                 make_bitmap(tmp.name, data, verbose=False, logger=logger)
-                cmds = __get_exec_cmds(__ImgViewer, tmp.name)
+                if args_chk(args, 'image_viewer'):
+                    # if command is set by args, just run it with the file name.
+                    cmds = [__ImgViewer, tmp.name]
+                else:
+                    # if command is set by config, run it with arguments set from config.
+                    cmds = __get_exec_cmds(__ImgViewer, tmp.name)
                 out = subprocess.run(cmds)
                 if wait:
                     # wait to open file. this supports stable behavior
