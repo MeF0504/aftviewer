@@ -36,13 +36,18 @@ class MyHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
 def get_parser_arg() -> dict[str, Any]:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
-    args_desc_ori = f"""show the constitution of a file.
+    args_desc_ori = f"""displays the contents of a file.
 Supported file types ... {', '.join(supported_type)}."""
-    args_ep_ori = """AFTViewer has some subcommands,
-  - 'aftviewer help -t TYPE' shows detailed help and available options for TYPE,
-  - 'aftviewer update' run the update command of AFTViewer,
-  - 'aftviewer config_list' shows the current optional configuration,
-  - 'aftviewer shell_completion --bash >> ~/.bashrc' or 'aftviewer shell_completion --zsh >> ~/.zshrc' set the completion script for bash/zsh."""
+    args_ep_ori = """AFTViewer has some optional subcommands available instead of "file",
+ - aftviewer help -t TYPE
+       shows detailed help and available options for the TYPE.
+ - aftviewer update
+       runs the update command of AFTViewer.
+ - aftviewer config_list
+       shows the current optional configuration.
+ - aftviewer shell_completion --bash >> ~/.bashrc
+   aftviewer shell_completion --zsh >> ~/.zshrc
+        sets the completion script for bash/zsh."""
     args_desc = ''
     args_ep = ''
     for ad in args_desc_ori.splitlines():
