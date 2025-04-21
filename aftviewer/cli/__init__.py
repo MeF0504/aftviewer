@@ -26,6 +26,7 @@ else:
     term_width = shutil.get_terminal_size().columns-2
 
 logger = getLogger(GLOBAL_CONF.logname)
+__subcmds = ['help', 'update', 'config_list', 'shell_completion']
 
 
 class MyHelpFormatter(argparse.RawDescriptionHelpFormatter):
@@ -39,14 +40,15 @@ def get_parser_arg() -> dict[str, Any]:
     args_desc_ori = f"""displays the contents of a file.
 Supported file types ... {', '.join(supported_type)}."""
     args_ep_ori = """AFTViewer has some optional subcommands available instead of "file",
- - aftviewer help -t TYPE
+ - aftviewer - help -t TYPE
        shows detailed help and available options for the TYPE.
- - aftviewer update
+ - aftviewer - update
        runs the update command of AFTViewer.
- - aftviewer config_list
+ - aftviewer - config_list [-t TYPE]
        shows the current optional configuration.
- - aftviewer shell_completion --bash >> ~/.bashrc
-   aftviewer shell_completion --zsh >> ~/.zshrc
+       If TYPE is specified, shows the configuration for the TYPE.
+ - aftviewer - shell_completion --bash >> ~/.bashrc
+   aftviewer - shell_completion --zsh >> ~/.zshrc
         sets the completion script for bash/zsh."""
     args_desc = ''
     args_ep = ''
@@ -65,18 +67,21 @@ Supported file types ... {', '.join(supported_type)}."""
 def get_args(argv: None | list[str] = None) -> Args:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     parser = argparse.ArgumentParser(**get_parser_arg())
-    parser.add_argument('file', help='input file')
-    parser.add_argument('--version', '-V', action='version',
-                        version=f'%(prog)s {VERSION}')
+    if '-' not in sys.argv[1:]:
+        parser.add_argument('file', help='input file')
+        parser.add_argument('--version', '-V', action='version',
+                            version=f'%(prog)s {VERSION}')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type.'
                         f' Available types are {", ".join(supported_type)}.'
-                        ' "aftviewer help -t TYPE"'
-                        ' will show the detailed help.')
+                        ' "aftviewer - help -t TYPE"'
+                        ' will show the detailed help')
+    parser.add_argument('-', help='run subcommand and exit',
+                        choices=__subcmds, default=None, dest='subcmd')
     tmpargs, rems = parser.parse_known_args()
-    if tmpargs.file == 'shell_completion':
+    if tmpargs.subcmd == 'shell_completion':
         add_args_shell_cmp(parser)
-    elif tmpargs.file == 'update':
+    elif tmpargs.subcmd == 'update':
         add_args_update(parser)
     __set_filetype(tmpargs)
     lib = __load_lib(tmpargs)
@@ -197,19 +202,16 @@ def main() -> None:
         print_error(f'invalid file type: {args.type}.')
         return
 
-    if args.file == 'config_list':
+    if args.subcmd == 'config_list':
         show_opts(args.type)
         return
-
-    if args.file == 'shell_completion':
+    elif args.subcmd == 'shell_completion':
         set_shell_comp(args)
         return
-
-    if args.file == 'update':
+    elif args.subcmd == 'update':
         update(args.branch)
         return
-
-    if args.file == 'help':
+    elif args.subcmd == 'help':
         if not args_chk(args, 'type'):
             print('please set --type to see the details.')
             return
@@ -222,6 +224,9 @@ def main() -> None:
                 lib.show_help()
             else:
                 print("this type does not support showing help.")
+        return
+    elif args.subcmd is not None:
+        print_error(f'Invalid subcommand: {args.subcmd}.')
         return
 
     fpath = Path(args.file).expanduser()

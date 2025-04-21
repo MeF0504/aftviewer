@@ -579,10 +579,14 @@ def __set_filetype(args: Args) -> None:
         __filetype = args.type
         __logger.debug(f'set file type from args: {args.type}')
         return
-    if args.file in ['config_list']:
-        __logger.debug(f'{args.file}: set defaults')
+    if args.subcmd in ['config_list']:
+        __logger.debug(f'{args.subcmd}: set defaults')
         __filetype = 'defaults'
         return
+    elif args.subcmd is not None:
+        __logger.debug('subcommand')
+        return
+
     fpath = Path(args.file)
     if not fpath.is_file():
         __logger.error('file does not exists')
