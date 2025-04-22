@@ -4,7 +4,8 @@ import shutil
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from .. import args_chk, print_key, get_config, help_template, add_args_key
+from .. import (args_chk, print_key, get_config,
+                help_template, add_args_specification)
 
 __detail_opts = dict(precision=None,
                      threshold=sys.maxsize,
@@ -74,14 +75,17 @@ min      : {d_min}'''
 
 
 def add_args(parser):
-    ex_group = parser.add_mutually_exclusive_group()
-    add_args_key(ex_group)
-    ex_group.add_argument('-v', '--verbose',
-                          help='show details. -v just print the value'
-                          ' in this file/key.'
-                          ' -vv show details (mean, std, etc.) and'
-                          ' all numbers in this file/key.',
-                          action='count', default=0)
+    kwargs_k = dict(help='Specify the key name to show.'
+                    ' If no key is specified, return the list of keys.'
+                    ' This option is only available for npz file.')
+    kwargs_v = dict(help='show details. -v just print the value'
+                    ' in this file/key.'
+                    ' -vv show details (mean, std, etc.) and'
+                    ' all numbers in this file/key.',
+                    action='count', default=0)
+    add_args_specification(parser, verbose=True, key=True,
+                           interactive=False, cui=False,
+                           kwargs_k=kwargs_k, kwargs_v=kwargs_v)
 
 
 def show_help():

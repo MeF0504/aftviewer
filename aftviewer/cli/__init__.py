@@ -87,7 +87,7 @@ def get_args(argv: None | list[str] = None) -> Args:
     lib = __load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
-    args = parser.parse_args()
+    args = parser.parse_args(namespace=Args())
     logger.debug(f'args: {args}')
     return args
 

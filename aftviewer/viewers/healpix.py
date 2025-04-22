@@ -7,11 +7,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from pymeflib import plot as mefplot
-from aftviewer import (GLOBAL_CONF, Args,
-                       args_chk, get_config, print_error,
-                       help_template, add_args_key, add_args_output,
-                       )
+from .. import (GLOBAL_CONF, Args, args_chk, get_config, print_error,
+                help_template, add_args_key, add_args_output,
+                )
 logger = getLogger(GLOBAL_CONF.logname)
+
+
+class LocalArgs(Args):
+    projection: str | None
+    cl: bool
+    norm: str | None
+    nest: bool
+    coord: list[str] | None
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
@@ -45,7 +52,7 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def set_projection(args: Args) -> str:
+def set_projection(args: LocalArgs) -> str:
     if hasattr(args, 'projection') and args.projection is not None:
         projection = args.projection
         logger.info(f'projection from args: {projection}')
@@ -58,7 +65,7 @@ def set_projection(args: Args) -> str:
     return projection
 
 
-def set_limits() -> tuple[float]:
+def set_limits() -> tuple[float | None, float | None]:
     try:
         m_limit = get_config('map_limit')
         mmin, mmax = m_limit
@@ -72,7 +79,8 @@ def set_limits() -> tuple[float]:
     return mmin, mmax
 
 
-def set_norm(args: Args) -> str | None:
+def set_norm(args: LocalArgs) -> str | None:
+    norm: str | None = None
     if hasattr(args, 'norm') and args.norm is not None:
         norm = args.norm
         logger.info(f'norm from args: {norm}')
@@ -87,7 +95,7 @@ def set_norm(args: Args) -> str | None:
     return None
 
 
-def set_coordinate(args: Args) -> list[str] | None:
+def set_coordinate(args: LocalArgs) -> list[str] | None:
     if hasattr(args, 'coord') and args.coord is not None:
         coord = args.coord
         logger.info(f'coord from args: {coord}')
@@ -97,9 +105,11 @@ def set_coordinate(args: Args) -> list[str] | None:
     else:
         coord = []
         logger.info(f'coord from default: {coord}')
+
     if len(coord) == 0:
-        coord = None
-    return coord
+        return None
+    else:
+        return coord
 
 
 def show_header(fpath: Path):
@@ -130,7 +140,7 @@ def show_header(fpath: Path):
         print(msg)
 
 
-def main(fpath: Path, args: Args):
+def main(fpath: Path, args: LocalArgs):
     fname = Path(fpath).name
     if args_chk(args, 'key'):
         if len(args.key) == 0:
@@ -177,9 +187,9 @@ def main(fpath: Path, args: Args):
         nest = False
     # show C_\ell or not
     if hasattr(args, 'cl'):
-        cl = args.cl
+        show_cl = args.cl
     else:
-        cl = False
+        show_cl = False
 
     # get and show maps
     heal_maps, headers = hp.read_map(fpath, field=None, h=True, nest=nest)
@@ -223,7 +233,7 @@ def main(fpath: Path, args: Args):
         fig1 = plt.gcf()
         fig1.savefig(save_dir/'healpix_maps.pdf')
 
-    if cl:
+    if show_cl:
         if Lmaps in (1, 3):
             fig2 = plt.figure(figsize=(10, 5))
             # assume I map or  I, Q, U maps

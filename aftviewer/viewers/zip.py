@@ -18,6 +18,10 @@ from pymeflib.tree2 import GC, branch_str, show_tree
 logger = getLogger(GLOBAL_CONF.logname)
 
 
+class LocalArgs(Args):
+    ask_password: bool
+
+
 def get_pwd():
     pwd = getpass()
     return pwd.encode()
@@ -63,7 +67,7 @@ def get_contents(zip_file, path):
 
 def show_zip(zip_file: zipfile.ZipFile, pwd: None | bytes,
              tmpdir: None | tempfile.TemporaryDirectory,
-             args: Args, get_contents: GC, cpath: str, **kwargs):
+             args: LocalArgs, get_contents: GC, cpath: str, **kwargs):
     res = []
     try:
         key_name = str(cpath)
@@ -104,22 +108,22 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: None | bytes,
         if 'system' in kwargs and kwargs['system']:
             zip_file.extract(zipinfo, path=tmpdir.name, pwd=pwd)
             tmpfile = os.path.join(tmpdir.name, cpath)
-            ret = run_system_cmd(tmpfile)
-            if ret:
+            ret1 = run_system_cmd(tmpfile)
+            if ret1:
                 return RM('open {}'.format(cpath), False)
             else:
                 return RM('Failed to open {}.'.format(cpath), True)
         elif is_image(key_name):
             zip_file.extract(zipinfo, path=tmpdir.name, pwd=pwd)
             tmpfile = os.path.join(tmpdir.name, cpath)
-            ret = show_image_file(tmpfile, args)
-            if ret is None:
+            ret2 = show_image_file(tmpfile, args)
+            if ret2 is None:
                 msg = 'image viewer not found.'
                 if args_chk(args, 'cui'):
                     msg += '\nNOTE: external command is not supported' + \
                         ' in CUI mode.'
                 return RM(msg, True)
-            elif not ret:
+            elif not ret2:
                 return RM('Failed to show image.', True)
 
         # text file?
@@ -155,7 +159,7 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: str, args: LocalArgs):
     if not zipfile.is_zipfile(fpath):
         print('{} is not a zip file.'.format(fpath))
         return

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Union, Optional
@@ -46,8 +47,7 @@ class ReturnMessage:
     error: bool
 
 
-@dataclass
-class Args:
+class Args(argparse.Namespace):
     """
     wrapper of argument parser. The following attributes are examples
     that are used in some of default file types.
