@@ -202,32 +202,37 @@ def main() -> None:
         print_error(f'invalid file type: {args.type}.')
         return
 
-    if args.subcmd == 'config_list':
-        show_opts(args.type)
-        return
-    elif args.subcmd == 'shell_completion':
-        set_shell_comp(args)
-        return
-    elif args.subcmd == 'update':
-        update(args.branch)
-        return
-    elif args.subcmd == 'help':
-        if not args_chk(args, 'type'):
-            print('please set --type to see the details.')
-            return
-        lib = __load_lib(args)
-        if lib is None:
-            print('Library file is not found.')
-        else:
-            if hasattr(lib, 'show_help') and \
-               type(lib.show_help) is FunctionType:
-                lib.show_help()
+    if args.subcmd is not None:
+        ret = False
+        if args.subcmd == 'config_list':
+            show_opts(args.type)
+            ret = True
+        elif args.subcmd == 'shell_completion':
+            ret = set_shell_comp(args)
+        elif args.subcmd == 'update':
+            ret = update(args.branch)
+        elif args.subcmd == 'help':
+            if not args_chk(args, 'type'):
+                print('please set --type to see the details.')
+                ret = False
+            lib = __load_lib(args)
+            if lib is None:
+                print('Library file is not found.')
+                ret = False
             else:
-                print("this type does not support showing help.")
-        return
-    elif args.subcmd is not None:
-        print_error(f'Invalid subcommand: {args.subcmd}.')
-        return
+                if hasattr(lib, 'show_help') and \
+                   type(lib.show_help) is FunctionType:
+                    lib.show_help()
+                else:
+                    print("this type does not support showing help.")
+                ret = True
+        else:
+            print_error(f'Invalid subcommand: {args.subcmd}.')
+            ret = False
+        if ret:
+            sys.exit(0)
+        else:
+            sys.exit(1)
 
     fpath = Path(args.file).expanduser()
     if not fpath.exists():
