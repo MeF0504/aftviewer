@@ -59,20 +59,20 @@ aftviewer -h
 ---
 To see the details of available options for each file type, type
 ```bash
-aftviewer help -t TYPE
+aftviewer - help -t TYPE
 ```
 To update this command, type
 ```bash
-aftviewer update
+aftviewer - update
 ```
 To show the list of current [configurations](https://github.com/MeF0504/aftviewer/wiki/Customization#parameters), type
 ```bash
-aftviewer config_list
+aftviewer - config_list
 ```
 To set the shell completion, type
 ```bash
 # bash
-aftviewer shell_completion --bash >> ~/.bashrc
+aftviewer - shell_completion --bash >> ~/.bashrc
 # zsh
-aftviewer shell_completion --zsh >> ~/.zshrc
+aftviewer - shell_completion --zsh >> ~/.zshrc
 ```
