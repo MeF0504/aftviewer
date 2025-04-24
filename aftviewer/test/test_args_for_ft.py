@@ -50,6 +50,7 @@ def test_args_filetypes(filetype, is_args_ok):
         parser = argparse.ArgumentParser(**get_parser_arg())
         parser.add_argument('file', help='input file')
         parser.add_argument('-t', '--type')
+        parser.add_argument('-', dest='subcmd', default=None)
         lib.add_args(parser)
         args, rems = parser.parse_known_args(
                 ['file', '-t', filetype] + test_args)

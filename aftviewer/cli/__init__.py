@@ -67,7 +67,8 @@ Supported file types ... {', '.join(supported_type)}."""
 def get_args(argv: None | list[str] = None) -> Args:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     parser = argparse.ArgumentParser(**get_parser_arg())
-    if '-' not in sys.argv[1:]:
+    if (argv is None and '-' not in sys.argv[1:]) or \
+       (argv is not None and '-' not in argv):
         parser.add_argument('file', help='input file')
         parser.add_argument('--version', '-V', action='version',
                             version=f'%(prog)s {VERSION}')
@@ -78,7 +79,7 @@ def get_args(argv: None | list[str] = None) -> Args:
                         ' will show the detailed help')
     parser.add_argument('-', help='run subcommand and exit',
                         choices=__subcmds, default=None, dest='subcmd')
-    tmpargs, rems = parser.parse_known_args()
+    tmpargs, rems = parser.parse_known_args(argv, namespace=Args())
     if tmpargs.subcmd == 'shell_completion':
         add_args_shell_cmp(parser)
     elif tmpargs.subcmd == 'update':
@@ -87,7 +88,7 @@ def get_args(argv: None | list[str] = None) -> Args:
     lib = __load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
-    args = parser.parse_args(namespace=Args())
+    args = parser.parse_args(argv, namespace=Args())
     logger.debug(f'args: {args}')
     return args
 
@@ -212,20 +213,21 @@ def main() -> None:
         elif args.subcmd == 'update':
             ret = update(args.branch)
         elif args.subcmd == 'help':
-            if not args_chk(args, 'type'):
+            if args_chk(args, 'type'):
+                lib = __load_lib(args)
+                if lib is None:
+                    print('Library file is not found.')
+                    ret = False
+                else:
+                    if hasattr(lib, 'show_help') and \
+                       type(lib.show_help) is FunctionType:
+                        lib.show_help()
+                    else:
+                        print("this type does not support showing help.")
+                    ret = True
+            else:
                 print('please set --type to see the details.')
                 ret = False
-            lib = __load_lib(args)
-            if lib is None:
-                print('Library file is not found.')
-                ret = False
-            else:
-                if hasattr(lib, 'show_help') and \
-                   type(lib.show_help) is FunctionType:
-                    lib.show_help()
-                else:
-                    print("this type does not support showing help.")
-                ret = True
         else:
             print_error(f'Invalid subcommand: {args.subcmd}.')
             ret = False

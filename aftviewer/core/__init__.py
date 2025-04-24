@@ -589,7 +589,7 @@ def __set_filetype(args: Args) -> None:
 
     fpath = Path(args.file)
     if not fpath.is_file():
-        __logger.error('file does not exists')
+        __logger.error(f'file does not exists: {args.file}')
         return
     ext = fpath.suffix[1:].lower()
     if fpath.is_file() and tarfile.is_tarfile(fpath):
