@@ -39,7 +39,7 @@ def get_parser_arg() -> dict[str, Any]:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     args_desc_ori = f"""displays the contents of a file.
 Supported file types ... {', '.join(supported_type)}."""
-    args_ep_ori = """AFTViewer has some optional subcommands available instead of "file",
+    args_ep_ori = """AFTViewer has some optional subcommands;
  - aftviewer - help -t TYPE
        shows detailed help and available options for the TYPE.
  - aftviewer - update
