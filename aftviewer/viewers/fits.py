@@ -11,6 +11,11 @@ from .. import (GLOBAL_CONF, Args, args_chk, show_image_ndarray, print_error,
 logger = getLogger(GLOBAL_CONF.logname)
 
 
+class LocalArgs(Args):
+    header: bool
+    log_scale: bool
+
+
 def add_args(parser: argparse.ArgumentParser) -> None:
     add_args_imageviewer(parser)
     add_args_key(parser,
@@ -29,7 +34,7 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def main(fpath: Path, args: Args):
+def main(fpath: Path, args: LocalArgs):
     fname = fpath.name
     if args_chk(args, 'key'):
         if len(args.key) == 0:
