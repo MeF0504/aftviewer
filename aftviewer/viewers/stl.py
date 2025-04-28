@@ -67,6 +67,12 @@ def main(fpath: Path, args: Args):
     else:
         viewer = args.viewer
         logger.info(f'set viewer from args; {viewer}.')
+    if viewer is None:
+        if 'plotly' in GLOBAL_CONF.pack_list:
+            viewer = 'plotly'
+        elif 'matplotlib' in GLOBAL_CONF.pack_list:
+            viewer = 'matplotlib'
+        logger.info(f'set viewer if viewer is available; {viewer}.')
 
     mesh_data = mesh.Mesh.from_file(str(fpath))
     logger.debug(f'mesh shape: {mesh_data.vectors.shape}')
@@ -118,6 +124,6 @@ def main(fpath: Path, args: Args):
         fig1 = go.Figure(data=[mesh3D], layout=layout)
         fig1.show()
     elif viewer is None:
-        print('viewer is not set.')
+        print('viewer is not found.')
     else:
         print(f'incorrect viewer: "{viewer}".')
