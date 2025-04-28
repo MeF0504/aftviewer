@@ -25,7 +25,8 @@
         "stl": {
             "viewer": null,
             "facecolors": null,
-            "edgecolors": "black"
+            "edgecolors": "black",
+            "backgroundcolors": null
         },
         "e-mail": {
             "headers": ["Subject", "From", "To", "Date"]
