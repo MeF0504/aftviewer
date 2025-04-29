@@ -17,7 +17,7 @@ from . import chk_deps
     ('np_pickle', [False, True, False, True, True, True, True, True, True]),
     ('tar', [True, False, True, True, True, True, True, True, True]),
     ('zip', [True, False, True, True, True, True, True, True, True]),
-    ('jupyter', [True, False, True, True, False, False, False, False, False]),
+    ('jupyter', [True, True, True, True, False, False, False, False, False]),
     ('e-mail', [True, True, False, True, True, True, True, False, False]),
     ('numpy', [False, False, False, True, True, True, True, False, False]),
     ('raw_image',
