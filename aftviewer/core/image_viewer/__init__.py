@@ -174,7 +174,8 @@ def show_image_file(img_file: str, args: Args,
                          f'({__ImgViewer}).')
             ret = None
     elif type(__ImgViewer) is str:
-        if chk_cmd(__ImgViewer, logger=logger):
+        if True:  # chk_cmd(__ImgViewer, logger=logger):
+            # ↑ __ImgViewer is already checked in __set_image_viewer.
             if args_chk(args, 'image_viewer'):
                 # if command is set by args, just run it with the file name.
                 cmds = [__ImgViewer, img_file]
@@ -242,8 +243,16 @@ def show_image_ndarray(data: Any, name: str, args: Args,
                          f'({__ImgViewer}).')
             ret = None
     elif type(__ImgViewer) is str:
-        if chk_cmd(__ImgViewer, logger=logger):
-            with tempfile.NamedTemporaryFile(suffix='.bmp') as tmp:
+        if True:  # chk_cmd(__ImgViewer, logger=logger):
+            # ↑ __ImgViewer is already checked in __set_image_viewer.
+            if os.name == 'nt':  # Windows
+                # Because Windows does not allow "with" statement in temp file.
+                # delete_on_close is supported in >= 3.12
+                tmpd = False
+            else:
+                tmpd = True
+            with tempfile.NamedTemporaryFile(suffix='.bmp',
+                                             delete=tmpd) as tmp:
                 make_bitmap(tmp.name, data, verbose=False, logger=logger)
                 if args_chk(args, 'image_viewer'):
                     # if command is set by args, just run it with the file name.
@@ -260,6 +269,9 @@ def show_image_ndarray(data: Any, name: str, args: Args,
                     ret = True
                 else:
                     ret = False
+            if not tmpd and os.path.isfile(tmp.name):
+                os.remove(tmp.name)
+                logger.debug(f'tmp file {tmp.name} is deleted')
         else:
             logger.error(f'{__ImgViewer} is not executable')
             ret = False
