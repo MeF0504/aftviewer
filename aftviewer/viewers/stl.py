@@ -67,20 +67,31 @@ def main(fpath: Path, args: Args):
     else:
         viewer = args.viewer
         logger.info(f'set viewer from args; {viewer}.')
+    if viewer is None:
+        if 'plotly' in GLOBAL_CONF.pack_list:
+            viewer = 'plotly'
+        elif 'matplotlib' in GLOBAL_CONF.pack_list:
+            viewer = 'matplotlib'
+        logger.info(f'set viewer if viewer is available; {viewer}.')
 
     mesh_data = mesh.Mesh.from_file(str(fpath))
     logger.debug(f'mesh shape: {mesh_data.vectors.shape}')
     ecol: None | str = get_config('edgecolors')
     fcol: None | str = get_config('facecolors')
+    bcol: None | str = get_config('backgroundcolors')
     if not check_color(ecol):
         ecol = None
     if not check_color(fcol):
         fcol = None
+    if not check_color(bcol):
+        bcol = None
 
     if viewer == 'matplotlib':
         # https://github.com/WoLpH/numpy-stl/?tab=readme-ov-file#plotting-using-matplotlib-is-equally-easy
         from mpl_toolkits import mplot3d
         import matplotlib.pyplot as plt
+        if bcol is None:
+            bcol = plt.rcParams['axes.facecolor']
         fig1 = plt.figure()
         ax11 = fig1.add_subplot(projection='3d')
         d3_pol = mplot3d.art3d.Poly3DCollection(mesh_data.vectors,
@@ -89,6 +100,10 @@ def main(fpath: Path, args: Args):
                                                 facecolors=fcol,
                                                 )
         ax11.add_collection3d(d3_pol)
+        ax11.xaxis.pane.set_facecolor(bcol)
+        ax11.yaxis.pane.set_facecolor(bcol)
+        ax11.zaxis.pane.set_facecolor(bcol)
+        ax11.set_facecolor(bcol)
 
         # Auto scale to the mesh size
         scale = mesh_data.points.flatten()
@@ -116,8 +131,20 @@ def main(fpath: Path, args: Args):
                            scene_camera=dict(eye=dict(x=1.25, y=-1.25, z=1)),
                            )
         fig1 = go.Figure(data=[mesh3D], layout=layout)
+        fig1.update_layout(scene=dict(
+            xaxis_title='',
+            yaxis_title='',
+            zaxis_title='',
+            xaxis=dict(backgroundcolor=bcol,
+                       ),
+            yaxis=dict(backgroundcolor=bcol,
+                       ),
+            zaxis=dict(backgroundcolor=bcol,
+                       ),
+            ),
+        )
         fig1.show()
     elif viewer is None:
-        print('viewer is not set.')
+        print('viewer is not found.')
     else:
         print(f'incorrect viewer: "{viewer}".')

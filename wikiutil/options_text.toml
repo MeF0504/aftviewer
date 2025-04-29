@@ -149,13 +149,17 @@ Currently "matplotlib" or "plotly" is supported."""
 type = "null/string"
 desc = """face color of the displayed model.
 Since this parameter is used in both Matplotlib and Plotly, available values are limited.
-null, full-color code (#xxxxxx), or color name (black, white, red, green, blue,
-cyan, magenta, or yellow) is available."""
+null, full-color code (#xxxxxx), or color name (black, white, red, green, blue, cyan, magenta, or yellow) is available."""
 
 [config.stl.edgecolors]
 type = "null/string"
 desc = """edge color of the displayed model.
 This is only used in Matplotlib.
+The available value is the same as "facecolors"."""
+
+[config.stl.backgroundcolors]
+type = "null/string"
+desc = """background color of the display.
 The available value is the same as "facecolors"."""
 
 [config.e-mail.headers]
