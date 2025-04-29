@@ -16,7 +16,7 @@ logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_output(output: dict[str, Any], args: Args, cnt: str,
-                out_obj, tmpdir: None | tempfile.TemporaryDirectory):
+                out_obj, tmpdir: tempfile.TemporaryDirectory):
     if out_obj == sys.stdout:
         header = ''
     else:
@@ -38,13 +38,7 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
                 if out_obj != sys.stdout:
                     # --output case
                     continue
-                elif tmpdir is None:
-                    # normal case
-                    with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
-                        tmp.write(img_bin)
-                        ret = show_image_file(tmp.name, args, wait=True)
                 else:
-                    # --verbose case
                     tmpfile = f'{tmpdir.name}/out-{cnt}.png'
                     add_idx = 0
                     while Path(tmpfile).is_file():
@@ -104,12 +98,12 @@ def main(fpath, args):
         fgo, bgo = get_col('output_color')
         fgt, bgt = get_col('type_color')
 
-    tmpdir = None
+    tmpdir = tempfile.TemporaryDirectory()
+    logger.info(f'tmpdir: {tmpdir.name}')
+
     meta = data['metadata']
     logger.debug(f'meta data: {meta}')
     if args_chk(args, 'verbose'):
-        tmpdir = tempfile.TemporaryDirectory()
-        logger.info(f'tmpdir: {tmpdir.name}')
         print(f'{header}kernel   : {meta["kernelspec"]["display_name"]}',
               file=outf)
         if 'language_info' in meta:
@@ -172,6 +166,5 @@ def main(fpath, args):
     if args_chk(args, 'verbose'):
         input('Press ENTER to close file.')
     outf.close()
-    if tmpdir is not None:
-        tmpdir.cleanup()
-        logger.info('cleanup tmpdir.')
+    tmpdir.cleanup()
+    logger.info('cleanup tmpdir.')
