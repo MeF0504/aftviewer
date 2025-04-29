@@ -18,6 +18,7 @@ from aftviewer.core.helpmsg import (add_args_imageviewer, add_args_encoding,
                                     add_args_output, add_args_verbose,
                                     add_args_key, add_args_interactive,
                                     add_args_cui)
+from aftviewer.cli import get_parser_arg, get_args
 
 fts = [(ft) for ft in __type_config]
 
@@ -43,9 +44,10 @@ fts = [(ft) for ft in __type_config]
     ('output', ['file', '-t', 'pickle'], False),
     ])
 def test_args_chk(attr, arg_list, expected):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('-t', '--type')
+    parser.add_argument('-', dest='subcmd', default=None)
     add_args_imageviewer(parser)
     add_args_encoding(parser)
     add_args_output(parser)
@@ -62,10 +64,7 @@ def test_load_lib(filetype):
     if not chk_deps(filetype):
         warnings.warn(f'skip cheking {filetype}')
         return
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file', help='input file')
-    parser.add_argument('-t', '--type')
-    args = parser.parse_args(['file', '-t', filetype])
+    args = get_args(['file', '-t', filetype])
     lib = __load_lib(args)
     assert lib is not None, f'failed to load library; {args.type}'
     if not hasattr(lib, 'show_help'):
@@ -182,22 +181,19 @@ def test_print_key():
 
 def test_set_filetype():
     aftviewer.core.__filetype = None
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file', help='input file')
-    parser.add_argument('-t', '--type')
-    args = parser.parse_args(['.', '-t', 'pickle'])
+    args = get_args(['.', '-t', 'pickle'])
     __set_filetype(args)
     assert aftviewer.core.__filetype == 'pickle', \
         f'file type is incorrect @ 1, {aftviewer.core.__filetype}'
 
     aftviewer.core.__filetype = None
-    args = parser.parse_args(['config_list'])
+    args = get_args(['-', 'config_list'])
     __set_filetype(args)
     assert aftviewer.core.__filetype == 'defaults', \
         f'file type is incorrect @ 2, {aftviewer.core.__filetype}'
 
     aftviewer.core.__filetype = None
-    args = parser.parse_args([__file__])
+    args = get_args([__file__])
     __set_filetype(args)
     assert aftviewer.core.__filetype is not None, 'failed to set filetype'
 

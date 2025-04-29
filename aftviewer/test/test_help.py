@@ -7,6 +7,7 @@ import pytest
 
 from aftviewer.core import __load_lib
 from . import chk_deps
+from aftviewer.cli import get_parser_arg
 
 
 @pytest.mark.parametrize(('filetype'), [
@@ -29,7 +30,7 @@ def test_help_message(filetype):
     if not chk_deps(filetype):
         warnings.warn(f'skip cheking {filetype}')
         return
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(**get_parser_arg())
     args = parser.parse_args([])
     args.file = 'help'
     args.type = filetype

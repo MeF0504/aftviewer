@@ -68,6 +68,7 @@ This option is useful when a shell command is set in "image_viewer" since a shel
 [config.defaults.iv_exec_cmd]
 type = "list of string"
 desc = """Arguments used when the shell command is specified as the image viewer.
+This option is not used when the image viewer command is set from command line.
 Some special keywords are available; "%c" and "%s".
 "%c" is replaced by the command (image viewer).
 "%s" is replaced by the file path of the image.

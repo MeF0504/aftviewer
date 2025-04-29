@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Union
+from typing import Callable, Union, Optional
 
 
 @dataclass(frozen=True)
@@ -46,19 +47,20 @@ class ReturnMessage:
     error: bool
 
 
-@dataclass
-class Args:
+class Args(argparse.Namespace):
     """
     wrapper of argument parser. The following attributes are examples
     that are used in some of default file types.
     The actual arguments depends on the file type.
-    Type 'aftviewer help -t <file type>' to see the selectable arguments.
+    Type 'aftviewer - help -t <file type>' to see the selectable arguments.
 
     Attributes:
     file: str
         opened file.
     type: str
         file type.
+    subcmd: str or None
+        subcommand name if specified, otherwise None.
     image_viewer: str
         Image viewer which specify the method to open an image file.
         If image viewer is specified at both command line and setting file
@@ -80,6 +82,7 @@ class Args:
     are exclusive.
     """
     file: str
+    subcmd: Optional[str]
     type: str
     image_viewer: str
     encoding: str

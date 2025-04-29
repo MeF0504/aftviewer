@@ -6,6 +6,7 @@ from importlib import import_module
 import pytest
 
 from . import chk_deps
+from aftviewer.cli import get_parser_arg
 
 
 # image viewer, encoding, output, verbose, key 0, key 1, key 2,
@@ -18,7 +19,7 @@ from . import chk_deps
     ('tar', [True, False, True, True, True, True, True, True, True]),
     ('zip', [True, False, True, True, True, True, True, True, True]),
     ('jupyter', [True, True, True, True, False, False, False, False, False]),
-    ('e-mail', [True, True, False, True, True, True, True, False, False]),
+    ('e-mail', [True, True, False, True, True, True, True, False, True]),
     ('numpy', [False, False, False, True, True, True, True, False, False]),
     ('raw_image',
      [True, False, False, False, False, False, False, False, False]),
@@ -46,9 +47,10 @@ def test_args_filetypes(filetype, is_args_ok):
     lib = import_module(f'aftviewer.viewers.{filetype}')
     not_ok = []
     for i, test_args in enumerate(test_args_list):
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(**get_parser_arg())
         parser.add_argument('file', help='input file')
         parser.add_argument('-t', '--type')
+        parser.add_argument('-', dest='subcmd', default=None)
         lib.add_args(parser)
         args, rems = parser.parse_known_args(
                 ['file', '-t', filetype] + test_args)
