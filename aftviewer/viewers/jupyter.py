@@ -10,12 +10,13 @@ from typing import Any
 
 from .. import (GLOBAL_CONF, Args, args_chk, cprint, show_image_file,
                 print_error, get_config, get_col, help_template,
-                add_args_imageviewer, add_args_output, add_args_verbose)
+                add_args_imageviewer, add_args_output, add_args_verbose,
+                add_args_encoding)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
 def show_output(output: dict[str, Any], args: Args, cnt: str,
-                out_obj, tmpdir: None | tempfile.TemporaryDirectory):
+                out_obj, tmpdir: tempfile.TemporaryDirectory):
     if out_obj == sys.stdout:
         header = ''
     else:
@@ -37,13 +38,7 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
                 if out_obj != sys.stdout:
                     # --output case
                     continue
-                elif tmpdir is None:
-                    # normal case
-                    with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
-                        tmp.write(img_bin)
-                        ret = show_image_file(tmp.name, args, wait=True)
                 else:
-                    # --verbose case
                     tmpfile = f'{tmpdir.name}/out-{cnt}.png'
                     add_idx = 0
                     while Path(tmpfile).is_file():
@@ -64,6 +59,7 @@ def add_args(parser):
     add_args_verbose(parser, help='Show all cells at once.')
     add_args_output(parser, help='Output the information to'
                     ' the specified file as a Python script.')
+    add_args_encoding(parser)
 
 
 def show_help():
@@ -73,7 +69,12 @@ def show_help():
 
 
 def main(fpath, args):
-    with open(fpath, 'r') as f:
+    if args_chk(args, 'encoding'):
+        enc = args.encoding
+    else:
+        enc = get_config('encoding')
+
+    with open(fpath, 'r', encoding=enc) as f:
         data = json.load(f)
     logger.debug(f'keys: {data.keys()}')
     if args_chk(args, 'output'):
@@ -97,12 +98,12 @@ def main(fpath, args):
         fgo, bgo = get_col('output_color')
         fgt, bgt = get_col('type_color')
 
-    tmpdir = None
+    tmpdir = tempfile.TemporaryDirectory()
+    logger.info(f'tmpdir: {tmpdir.name}')
+
     meta = data['metadata']
     logger.debug(f'meta data: {meta}')
     if args_chk(args, 'verbose'):
-        tmpdir = tempfile.TemporaryDirectory()
-        logger.info(f'tmpdir: {tmpdir.name}')
         print(f'{header}kernel   : {meta["kernelspec"]["display_name"]}',
               file=outf)
         if 'language_info' in meta:
@@ -165,6 +166,5 @@ def main(fpath, args):
     if args_chk(args, 'verbose'):
         input('Press ENTER to close file.')
     outf.close()
-    if tmpdir is not None:
-        tmpdir.cleanup()
-        logger.info('cleanup tmpdir.')
+    tmpdir.cleanup()
+    logger.info('cleanup tmpdir.')
