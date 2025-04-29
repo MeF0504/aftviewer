@@ -23,6 +23,10 @@ __set_ImgViewer = False
 
 
 def __get_exec_cmds(image_viewer, fname):
+    if get_config('image_viewer') != image_viewer:
+        # set by args.
+        return [image_viewer, fname]
+
     res = []
     for cmd in get_config('iv_exec_cmd'):
         if cmd == '%s':
