@@ -5,7 +5,7 @@ from logging import getLogger
 
 import matplotlib.pyplot as plt
 
-from .. import GLOBAL_CONF
+from .. import GLOBAL_CONF, print_error
 
 if "screeninfo" in GLOBAL_CONF.pack_list:
     from screeninfo import get_monitors
@@ -41,24 +41,36 @@ def get_size_dpi(shape: tuple[int, ...]) -> tuple[tuple[float, float], int]:
 
 
 def show_image_file(img_file: str) -> bool:
-    img = plt.imread(img_file)
-    size, dpi = get_size_dpi(img.shape)
-    fig1 = plt.figure(figsize=size, dpi=dpi)
-    ax11 = fig1.add_axes((0, 0, 1, 1))
-    ax11.imshow(img)
-    clear_mpl_axes(ax11)
-    plt.show()
-    plt.close(fig1)
-    return True
+    try:
+        img = plt.imread(img_file)
+        size, dpi = get_size_dpi(img.shape)
+        fig1 = plt.figure(figsize=size, dpi=dpi)
+        ax11 = fig1.add_axes((0, 0, 1, 1))
+        ax11.imshow(img)
+        clear_mpl_axes(ax11)
+        plt.show()
+        plt.close(fig1)
+    except Exception as e:
+        print_error(f'failed to open image: {img_file}')
+        print_error(f'{type(e).__name__}: {e}')
+        return False
+    else:
+        return True
 
 
 def show_image_ndarray(data: Any, name: str) -> bool:
     size, dpi = get_size_dpi(data.shape)
-    fig1 = plt.figure(figsize=size, dpi=dpi)
-    # full display
-    ax1 = fig1.add_axes((0, 0, 1, 1))
-    ax1.imshow(data)
-    clear_mpl_axes(ax1)
-    plt.show()
-    plt.close(fig1)
-    return True
+    try:
+        fig1 = plt.figure(figsize=size, dpi=dpi)
+        # full display
+        ax1 = fig1.add_axes((0, 0, 1, 1))
+        ax1.imshow(data)
+        clear_mpl_axes(ax1)
+        plt.show()
+        plt.close(fig1)
+    except Exception as e:
+        print_error('failed to open image data')
+        print_error(f'{type(e).__name__}: {e}')
+        return False
+    else:
+        return True
