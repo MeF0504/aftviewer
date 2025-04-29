@@ -10,7 +10,8 @@ from typing import Any
 
 from .. import (GLOBAL_CONF, Args, args_chk, cprint, show_image_file,
                 print_error, get_config, get_col, help_template,
-                add_args_imageviewer, add_args_output, add_args_verbose)
+                add_args_imageviewer, add_args_output, add_args_verbose,
+                add_args_encoding)
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -64,6 +65,7 @@ def add_args(parser):
     add_args_verbose(parser, help='Show all cells at once.')
     add_args_output(parser, help='Output the information to'
                     ' the specified file as a Python script.')
+    add_args_encoding(parser)
 
 
 def show_help():
@@ -73,7 +75,12 @@ def show_help():
 
 
 def main(fpath, args):
-    with open(fpath, 'r') as f:
+    if args_chk(args, 'encoding'):
+        enc = args.encoding
+    else:
+        enc = get_config('encoding')
+
+    with open(fpath, 'r', encoding=enc) as f:
         data = json.load(f)
     logger.debug(f'keys: {data.keys()}')
     if args_chk(args, 'output'):

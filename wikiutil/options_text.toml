@@ -135,6 +135,10 @@ This option is overwritten by the '--encoding' command-line option."""
 type = "bool"
 desc = """ If true, show `(current index)/(number of cells)` at the cell number line."""
 
+[config.jupyter.encoding]
+type = "string"
+desc = """The encoding used to load the Jupyter file."""
+
 [config.stl.viewer]
 type = "\"matplotlib\" or \"plotly\""
 desc = """module to display STL file.

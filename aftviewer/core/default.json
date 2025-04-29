@@ -20,7 +20,8 @@
             "encoding": "ASCII"
         },
         "jupyter": {
-            "show_number": false
+            "show_number": false,
+            "encoding": "utf-8"
         },
         "stl": {
             "viewer": null,
