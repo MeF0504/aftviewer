@@ -4,6 +4,8 @@ is a CUI/TUI tool to view any type of files made by Python.
 
 See the [wiki page](https://github.com/MeF0504/aftviewer/wiki) for the details.
 
+Sample GIFs can be found [here](samples/gif/README.md).
+
 ## Requirements
 
 The basic process of this software is designed to work with standard libraries of recent [Python3](https://www.python.org/).  
