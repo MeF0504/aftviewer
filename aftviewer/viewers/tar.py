@@ -119,9 +119,11 @@ def get_contents(tar_file: tarfile.TarFile, path: PurePosixPath):
         elif t.isfile():
             files.append(tname)
         elif t.isdir():
-            dirs.append(tname)
+            if tname != '':
+                dirs.append(tname)
     dirs.sort()
     files.sort()
+    logger.debug(f'get_contents: {cpath}, dirs: {dirs}, files: {files}')
     return dirs, files
 
 
