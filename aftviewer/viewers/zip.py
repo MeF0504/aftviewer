@@ -53,15 +53,16 @@ def get_contents(zip_file, path):
         if '/' in zname:
             # in some case, directories are not listed?
             tmp_dir = zname.split('/')[0]
-            if tmp_dir not in dirs:
+            if tmp_dir not in dirs and tmp_dir != '':
                 dirs.append(tmp_dir)
         elif z.is_dir():
-            if zname not in dirs:
+            if zname not in dirs and zname != '':
                 dirs.append(zname)
         else:
             files.append(zname)
     dirs.sort()
     files.sort()
+    logger.debug(f'get_contents: {cpath}, dirs: {dirs}, files: {files}')
     return dirs, files
 
 
