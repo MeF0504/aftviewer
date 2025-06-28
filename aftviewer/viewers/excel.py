@@ -3,8 +3,10 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 from logging import getLogger
+from functools import partial
 
-from .. import (GLOBAL_CONF, Args, print_error, print_warning, print_key,
+from .. import (GLOBAL_CONF, Args,
+                print_error, print_warning, print_key, interactive_cui,
                 help_template, add_args_encoding, add_args_specification)
 from .. import ReturnMessage as RM
 
@@ -36,6 +38,16 @@ def show_help() -> None:
     print(helpmsg)
 
 
+def get_contents(allsheets: list[str], path: Path) -> tuple[list, list]:
+    is_root = str(path) == '.'
+    logger.debug(f'path: {path} : {is_root}')
+    if is_root:
+        # at root
+        return [], sorted(allsheets)
+    else:
+        return [], []
+
+
 def get_sheets(allsheets: list[str], args: Args) -> list[str]:
     if args.key is None:
         return allsheets
@@ -57,6 +69,7 @@ def show_table(data: dict[str, list[list[str]]], table_path: str,
     values = data[table_path]
     alp = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     headers = ['']
+    logger.debug(f'cpath: {table_path}, cols: {len(values[0])}')
     assert len(values[0]) < len(alp)**2, \
         f'Too many columns in the values: {len(values[0])}. '
     for i in range(len(values[0])):
@@ -135,6 +148,9 @@ def main(fpath: Path, args: Args):
         return
 
     if args.cui:
+        gc = partial(get_contents, list(data.keys()))
+        sf = partial(show_table, data)
+        interactive_cui(fpath, gc, sf)
         pass
     else:
         for sheet in data:
