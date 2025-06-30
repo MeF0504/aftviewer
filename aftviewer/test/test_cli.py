@@ -45,6 +45,7 @@ def test_get_args():
     ('stl'),
     ('fits'),
     ('healpix'),
+    ('excel'),
     ])
 def test_show_opts(filetype):
     # check the function run correctly.
