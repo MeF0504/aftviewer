@@ -1,5 +1,5 @@
-import sys
-from pathlib import Path
+from importlib import metadata
+import warnings
 
 
 def chk_deps(filetype: str) -> bool:
@@ -8,20 +8,21 @@ def chk_deps(filetype: str) -> bool:
             'np_pickle': ['numpy'],
             'raw_image': ['rawpy'],
             'hdf5': ['h5py'],
-            'stl': ['stl'],
+            'stl': ['numpy-stl'],
             'fits': ['astropy'],
             'healpix': ['healpy'],
             }
     if filetype not in deps:
         return True
+
+    pack_list = []
+    for dst in metadata.distributions():
+        pack_list.append(dst.metadata['Name'])
     flag = [False for x in deps[filetype]]
     for i, mod in enumerate(deps[filetype]):
-        for sp in sys.path:
-            if (Path(sp)/mod).is_dir():
-                flag[i] = True
-                break
-            if (Path(sp)/f'{mod}.py').is_file():
-                flag[i] = True
-                break
+        if mod in pack_list:
+            flag[i] = True
+        else:
+            warnings.warn(f'{mod} is not installed.')
 
     return all(flag)
