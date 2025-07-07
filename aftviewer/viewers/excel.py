@@ -34,7 +34,8 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
 
 def show_help() -> None:
-    helpmsg = help_template('excel', 'description.', add_args)
+    helpmsg = help_template('excel', 'Show the contents of Excel files.',
+                            add_args)
     print(helpmsg)
 
 
@@ -67,6 +68,9 @@ def get_sheets(allsheets: list[str], args: Args) -> list[str]:
 def show_table(data: dict[str, list[list[str]]], table_path: str,
                **kwargs) -> RM:
     values = data[table_path]
+    if len(values) == 0:
+        logger.debug(f'empty table ({table_path}): {values}')
+        return RM('No data in the table.', False)
     alp = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     headers = ['']
     logger.debug(f'cpath: {table_path}, cols: {len(values[0])}')
@@ -119,10 +123,13 @@ def get_data_xlsx(fpath: Path, args: Args,
     for sh in sheets:
         ws = book[sh]
         vals = []
+        res[sh] = vals
+        if not hasattr(ws, 'iter_rows'):
+            logger.warning(f'Sheet "{sh}" does not support iter_rows')
+            continue
         for row in ws.iter_rows(values_only=True):
             row2 = [str(cell) if cell is not None else '' for cell in row]
             vals.append(row2)
-        res[sh] = vals
     return res
 
 
