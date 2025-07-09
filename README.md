@@ -18,10 +18,11 @@ e.g.)
 - [numpy-stl](https://pypi.org/project/numpy-stl/) for stl.
 - [Astropy](https://www.astropy.org/) for fits.
 - [healpy](https://healpy.readthedocs.io/) for healpix.
+- [xlrd](https://xlrd.readthedocs.io/en/latest/) and/or [openpyxl](https://openpyxl.readthedocs.io/en/stable/) for excel.
 
 The following libraries are not always necessary but are useful if available.
-- [numpy](https://numpy.org/) for hdf5
-- [tabulate](https://pypi.org/project/tabulate/) for sqlite3
+- [numpy](https://numpy.org/) for hdf5.
+- [tabulate](https://pypi.org/project/tabulate/) for sqlite3 and excel.
 - [Matplotlib](https://matplotlib.org/) or [Plotly](https://plotly.com/python/) for stl to display 3-D model.
 
 To show images, imaging-related libraries

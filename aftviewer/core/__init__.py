@@ -124,6 +124,7 @@ __type_config = {
     "stl": "stl",
     "fits": "fits fit",
     "healpix": "",  # extension is same as fits.
+    "excel": "xls xlsx xlsm",
 }
 __update_add_types()
 __type_config.update(__add_types)
