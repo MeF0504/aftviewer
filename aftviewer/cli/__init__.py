@@ -74,7 +74,7 @@ def get_args(argv: None | list[str] = None) -> Args:
                             version=f'%(prog)s {VERSION}')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type.'
-                        f' Available types are {", ".join(supported_type)}.'
+                        ' See above for available file types.'
                         ' "aftviewer - help -t TYPE"'
                         ' will show the detailed help')
     parser.add_argument('-', help='run subcommand and exit',
