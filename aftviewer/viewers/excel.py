@@ -97,7 +97,8 @@ def get_data_xls(fpath: Path, args: Args) -> None | dict[str, list[list[str]]]:
     book = xlrd.open_workbook(fpath, encoding_override=args.encoding)
     sheets = get_sheets(book.sheet_names(), args)
     if sheets is None:
-        return
+        # showing all sheets case.
+        return None
 
     res = {}
     for sh in sheets:
@@ -117,7 +118,8 @@ def get_data_xlsx(fpath: Path, args: Args,
     book = openpyxl.load_workbook(fpath, read_only=True, keep_vba=keep_vba)
     sheets = get_sheets(book.sheetnames, args)
     if sheets is None:
-        return
+        # showing all sheets case.
+        return None
 
     res = {}
     for sh in sheets:
@@ -152,6 +154,7 @@ def main(fpath: Path, args: Args):
         logger.error(f'Unsupported Excel version?? {excelver}')
         return
     if data is None:
+        # showing all sheets case.
         return
 
     if args.cui:
