@@ -14,7 +14,7 @@ from .. import (GLOBAL_CONF, Args, args_chk, is_image, print_key, print_error,
                 add_args_imageviewer, add_args_output, add_args_specification
                 )
 from .. import ReturnMessage as RM
-from pymeflib.tree2 import GC, branch_str, show_tree
+from pymeflib.tree2 import GC, BRANCH_STR1, show_tree
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -100,9 +100,9 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: None | bytes,
         res.append('{}'.format(key_name))
         dirs, files = get_contents(key_name)
         for f in files:
-            res.append('{}{}'.format(branch_str, f))
+            res.append('{}{}'.format(BRANCH_STR1, f))
         for d in dirs:
-            res.append('{}{}/'.format(branch_str, d))
+            res.append('{}{}/'.format(BRANCH_STR1, d))
 
     else:
         # file

@@ -15,7 +15,7 @@ from .. import (GLOBAL_CONF, args_chk, print_key, cprint, print_error,
                 interactive_view, help_template, add_args_specification,
                 add_args_output)
 from .. import ReturnMessage as RM
-from pymeflib.tree2 import branch_str, TreeViewer
+from pymeflib.tree2 import BRANCH_STR1, TreeViewer
 from ..core.cui import CursesCUI
 if 'tabulate' in GLOBAL_CONF.pack_list:
     from tabulate import tabulate
@@ -59,7 +59,7 @@ def show_table(cursor, tables, table_path,
                 ctype = 'none'
             else:
                 ctype = tinfo[2]
-            res.append('{}{} [ {} ]'.format(branch_str, tinfo[1], ctype))
+            res.append('{}{} [ {} ]'.format(BRANCH_STR1, tinfo[1], ctype))
 
     else:
         if column is None:
