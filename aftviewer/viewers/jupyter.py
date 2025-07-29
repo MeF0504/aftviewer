@@ -8,11 +8,21 @@ from pathlib import Path
 from logging import getLogger
 from typing import Any
 
+try:
+    from pygments import highlight
+    from pygments.lexers import PythonLexer
+    from pygments.formatters import TerminalFormatter
+except ImportError:
+    use_pygments = False
+else:
+    use_pygments = True
+
 from .. import (GLOBAL_CONF, Args, args_chk, cprint, show_image_file,
                 print_error, get_config, get_col, help_template,
                 add_args_imageviewer, add_args_output, add_args_verbose,
                 add_args_encoding)
 logger = getLogger(GLOBAL_CONF.logname)
+logger.info(f'use_pygments: {use_pygments}')
 
 
 def show_output(output: dict[str, Any], args: Args, cnt: str,
@@ -50,6 +60,17 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
                     print_error('image viewer is not found.')
                 elif not ret:
                     print_error('failed to open an image.')
+
+
+def syntax_text(text: str, out_obj) -> str:
+    if not use_pygments:
+        return text
+    elif text.startswith('!') or text.startswith('%'):
+        return text
+    elif out_obj != sys.stdout:
+        return text
+    else:
+        return highlight(text, PythonLexer(), TerminalFormatter())
 
 
 def add_args(parser):
@@ -127,11 +148,13 @@ def main(fpath, args):
                    fg=fgi, bg=bgi, file=outf)
             for instr in cell['source']:
                 if instr.startswith('!'):
+                    # shell command
                     outtext = f'{header}{instr}'
                 elif instr.startswith('%'):
+                    # magic command
                     outtext = f'{header}{instr}'
                 else:
-                    outtext = instr
+                    outtext = syntax_text(instr, outf)
                 print(outtext, end='', file=outf)
             print(file=outf)
             # Output
