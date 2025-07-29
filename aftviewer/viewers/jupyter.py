@@ -25,7 +25,7 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
         for text in output['text']:
             print(f'{header}{text}', end='', file=out_obj)
         print(file=out_obj)
-    elif 'data' in output:
+    if 'data' in output:
         out_data = output['data']
         for out_type in out_data:
             if out_type == 'text/plain':
@@ -33,21 +33,19 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
                     print(f'{header}{text}', end='', file=out_obj)
                 print(file=out_obj)
             elif out_type == 'image/png':
-                img_code = out_data['image/png']
-                img_bin = base64.b64decode(img_code.encode())
                 if out_obj != sys.stdout:
                     # --output case
                     continue
-                else:
-                    tmpfile = f'{tmpdir.name}/out-{cnt}.png'
-                    add_idx = 0
-                    while Path(tmpfile).is_file():
-                        tmpfile = f'{tmpdir.name}/out-{cnt}_{add_idx}.png'
-                        add_idx += 1
-                    with open(tmpfile, 'wb') as tmp:
-                        tmp.write(img_bin)
-                        ret = show_image_file(tmpfile, args, wait=False)
-                    pass
+                img_code = out_data['image/png']
+                img_bin = base64.b64decode(img_code.encode())
+                tmpfile = f'{tmpdir.name}/out-{cnt}.png'
+                add_idx = 0
+                while Path(tmpfile).is_file():
+                    tmpfile = f'{tmpdir.name}/out-{cnt}_{add_idx}.png'
+                    add_idx += 1
+                with open(tmpfile, 'wb') as tmp:
+                    tmp.write(img_bin)
+                    ret = show_image_file(tmpfile, args, wait=False)
                 if ret is None:
                     print_error('image viewer is not found.')
                 elif not ret:
