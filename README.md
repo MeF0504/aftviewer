@@ -24,6 +24,7 @@ The following libraries are not always necessary but are useful if available.
 - [numpy](https://numpy.org/) for hdf5.
 - [tabulate](https://pypi.org/project/tabulate/) for sqlite3 and excel.
 - [Matplotlib](https://matplotlib.org/) or [Plotly](https://plotly.com/python/) for stl to display 3-D model.
+- [pygments](https://pygments.org/) for jupyter.
 
 To show images, imaging-related libraries
 (Currently supporting libraries are
