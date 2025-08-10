@@ -140,6 +140,14 @@ desc = """ If true, show `(current index)/(number of cells)` at the cell number 
 type = "string"
 desc = """The encoding used to load the Jupyter file."""
 
+[config.jupyter.syntax_highlight]
+type = "bool"
+desc = """If true and 'pygments' is installed, syntax highlight is applied to the code cells in Jupyter file."""
+
+[config.jupyter.highlight_style]
+type = "string"
+desc = """The style of syntax highlight. See [Pygments styles](https://pygments.org/styles/) for available styles."""
+
 [config.stl.viewer]
 type = "\"matplotlib\" or \"plotly\""
 desc = """module to display STL file.

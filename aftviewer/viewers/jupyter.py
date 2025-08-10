@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 import json
 import base64
@@ -11,7 +12,7 @@ from typing import Any
 try:
     from pygments import highlight
     from pygments.lexers import PythonLexer
-    from pygments.formatters import TerminalFormatter
+    from pygments.formatters import TerminalFormatter, Terminal256Formatter
 except ImportError:
     use_pygments = False
 else:
@@ -62,15 +63,19 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
                     print_error('failed to open an image.')
 
 
-def syntax_text(text: str, out_obj) -> str:
+def syntax_text(text: str, out_obj,
+                fmter: TerminalFormatter | Terminal256Formatter | None
+                ) -> str:
     if not use_pygments:
+        return text
+    elif fmter is None:
         return text
     elif text.startswith('!') or text.startswith('%'):
         return text
     elif out_obj != sys.stdout:
         return text
     else:
-        return highlight(text, PythonLexer(), TerminalFormatter())
+        return highlight(text, PythonLexer(), fmter)
 
 
 def add_args(parser):
@@ -131,6 +136,17 @@ def main(fpath, args):
         if 'colab' in meta:
             print(f'{header}colab : {meta["colab"]["name"]}', file=outf)
 
+    # set formatter
+    hi_text = get_config('syntax_highlight')
+    fmt_style = get_config('highlight_style')
+    if not hi_text or not use_pygments:
+        fmter = None
+    elif os.environ.get('TERM') == 'xterm-256color':
+        fmter = Terminal256Formatter(style=fmt_style)
+    else:
+        fmter = TerminalFormatter(style=fmt_style)
+    logger.debug(f'formatter: {fmter} / {fmt_style}')
+
     L = len(data['cells'])
     show_num = get_config('show_number')
     for i, cell in enumerate(data['cells']):
@@ -154,7 +170,7 @@ def main(fpath, args):
                     # magic command
                     outtext = f'{header}{instr}'
                 else:
-                    outtext = syntax_text(instr, outf)
+                    outtext = syntax_text(instr, outf, fmter)
                 print(outtext, end='', file=outf)
             print(file=outf)
             # Output
