@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 import json
 import base64
@@ -8,11 +9,21 @@ from pathlib import Path
 from logging import getLogger
 from typing import Any
 
+try:
+    from pygments import highlight
+    from pygments.lexers import PythonLexer
+    from pygments.formatters import TerminalFormatter, Terminal256Formatter
+except ImportError:
+    use_pygments = False
+else:
+    use_pygments = True
+
 from .. import (GLOBAL_CONF, Args, args_chk, cprint, show_image_file,
                 print_error, get_config, get_col, help_template,
                 add_args_imageviewer, add_args_output, add_args_verbose,
                 add_args_encoding)
 logger = getLogger(GLOBAL_CONF.logname)
+logger.info(f'use_pygments: {use_pygments}')
 
 
 def show_output(output: dict[str, Any], args: Args, cnt: str,
@@ -25,7 +36,7 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
         for text in output['text']:
             print(f'{header}{text}', end='', file=out_obj)
         print(file=out_obj)
-    elif 'data' in output:
+    if 'data' in output:
         out_data = output['data']
         for out_type in out_data:
             if out_type == 'text/plain':
@@ -33,25 +44,38 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
                     print(f'{header}{text}', end='', file=out_obj)
                 print(file=out_obj)
             elif out_type == 'image/png':
-                img_code = out_data['image/png']
-                img_bin = base64.b64decode(img_code.encode())
                 if out_obj != sys.stdout:
                     # --output case
                     continue
-                else:
-                    tmpfile = f'{tmpdir.name}/out-{cnt}.png'
-                    add_idx = 0
-                    while Path(tmpfile).is_file():
-                        tmpfile = f'{tmpdir.name}/out-{cnt}_{add_idx}.png'
-                        add_idx += 1
-                    with open(tmpfile, 'wb') as tmp:
-                        tmp.write(img_bin)
-                        ret = show_image_file(tmpfile, args, wait=False)
-                    pass
+                img_code = out_data['image/png']
+                img_bin = base64.b64decode(img_code.encode())
+                tmpfile = f'{tmpdir.name}/out-{cnt}.png'
+                add_idx = 0
+                while Path(tmpfile).is_file():
+                    tmpfile = f'{tmpdir.name}/out-{cnt}_{add_idx}.png'
+                    add_idx += 1
+                with open(tmpfile, 'wb') as tmp:
+                    tmp.write(img_bin)
+                    ret = show_image_file(tmpfile, args, wait=False)
                 if ret is None:
                     print_error('image viewer is not found.')
                 elif not ret:
                     print_error('failed to open an image.')
+
+
+def syntax_text(text: str, out_obj,
+                fmter: TerminalFormatter | Terminal256Formatter | None
+                ) -> str:
+    if not use_pygments:
+        return text
+    elif fmter is None:
+        return text
+    elif text.startswith('!') or text.startswith('%'):
+        return text
+    elif out_obj != sys.stdout:
+        return text
+    else:
+        return highlight(text, PythonLexer(), fmter)
 
 
 def add_args(parser):
@@ -112,6 +136,17 @@ def main(fpath, args):
         if 'colab' in meta:
             print(f'{header}colab : {meta["colab"]["name"]}', file=outf)
 
+    # set formatter
+    hi_text = get_config('syntax_highlight')
+    fmt_style = get_config('highlight_style')
+    if not hi_text or not use_pygments:
+        fmter = None
+    elif os.environ.get('TERM') == 'xterm-256color':
+        fmter = Terminal256Formatter(style=fmt_style)
+    else:
+        fmter = TerminalFormatter(style=fmt_style)
+    logger.debug(f'formatter: {fmter} / {fmt_style}')
+
     L = len(data['cells'])
     show_num = get_config('show_number')
     for i, cell in enumerate(data['cells']):
@@ -129,11 +164,13 @@ def main(fpath, args):
                    fg=fgi, bg=bgi, file=outf)
             for instr in cell['source']:
                 if instr.startswith('!'):
+                    # shell command
                     outtext = f'{header}{instr}'
                 elif instr.startswith('%'):
+                    # magic command
                     outtext = f'{header}{instr}'
                 else:
-                    outtext = instr
+                    outtext = syntax_text(instr, outf, fmter)
                 print(outtext, end='', file=outf)
             print(file=outf)
             # Output

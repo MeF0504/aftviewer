@@ -21,7 +21,9 @@
         },
         "jupyter": {
             "show_number": false,
-            "encoding": "utf-8"
+            "encoding": "utf-8",
+            "syntax_highlight": true,
+            "highlight_style": "default"
         },
         "stl": {
             "viewer": null,
