@@ -65,7 +65,6 @@ Supported file types ... {', '.join(supported_type)}."""
 
 
 def get_args(argv: None | list[str] = None) -> Args:
-    supported_type = list(GLOBAL_CONF.types.keys()).copy()
     parser = argparse.ArgumentParser(**get_parser_arg())
     if (argv is None and '-' not in sys.argv[1:]) or \
        (argv is not None and '-' not in argv):
