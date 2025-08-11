@@ -216,7 +216,7 @@ def main() -> None:
             if args_chk(args, 'type'):
                 lib = __load_lib(args)
                 if lib is None:
-                    print('Library file is not found.')
+                    print('Failed to load the library.')
                     ret = False
                 else:
                     if hasattr(lib, 'show_help') and \
@@ -258,7 +258,7 @@ def main() -> None:
 
     lib = __load_lib(args)
     if lib is None:
-        print(f'The library file for "{args.type}" is not found.')
+        print(f'Failed to load the library for "{args.type}".')
     else:
         lib.main(fpath, args)
     return
