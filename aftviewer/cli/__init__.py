@@ -65,7 +65,6 @@ Supported file types ... {', '.join(supported_type)}."""
 
 
 def get_args(argv: None | list[str] = None) -> Args:
-    supported_type = list(GLOBAL_CONF.types.keys()).copy()
     parser = argparse.ArgumentParser(**get_parser_arg())
     if (argv is None and '-' not in sys.argv[1:]) or \
        (argv is not None and '-' not in argv):
@@ -216,7 +215,7 @@ def main() -> None:
             if args_chk(args, 'type'):
                 lib = __load_lib(args)
                 if lib is None:
-                    print('Library file is not found.')
+                    print('Failed to load the library.')
                     ret = False
                 else:
                     if hasattr(lib, 'show_help') and \
@@ -258,7 +257,7 @@ def main() -> None:
 
     lib = __load_lib(args)
     if lib is None:
-        print(f'The library file for "{args.type}" is not found.')
+        print(f'Failed to load the library for "{args.type}".')
     else:
         lib.main(fpath, args)
     return

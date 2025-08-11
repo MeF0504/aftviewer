@@ -204,9 +204,10 @@ def show_image_ndarray(data: Any, name: str, args: Args,
 
     Parameters
     ----------
-    data: numpy.ndarray
+    data: array-like
         Data to be shown as an image. the shape of the data should be
         (h, w, 3) or (h, w, 4).
+        Some image viewers requires numpy.ndarray data.
     name: str
         The name of the image.
     args: Args
@@ -224,7 +225,10 @@ def show_image_ndarray(data: Any, name: str, args: Args,
         If a module to open the image is not found, return None.
     """
     global __set_ImgViewer, __ImgViewer
-    logger.debug(f'data shape: {data.shape}')
+    if hasattr(data, 'shape'):
+        logger.debug(f'data shape: {data.shape}')
+    else:
+        logger.debug(f'data shape: {len(data)}, {len(data[0])}')
 
     if not __set_ImgViewer:
         __set_image_viewer(args)
