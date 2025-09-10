@@ -6,7 +6,8 @@ except ImportError as e:
 else:
     is_pil = True
 
-from aftviewer import show_image_file, help_template, add_args_imageviewer
+from aftviewer import (show_image_file, help_template, add_args_imageviewer,
+                       print_warning)
 
 
 def add_args(parser):
@@ -21,8 +22,12 @@ def show_help():
 def main(fpath, args):
     if is_pil:
         print('EXIF data')
-        img_data = Image.open(fpath)
-        img_exif = img_data.getexif()
-        for key, val in img_exif.items():
-            print(f' 0x{key:4x}: {val}')
+        try:
+            img_data = Image.open(fpath)
+            img_exif = img_data.getexif()
+            for key, val in img_exif.items():
+                print(f' 0x{key:4x}: {val}')
+        except Exception as e:
+            print_warning('Cannot read EXIF data.')
+            print_warning(f'{type(e).__name__}, {e}')
     show_image_file(str(fpath), args)
