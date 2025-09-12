@@ -47,7 +47,7 @@ def install_viewer(args: argparse.Namespace, lib_path: Path):
 
     add_txt = GLOBAL_CONF.conf_dir/'.lib/add_types.txt'
     add_types = {}
-    if add_txt.is_file():
+    if add_txt.is_file() and os.access(add_txt, os.R_OK):
         with open(add_txt, 'r') as f:
             for line in f:
                 line = line.replace('\n', '')
