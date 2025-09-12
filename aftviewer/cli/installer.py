@@ -19,8 +19,11 @@ def closing(dst_path: Path):
 
 
 def install_viewer(args: argparse.Namespace, lib_path: Path):
-    dst_path = GLOBAL_CONF.conf_dir/f'.lib/add_viewers/{lib_path.name}'
+    lib_dir = GLOBAL_CONF.conf_dir/'.lib/add_viewers'
+    dst_path = lib_dir/lib_path.name
     type_name = lib_path.name[:-3]
+    if not lib_dir.is_dir():
+        lib_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(lib_path, dst_path)
     lib = import_module(f'add_viewers.{type_name}')
 
@@ -44,11 +47,12 @@ def install_viewer(args: argparse.Namespace, lib_path: Path):
 
     add_txt = GLOBAL_CONF.conf_dir/'.lib/add_types.txt'
     add_types = {}
-    with open(add_txt, 'r') as f:
-        for line in f:
-            line = line.replace('\n', '')
-            add_type, exts = line.split('\t')
-            add_types[add_type] = exts
+    if add_txt.is_file() and os.access(add_txt, os.R_OK):
+        with open(add_txt, 'r') as f:
+            for line in f:
+                line = line.replace('\n', '')
+                add_type, exts = line.split('\t')
+                add_types[add_type] = exts
     with open(add_txt, 'w') as f:
         for t, e in add_types.items():
             f.write(f'{t}\t{e}\n')
@@ -56,8 +60,11 @@ def install_viewer(args: argparse.Namespace, lib_path: Path):
 
 
 def install_image_viewer(args: argparse.Namespace, lib_path: Path):
-    dst_path = GLOBAL_CONF.conf_dir/f'.lib/add_image_viewers/{lib_path.name}'
+    lib_dir = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
+    dst_path = lib_dir/lib_path.name
     type_name = lib_path.name[:-3]
+    if not lib_dir.is_dir():
+        lib_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(lib_path, dst_path)
     lib = import_module(f'add_image_viewers.{type_name}')
 
