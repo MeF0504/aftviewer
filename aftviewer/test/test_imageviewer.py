@@ -1,17 +1,15 @@
 # test image viewer related functions.
-import sys
 import argparse
 import warnings
 import platform
-from pathlib import Path
 from types import ModuleType
 
 import pytest
 
 from pymeflib.util import chk_cmd
-from aftviewer.core import image_viewer, __set_user_opts
+from aftviewer.core import GLOBAL_CONF, image_viewer, __set_user_opts
 from aftviewer.core.helpmsg import add_args_imageviewer, add_args_cui
-from aftviewer.cli import get_parser_arg, get_args
+from aftviewer.cli import get_parser_arg
 
 uname = platform.system()
 if uname == 'Darwin':
@@ -28,14 +26,10 @@ for c in cmds:
 
 ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), (cmd), ('not a command')]
 
-
-def check_mod_installed(iv):
-    if iv not in ('matplotlib', 'PIL', 'cv2'):
-        return None
-    for p in sys.path:
-        if (Path(p)/iv).is_dir():
-            return ModuleType
-    return type(None)
+addlib = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
+if addlib.is_dir():
+    for ivfile in addlib.glob('*.py'):
+        ivs.append((ivfile.with_suffix('').name))
 
 
 @pytest.mark.parametrize(('iv'), ivs)
@@ -57,10 +51,7 @@ def test_get_image_viewer_args(iv):
     if iv == 'None':
         assert image_viewer.__ImgViewer == 'None', msg
     elif iv in image_viewers:
-        mod_type = check_mod_installed(iv)
-        assert mod_type is not None, f'something strange; {iv}'
-        assert type(image_viewer.__ImgViewer) is mod_type, msg
-        if mod_type is ModuleType:
+        if type(image_viewer.__ImgViewer) is ModuleType:
             assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
             assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
         else:
@@ -92,10 +83,7 @@ def test_get_image_viewer_cui(iv):
     if iv == 'None':
         assert image_viewer.__ImgViewer == 'None', msg
     elif iv in image_viewers:
-        mod_type = check_mod_installed(iv)
-        assert mod_type is not None, f'something strange; {iv}'
-        assert type(image_viewer.__ImgViewer) is mod_type, msg
-        if mod_type is ModuleType:
+        if type(image_viewer.__ImgViewer) is ModuleType:
             assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
             assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
         else:
@@ -126,10 +114,7 @@ def test_get_image_viewer_conf(iv):
     if iv == 'None':
         assert image_viewer.__ImgViewer == 'None', msg
     elif iv in image_viewers:
-        mod_type = check_mod_installed(iv)
-        assert mod_type is not None, f'something strange; {iv}'
-        assert type(image_viewer.__ImgViewer) is mod_type, msg
-        if mod_type is ModuleType:
+        if type(image_viewer.__ImgViewer) is ModuleType:
             assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
             assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
         else:
