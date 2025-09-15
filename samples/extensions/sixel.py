@@ -2,6 +2,7 @@ import os
 import sys
 import tempfile
 from logging import getLogger
+from typing import Any
 
 from aftviewer import GLOBAL_CONF, print_error
 from libsixel.encoder import Encoder, SIXEL_OPTFLAG_WIDTH, SIXEL_OPTFLAG_COLORS
@@ -21,7 +22,7 @@ def show_image_file(img_file: str) -> bool:
     return True
 
 
-def show_image_ndarray(data: any, name: str) -> bool:
+def show_image_ndarray(data: Any, name: str) -> bool:
     if os.name == 'nt':  # Windows
         # See aftviewer/core/image_viewer/__init__.py
         tmpd = False
