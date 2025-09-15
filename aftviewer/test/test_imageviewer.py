@@ -29,7 +29,7 @@ ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), (cmd), ('not a command')]
 addlib = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
 if addlib.is_dir():
     for ivfile in addlib.glob('*.py'):
-        ivs.append((ivfile.with_suffix('').name))
+        ivs.append((ivfile.stem))
 
 
 @pytest.mark.parametrize(('iv'), ivs)
