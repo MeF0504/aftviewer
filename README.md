@@ -6,6 +6,12 @@ See the [wiki page](https://github.com/MeF0504/aftviewer/wiki) for the details.
 
 Sample GIFs can be found [here](samples/gif/README.md).
 
+## Concept
+
+This software is designed to be a universal viewer for any files.
+Also, the basic functions of this software work with only the standard libraries of recent Python 3.
+Third-party libraries are required and loaded only when specific file types are handled; e.g. `npz` file requires the `numpy` library.
+
 ## Requirements
 
 The basic process of this software is designed to work with standard libraries of recent [Python3](https://www.python.org/).  

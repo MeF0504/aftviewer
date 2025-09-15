@@ -22,7 +22,7 @@ This script shows image files using image viewer.
 ### How to use
 1. Install this script
 ```sh
-aftviewer-install show_image.py png jpg jpeg
+aftviewer-libinstaller show_image.py png jpg jpeg
 ```
 See [wiki page](https://github.com/MeF0504/aftviewer/wiki/Extension) for details.
 
@@ -30,6 +30,10 @@ See [wiki page](https://github.com/MeF0504/aftviewer/wiki/Extension) for details
 ```sh
 aftviewer sample.png [-t show_image]
 ```
+
+## extensions
+Samples of extension scripts that are outside the basic concept.
+See README in the extensions directory for details.
 
 ## gif
 

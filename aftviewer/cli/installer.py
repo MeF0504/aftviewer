@@ -21,7 +21,7 @@ def closing(dst_path: Path):
 def install_viewer(args: argparse.Namespace, lib_path: Path):
     lib_dir = GLOBAL_CONF.conf_dir/'.lib/add_viewers'
     dst_path = lib_dir/lib_path.name
-    type_name = lib_path.name[:-3]
+    type_name = lib_path.stem
     if not lib_dir.is_dir():
         lib_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(lib_path, dst_path)
@@ -62,7 +62,7 @@ def install_viewer(args: argparse.Namespace, lib_path: Path):
 def install_image_viewer(args: argparse.Namespace, lib_path: Path):
     lib_dir = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
     dst_path = lib_dir/lib_path.name
-    type_name = lib_path.name[:-3]
+    type_name = lib_path.stem
     if not lib_dir.is_dir():
         lib_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(lib_path, dst_path)
