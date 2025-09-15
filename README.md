@@ -8,9 +8,9 @@ Sample GIFs can be found [here](samples/gif/README.md).
 
 ## Concept
 
-This software is designed to be a universal viewer for any type of files.
-Also, the basic functions of this software work with only standard libraries of recent Python3.
-Third-party libraries are required and loaded only when specific file types are handled; e.g. `npz` file requires `numpy` library.
+This software is designed to be a universal viewer for files.
+Also, the basic functions of this software work with only the standard libraries of recent Python 3.
+Third-party libraries are required and loaded only when specific file types are handled; e.g. `npz` file requires the `numpy` library.
 
 ## Requirements
 
