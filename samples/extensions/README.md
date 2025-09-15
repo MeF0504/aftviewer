@@ -18,6 +18,11 @@ pip install numpy plotly Pillow
 aftviewer-libinstaller plotly.py image-viewer
 ```
 
+3. Use the extension, e.g.,
+```bash
+aftviewer HOGE.fit -iv plotly
+```
+
 ## sixel.py
 
 This script is an extension to show images in the terminal using [libsixel](https://github.com/saitoha/libsixel).
@@ -29,4 +34,9 @@ See the instructions [here](https://github.com/saitoha/libsixel/tree/master/pyth
 2. Install the extension
 ```bash
 aftviewer-libinstaller sixel.py image-viewer
+```
+
+3. Use the extension, e.g.,
+```bash
+aftviewer HOGE.ipynb -iv sixel
 ```
