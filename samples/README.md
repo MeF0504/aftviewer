@@ -31,6 +31,10 @@ See [wiki page](https://github.com/MeF0504/aftviewer/wiki/Extension) for details
 aftviewer sample.png [-t show_image]
 ```
 
+## extensions
+Samples of extension scripts that are outside the basic concept.
+See README in the extensions directory for details.
+
 ## gif
 
 Sample GIF images of `aftviewer` command with various file types.
