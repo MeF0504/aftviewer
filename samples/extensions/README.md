@@ -15,7 +15,7 @@ pip install numpy plotly Pillow
 
 2. Install the extension
 ```bash
-aftviewer-libinstaller plotly.py image-viewer
+aftviewer-libinstaller https://raw.githubusercontent.com/MeF0504/aftviewer/refs/heads/main/samples/extensions/plotly.py image-viewer
 ```
 
 3. Use the extension, e.g.,
@@ -33,7 +33,7 @@ See the instructions [here](https://github.com/saitoha/libsixel/tree/master/pyth
 
 2. Install the extension
 ```bash
-aftviewer-libinstaller sixel.py image-viewer
+aftviewer-libinstaller https://raw.githubusercontent.com/MeF0504/aftviewer/refs/heads/main/samples/extensions/sixel.py image-viewer
 ```
 
 3. Use the extension, e.g.,
