@@ -95,7 +95,7 @@ def install_image_viewer(args: argparse.Namespace, lib_path: Path):
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('libfile',
-                        help='Path of the library file of'
+                        help='Path or URL of the library file of'
                         ' the additional type to install')
     parser.add_argument('ext', help='File extension of the additional type.',
                         nargs='*')
