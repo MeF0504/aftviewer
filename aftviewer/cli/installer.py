@@ -5,6 +5,8 @@ import os
 import sys
 import shutil
 import argparse
+import tempfile
+from urllib import request
 from pathlib import Path
 from importlib import import_module
 from logging import getLogger
@@ -16,6 +18,11 @@ logger = getLogger(GLOBAL_CONF.logname)
 
 def closing(dst_path: Path):
     os.remove(dst_path)
+
+
+def rmtmp(tmpdir: None | tempfile.TemporaryDirectory):
+    if tmpdir is not None:
+        tmpdir.cleanup()
 
 
 def install_viewer(args: argparse.Namespace, lib_path: Path):
@@ -88,7 +95,7 @@ def install_image_viewer(args: argparse.Namespace, lib_path: Path):
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('libfile',
-                        help='Path of the library file of'
+                        help='Path or URL of the library file of'
                         ' the additional type to install')
     parser.add_argument('ext', help='File extension of the additional type.',
                         nargs='*')
@@ -98,12 +105,25 @@ def get_args() -> argparse.Namespace:
 
 def main():
     args = get_args()
-    lib_path = Path(args.libfile)
+    tmpdir: None | tempfile.TemporaryDirectory = None
+    if args.libfile.startswith(('http://', 'https://')):
+        libname = os.path.basename(args.libfile)
+        tmpdir = tempfile.TemporaryDirectory()
+        with request.urlopen(args.libfile) as response:
+            with open(os.path.join(tmpdir.name, libname), 'wb') as tf:
+                tf.write(response.read())
+                lib_path = Path(tf.name)
+                logger.debug(f'Save downloaded file to {tf.name}.')
+    else:
+        lib_path = Path(args.libfile)
+
     if not lib_path.is_file():
         print_error(f'{lib_path} does not exist.', file=sys.stderr)
+        rmtmp(tmpdir)
         return
     if not lib_path.name.endswith('.py'):
         print_error(f'Incorrect extension: {lib_path.name}', file=sys.stderr)
+        rmtmp(tmpdir)
         return
 
     __add_lib2path()
@@ -113,3 +133,5 @@ def main():
     else:
         logger.debug(f'install viewer extension "{lib_path}".')
         install_viewer(args, lib_path)
+
+    rmtmp(tmpdir)
