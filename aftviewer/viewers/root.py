@@ -71,14 +71,17 @@ def show_tree(tree: uproot.TTree, args: Args) -> None:
 def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3) -> None:
     vals, edges = hist.to_numpy(flow=True)
     if plt is not None:
-        plt.step(edges, np.append(vals, vals[-1]), where='post')
-        xlabel = hist.axis().labels()
-        plt.xlabel(xlabel if xlabel else '')
-        plt.ylabel('Entries')
-        plt.title(hist.title if hist.title else '')
-        plt.grid(False)
-        plt.show()
+        xlabel = hist.axis().all_members.get('fTitle', '')
+        title = hist.title if hist.title else ''
+        fig1 = plt.figure()
+        ax11 = fig1.add_subplot(1, 1, 1)
+        ax11.step(edges, np.append(vals, vals[-1]), where='post')
+        ax11.set_xlabel(xlabel)
+        ax11.set_ylabel('Entries')
+        ax11.set_title(f'{title} ({hist.name})' if title else hist.name)
+        ax11.grid(False)
     elif ROOT is not None:
+        # 複数のhist表示がこれだと出来ない？ fを出しても駄目
         f = ROOT.TFile.Open(hist.file.file_path)
         h = f.Get(hist.name)
         h.Draw()
@@ -107,6 +110,7 @@ def main(fpath: Path, args: Args):
             print("List of objects in the ROOT file:")
             for k, t in rfile.classnames().items():
                 print(f"{k}: {t}")
+            rfile.close()
             return
         else:
             keys = args.key
@@ -135,4 +139,6 @@ def main(fpath: Path, args: Args):
             print_warning(f"Object type '{t}' is not supported yet."
                           " Please let me know!"
                           " -> https://github.com/MeF0504/aftviewer/issues")
+    if plt is not None and plt.get_fignums():
+        plt.show()
     rfile.close()
