@@ -1,5 +1,8 @@
 import argparse
 from pathlib import Path
+import pprint
+from logging import getLogger
+
 
 import uproot
 import numpy as np  # uproot requires NumPy!
@@ -16,9 +19,14 @@ else:
     if matplotlib.get_backend() == 'agg':
         plt = None  # No display available
 
-from .. import (Args, get_config, args_chk, print_key, print_warning,
+from .. import (GLOBAL_CONF, Args, get_config, args_chk,
+                print_key, print_warning,
                 help_template, add_args_key, add_args_verbose)
 from .numpy import show_summary
+
+
+logger = getLogger(GLOBAL_CONF.logname)
+__pargs = get_config('pp_kwargs')
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
@@ -26,15 +34,24 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                  help='Specify the Object name to show.'
                       ' If nothing is specified, show the list of objects.')
     add_args_verbose(parser,
-                     help='show details (for TTree).'
-                     ' Use -v to show summary of each branch,'
-                     ' and -vv to show full array contents.',
+                     help='show details.'
+                     ' In TTree object, use -v to show summary of each branch,'
+                     ' and -vv to show full array contents.'
+                     ' In other objects, -v show all members.',
                      action='count', default=0)
 
 
 def show_help() -> None:
     helpmsg = help_template('root', 'Open a ROOT file.', add_args)
     print(helpmsg)
+
+
+def show_all_members(obj) -> None:
+    if hasattr(obj, 'all_members'):
+        print('all members:')
+        pprint.pprint(obj.all_members, **__pargs)
+    else:
+        logger.warning('no all_members attribute: {obj}')
 
 
 def show_canvas(fpath: Path, cname: str) -> None:
@@ -56,19 +73,20 @@ def show_tree(tree: uproot.TTree, args: Args) -> None:
         tree.show()
         return
 
-    opts = get_config('numpy_printoptions')
-    np.set_printoptions(**opts)
     print(f'=== {tree.title} ===')
     for key in tree.keys():
         array = tree[key].array(library='np')
-        if args.verbose == 2:
-            print(f'{key}: {array}')
-        elif args.verbose == 1:
+        if args.verbose == 1:
             print(f'------ {key} ------')
+            show_all_members(tree[key])
             show_summary(array)
+        else:
+            print(f'{key}: {array}')
 
 
-def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3) -> None:
+def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
+    if args.verbose > 0:
+        show_all_members(hist)
     vals, edges = hist.to_numpy(flow=True)
     if plt is not None:
         xlabel = hist.axis().all_members.get('fTitle', '')
@@ -91,7 +109,7 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3) -> None:
         print('Neither matplotlib nor ROOT is available. Cannot display TH1.')
 
 
-def show_hist2d() -> None:
+def show_hist2d(hist: uproot.models.TH.Model_TH2D, args:Args) -> None:
     pass
 
 
@@ -117,6 +135,9 @@ def main(fpath: Path, args: Args):
     else:
         keys = rfile.keys()
 
+    npopts = get_config('numpy_printoptions')
+    np.set_printoptions(**npopts)
+
     for k in keys:
         if k not in rfile:
             print_warning(f"Key '{k}' not found in the ROOT file.")
@@ -126,9 +147,9 @@ def main(fpath: Path, args: Args):
         if t == "TCanvas":
             show_canvas(fpath, k)
         elif t.startswith("TH1"):
-            show_hist1d(rfile[k])
+            show_hist1d(rfile[k], args)
         elif t.startswith("TH2"):
-            show_hist2d()
+            show_hist2d(rfile[k], args)
         elif t == "TTree":
             show_tree(rfile[k], args)
         elif t == 'TProfile':
