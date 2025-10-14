@@ -46,12 +46,14 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def show_all_members(obj) -> None:
+def show_all_members(obj, shift: str = ' ') -> None:
     if hasattr(obj, 'all_members'):
-        print('all members:')
-        pprint.pprint(obj.all_members, **__pargs)
-    else:
-        logger.warning('no all_members attribute: {obj}')
+        for key, val in obj.all_members.items():
+            if hasattr(val, 'all_members'):
+                print(f'{shift}{key}:')
+                show_all_members(val, shift=shift + '  ')
+            else:
+                print(f'{shift}{key}: {val}')
 
 
 def show_canvas(fpath: Path, cname: str) -> None:
