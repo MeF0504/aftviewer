@@ -69,9 +69,6 @@ def show_canvas(fpath: Path, cname: str) -> None:
 
 
 def show_tree(tree: uproot.TTree, args: Args) -> None:
-    # print(tree.name)
-    # print(tree.object_path)
-    # print(tree.num_entries)
     if args.verbose == 0:
         tree.show()
         return
@@ -79,12 +76,14 @@ def show_tree(tree: uproot.TTree, args: Args) -> None:
     print(f'=== {tree.title} ===')
     for key in tree.keys():
         array = tree[key].array(library='np')
+        print(f'------ {key} ------')
         if args.verbose == 1:
-            print(f'------ {key} ------')
-            show_all_members(tree[key])
             show_summary(array)
         else:
-            print(f'{key}: {array}')
+            print(' --- All members ---')
+            show_all_members(tree[key])
+            print('--- Values ---')
+            print(array)
 
 
 def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
