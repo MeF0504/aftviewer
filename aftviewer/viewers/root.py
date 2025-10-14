@@ -23,6 +23,7 @@ from .. import (GLOBAL_CONF, Args, get_config, args_chk,
                 print_key, print_warning,
                 help_template, add_args_key, add_args_verbose)
 from .numpy import show_summary
+from pymeflib import plot as mefplot
 
 
 logger = getLogger(GLOBAL_CONF.logname)
@@ -89,8 +90,8 @@ def show_tree(tree: uproot.TTree, args: Args) -> None:
 def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
-    vals, edges = hist.to_numpy(flow=True)
     if plt is not None:
+        vals, edges = hist.to_numpy(flow=True)
         xlabel = hist.axis().all_members.get('fTitle', '')
         title = hist.title if hist.title else ''
         fig1 = plt.figure()
@@ -111,8 +112,30 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
         print('Neither matplotlib nor ROOT is available. Cannot display TH1.')
 
 
-def show_hist2d(hist: uproot.models.TH.Model_TH2D, args:Args) -> None:
-    pass
+def show_hist2d(hist: uproot.models.TH.Model_TH2D, args: Args) -> None:
+    if args.verbose > 0:
+        show_all_members(hist)
+    if plt is not None:
+        vals, edgex, edgey = hist.to_numpy(flow=False)
+        xlabel = hist.axis(0).all_members.get('fTitle', '')
+        ylabel = hist.axis(1).all_members.get('fTitle', '')
+        title = hist.title if hist.title else ''
+        fig1 = plt.figure()
+        ax11 = fig1.add_subplot(1, 1, 1)
+        im1 = ax11.imshow(vals.T, origin='lower',
+                          extent=[edgex[0], edgex[-1], edgey[0], edgey[-1]],
+                          aspect='auto')
+        ax11.set_xlabel(xlabel)
+        ax11.set_ylabel(ylabel)
+        ax11.set_title(f'{title} ({hist.name})' if title else hist.name)
+        mefplot.add_1_colorbar(fig1, im1,
+                               rect=[0.92, 0.1, 0.02, 0.8])
+    elif ROOT is not None:
+        f = ROOT.TFile.Open(hist.file.file_path)
+        h = f.Get(hist.name)
+        h.Draw()
+        ROOT.gApplication.Run()()
+        f.close()
 
 
 def show_profile() -> None:
