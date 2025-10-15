@@ -39,6 +39,9 @@
             "map_limit": [null, null],
             "norm": "None",
             "coord": null
+        },
+        "root": {
+            "drawer": "matplotlib"
         }
     },
     "colors": {

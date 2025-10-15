@@ -7,20 +7,6 @@ from logging import getLogger
 import uproot
 import numpy as np  # uproot requires NumPy!
 
-try:
-    import ROOT
-except ImportError:
-    ROOT = None
-
-try:
-    import matplotlib
-    import matplotlib.pyplot as plt
-except ImportError:
-    plt = None
-else:
-    if matplotlib.get_backend() == 'agg':
-        plt = None  # No display available
-
 from .. import (GLOBAL_CONF, Args, get_config, args_chk,
                 print_key, print_warning,
                 help_template, add_args_key, add_args_verbose)
@@ -29,6 +15,7 @@ from pymeflib import plot as mefplot
 
 
 logger = getLogger(GLOBAL_CONF.logname)
+__drawer: None | str = None
 __pargs = get_config('pp_kwargs')
 
 
@@ -42,11 +29,71 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                      ' and -vv to show full contents.'
                      ' In other objects, -v show all members.',
                      action='count', default=0)
+    parser.add_argument('--drawer', '-d', help='Specify the Object drawer.',
+                        choices=['ROOT', 'matplotlib'],
+                        type=str, default=None)
 
 
 def show_help() -> None:
     helpmsg = help_template('root', 'Open a ROOT file.', add_args)
     print(helpmsg)
+
+
+def chk_drawer(drawer: str, args: Args) -> bool:
+    res = False
+    if args.drawer == drawer:
+        res = True
+    elif args.drawer is None and get_config('drawer') == drawer:
+        res = True
+    return res
+
+
+def is_drawer_root(args) -> bool:
+    global ROOT
+    global __drawer
+    if __drawer == 'ROOT':
+        return True
+
+    if chk_drawer('ROOT', args):
+        try:
+            import ROOT
+        except ImportError as e:
+            logger.debug(f'failed to import ROOT: {e}')
+            return False
+        else:
+            __drawer = 'ROOT'
+            logger.debug(f'set drawer as ROOT: {ROOT}')
+            return True
+    else:
+        return False
+
+
+def is_drawer_mpl(args) -> bool:
+    global plt
+    global __drawer
+    if __drawer == 'matplotlib':
+        return True
+
+    if chk_drawer('matplotlib', args):
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as e:
+            logger.debug(f'failed to import mpl: {e}')
+            return False
+        else:
+            __drawer = 'matplotlib'
+            logger.debug(f'set drawer as mpl: {plt}')
+            return True
+    else:
+        return False
+
+
+def draw_root(fpath: str, cname: str) -> None:
+    f = ROOT.TFile.Open(fpath)
+    c = f.Get(cname)
+    c.Draw()
+    ROOT.gApplication.Run()()
+    f.close()
 
 
 def show_all_members(obj, shift: str = ' ') -> None:
@@ -59,19 +106,11 @@ def show_all_members(obj, shift: str = ' ') -> None:
                 print(f'{shift}{key}: {val}')
 
 
-def draw_root(fpath: str, cname: str) -> None:
-    f = ROOT.TFile.Open(fpath)
-    c = f.Get(cname)
-    c.Draw()
-    ROOT.gApplication.Run()()
-    f.close()
-
-
-def show_canvas(fpath: Path, cname: str) -> None:
-    if ROOT is not None:
+def show_canvas(fpath: Path, cname: str, args: Args) -> None:
+    if is_drawer_root(args):
         draw_root(str(fpath), cname)
     else:
-        print("ROOT is not available. Cannot display TCanvas.")
+        print('TCanvas only supports "ROOT" drawer.')
 
 
 def show_tree(tree: uproot.TTree, args: Args) -> None:
@@ -96,7 +135,7 @@ def show_tree(tree: uproot.TTree, args: Args) -> None:
 def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
-    if plt is not None:
+    if is_drawer_mpl(args):
         vals = hist.values(flow=True)
         edges = hist.axis().edges(flow=True)
         xlabel = hist.axis().all_members.get('fTitle', '')
@@ -107,7 +146,7 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
         ax11.set_xlabel(xlabel)
         ax11.set_title(f'{title} ({hist.name})' if title else hist.name)
         ax11.grid(False)
-    elif ROOT is not None:
+    elif is_drawer_root(args):
         # 複数のhist表示がこれだと出来ない？ fを出しても駄目
         draw_root(hist.file.file_path, hist.name)
     else:
@@ -117,7 +156,7 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
 def show_hist2d(hist: uproot.models.TH.Model_TH2D, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
-    if plt is not None:
+    if is_drawer_mpl(args):
         vals, edgex, edgey = hist.to_numpy(flow=False)
         xlabel = hist.axis(0).all_members.get('fTitle', '')
         ylabel = hist.axis(1).all_members.get('fTitle', '')
@@ -132,7 +171,7 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2D, args: Args) -> None:
         ax11.set_title(f'{title} ({hist.name})' if title else hist.name)
         mefplot.add_1_colorbar(fig1, im1,
                                rect=[0.92, 0.1, 0.02, 0.8])
-    elif ROOT is not None:
+    elif is_drawer_root(args):
         draw_root(hist.file.file_path, hist.name)
 
 
@@ -160,7 +199,7 @@ def main(fpath: Path, args: Args):
         t = rfile[k].classname
         print_key(f"{k}: {t}")
         if t == "TCanvas":
-            show_canvas(fpath, k)
+            show_canvas(fpath, k, args)
         elif t.startswith("TH1"):
             show_hist1d(rfile[k], args)
         elif t.startswith("TH2"):
@@ -175,6 +214,7 @@ def main(fpath: Path, args: Args):
             print_warning(f"Object type '{t}' is not supported yet."
                           " Please let me know!"
                           " -> https://github.com/MeF0504/aftviewer/issues")
-    if plt is not None and plt.get_fignums():
-        plt.show()
+    if is_drawer_mpl(args):
+        if len(plt.get_fignums()) != 0:
+            plt.show()
     rfile.close()
