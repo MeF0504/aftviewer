@@ -6,10 +6,12 @@ from logging import getLogger
 
 import uproot
 import numpy as np  # uproot requires NumPy!
+
 try:
     import ROOT
 except ImportError:
     ROOT = None
+
 try:
     import matplotlib
     import matplotlib.pyplot as plt
@@ -37,7 +39,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     add_args_verbose(parser,
                      help='show details.'
                      ' In TTree object, use -v to show summary of each branch,'
-                     ' and -vv to show full array contents.'
+                     ' and -vv to show full contents.'
                      ' In other objects, -v show all members.',
                      action='count', default=0)
 
@@ -57,13 +59,17 @@ def show_all_members(obj, shift: str = ' ') -> None:
                 print(f'{shift}{key}: {val}')
 
 
+def draw_root(fpath: str, cname: str) -> None:
+    f = ROOT.TFile.Open(fpath)
+    c = f.Get(cname)
+    c.Draw()
+    ROOT.gApplication.Run()()
+    f.close()
+
+
 def show_canvas(fpath: Path, cname: str) -> None:
     if ROOT is not None:
-        f = ROOT.TFile.Open(str(fpath))
-        c = f.Get(cname)
-        c.Draw()
-        ROOT.gApplication.Run()()
-        f.close()
+        draw_root(str(fpath), cname)
     else:
         print("ROOT is not available. Cannot display TCanvas.")
 
@@ -73,40 +79,37 @@ def show_tree(tree: uproot.TTree, args: Args) -> None:
         tree.show()
         return
 
-    print(f'=== {tree.title} ===')
+    print(f'=== Title: {tree.title} ===')
     for key in tree.keys():
         array = tree[key].array(library='np')
-        print(f'------ {key} ------')
+        print(f'--- Branch: {key} ---')
         if args.verbose == 1:
             show_summary(array)
         else:
-            print(' --- All members ---')
+            print(' ~~~ All members ~~~')
             show_all_members(tree[key])
-            print('--- Values ---')
+            print('~~~ Values ~~~')
             print(array)
+            print()
 
 
 def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
     if plt is not None:
-        vals, edges = hist.to_numpy(flow=True)
+        vals = hist.values(flow=True)
+        edges = hist.axis().edges(flow=True)
         xlabel = hist.axis().all_members.get('fTitle', '')
         title = hist.title if hist.title else ''
         fig1 = plt.figure()
         ax11 = fig1.add_subplot(1, 1, 1)
         ax11.step(edges, np.append(vals, vals[-1]), where='post')
         ax11.set_xlabel(xlabel)
-        ax11.set_ylabel('Entries')
         ax11.set_title(f'{title} ({hist.name})' if title else hist.name)
         ax11.grid(False)
     elif ROOT is not None:
         # 複数のhist表示がこれだと出来ない？ fを出しても駄目
-        f = ROOT.TFile.Open(hist.file.file_path)
-        h = f.Get(hist.name)
-        h.Draw()
-        ROOT.gApplication.Run()()
-        f.close()
+        draw_root(hist.file.file_path, hist.name)
     else:
         print('Neither matplotlib nor ROOT is available. Cannot display TH1.')
 
@@ -130,19 +133,7 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2D, args: Args) -> None:
         mefplot.add_1_colorbar(fig1, im1,
                                rect=[0.92, 0.1, 0.02, 0.8])
     elif ROOT is not None:
-        f = ROOT.TFile.Open(hist.file.file_path)
-        h = f.Get(hist.name)
-        h.Draw()
-        ROOT.gApplication.Run()()
-        f.close()
-
-
-def show_profile() -> None:
-    pass
-
-
-def show_ntuple() -> None:
-    pass
+        draw_root(hist.file.file_path, hist.name)
 
 
 def main(fpath: Path, args: Args):
@@ -177,9 +168,9 @@ def main(fpath: Path, args: Args):
         elif t == "TTree":
             show_tree(rfile[k], args)
         elif t == 'TProfile':
-            show_profile()
+            show_hist1d(rfile[k], args)
         elif t == 'TNtuple':
-            show_ntuple()
+            show_tree(rfile[k], args)
         else:
             print_warning(f"Object type '{t}' is not supported yet."
                           " Please let me know!"
