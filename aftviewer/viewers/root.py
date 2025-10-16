@@ -114,7 +114,7 @@ def show_canvas(fpath: Path, cname: str, args: Args) -> None:
               f' => `aftviewer {fpath} -d ROOT`')
 
 
-def show_tree(tree: uproot.TTree, args: Args) -> None:
+def show_tree(tree: uproot.models.TTree.Model_TTree_v20, args: Args) -> None:
     if args.verbose == 0:
         tree.show()
         return
@@ -133,7 +133,7 @@ def show_tree(tree: uproot.TTree, args: Args) -> None:
             print()
 
 
-def show_hist1d(hist: uproot.models.TH.Model_TH1D, args: Args) -> None:
+def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
@@ -153,7 +153,7 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D, args: Args) -> None:
         print('Neither matplotlib nor ROOT is available. Cannot display TH1.')
 
 
-def show_hist2d(hist: uproot.models.TH.Model_TH2D, args: Args) -> None:
+def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
@@ -177,7 +177,7 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2D, args: Args) -> None:
         print('Neither matplotlib nor ROOT is available. Cannot display TH2.')
 
 
-def show_profile(prof: uproot.models.TH.Model_TProfile, args: Args):
+def show_profile(prof: uproot.models.TH.Model_TProfile_v7, args: Args):
     if args.verbose > 0:
         show_all_members(prof)
     if is_drawer_mpl(args):
