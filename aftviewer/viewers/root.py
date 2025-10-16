@@ -110,7 +110,8 @@ def show_canvas(fpath: Path, cname: str, args: Args) -> None:
     if is_drawer_root(args):
         draw_root(str(fpath), cname)
     else:
-        print('TCanvas only supports "ROOT" drawer.')
+        print('TCanvas only supports "ROOT" drawer.'
+              f' => `aftviewer {fpath} -d ROOT`')
 
 
 def show_tree(tree: uproot.TTree, args: Args) -> None:
@@ -132,12 +133,11 @@ def show_tree(tree: uproot.TTree, args: Args) -> None:
             print()
 
 
-def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
+def show_hist1d(hist: uproot.models.TH.Model_TH1D, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
-        vals = hist.values(flow=True)
-        edges = hist.axis().edges(flow=True)
+        vals, edges = hist.to_numpy(flow=True)
         xlabel = hist.axis().all_members.get('fTitle', '')
         title = hist.title if hist.title else ''
         fig1 = plt.figure()
@@ -173,6 +173,31 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2D, args: Args) -> None:
                                rect=[0.92, 0.1, 0.02, 0.8])
     elif is_drawer_root(args):
         draw_root(hist.file.file_path, hist.name)
+    else:
+        print('Neither matplotlib nor ROOT is available. Cannot display TH2.')
+
+
+def show_profile(prof: uproot.models.TH.Model_TProfile, args: Args):
+    if args.verbose > 0:
+        show_all_members(prof)
+    if is_drawer_mpl(args):
+        vals = prof.values(flow=False)
+        errs = prof.errors(flow=False)
+        edges = prof.axis().edges(flow=False)
+        widths = prof.axis().widths(flow=False)
+        xlabel = prof.axis().all_members.get('fTitle', '')
+        title = prof.title if prof.title else ''
+        fig1 = plt.figure()
+        ax11 = fig1.add_subplot(1, 1, 1)
+        ax11.errorbar(np.diff(edges)+edges[:-1], vals, yerr=errs, xerr=widths,
+                      fmt='.')
+        ax11.set_xlabel(xlabel)
+        ax11.set_title(f'{title} ({prof.name})' if title else prof.name)
+        ax11.grid(False)
+    elif is_drawer_root(args):
+        draw_root(prof.file.file_path, prof.name)
+    else:
+        print('Neither matplotlib nor ROOT is available. Cannot display TH1.')
 
 
 def main(fpath: Path, args: Args):
@@ -207,7 +232,7 @@ def main(fpath: Path, args: Args):
         elif t == "TTree":
             show_tree(rfile[k], args)
         elif t == 'TProfile':
-            show_hist1d(rfile[k], args)
+            show_profile(rfile[k], args)
         elif t == 'TNtuple':
             show_tree(rfile[k], args)
         else:
