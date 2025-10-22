@@ -1,5 +1,6 @@
 try:
     from PIL import Image
+    from PIL.ExifTags import TAGS
 except ImportError as e:
     print(type(e).__name__, e)
     is_pil = False
@@ -26,7 +27,11 @@ def main(fpath, args):
             img_data = Image.open(fpath)
             img_exif = img_data.getexif()
             for key, val in img_exif.items():
-                print(f' 0x{key:4x}: {val}')
+                if key in TAGS:
+                    keyname = TAGS[key]
+                else:
+                    keyname = f'0x{key:04x}'
+                print(f' {keyname}: {val}')
         except Exception as e:
             print_warning('Cannot read EXIF data.')
             print_warning(f'{type(e).__name__}, {e}')
