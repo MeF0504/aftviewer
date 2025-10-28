@@ -200,6 +200,38 @@ def show_profile(prof: uproot.models.TH.Model_TProfile_v7, args: Args):
         print('Neither matplotlib nor ROOT is available. Cannot display TH1.')
 
 
+def show_contents(fpath: Path, key: str, args: Args,
+                  rfile: uproot.reading.ReadOnlyDirectory):
+    if key not in rfile:
+        print_warning(f"Key '{key}' not found in the ROOT file.")
+        return
+    if hasattr(rfile[key], 'classnames'):
+        print_key(key)
+        for k2 in rfile[key].classnames().keys():
+            # contents in directory are selectable in another key?
+            # show_contents(fpath, k2, args, rfile[key])
+            print(f'  {k2}: {rfile[key][k2]}')
+    else:
+        t = rfile[key].classname
+        print_key(f"{key}: {t}")
+        if t == "TCanvas":
+            show_canvas(fpath, key, args)
+        elif t.startswith("TH1"):
+            show_hist1d(rfile[key], args)
+        elif t.startswith("TH2"):
+            show_hist2d(rfile[key], args)
+        elif t == "TTree":
+            show_tree(rfile[key], args)
+        elif t == 'TProfile':
+            show_profile(rfile[key], args)
+        elif t == 'TNtuple':
+            show_tree(rfile[key], args)
+        else:
+            print_warning(f"Object type '{t}' is not supported yet."
+                          " Please let me know!"
+                          " -> https://github.com/MeF0504/aftviewer/issues")
+
+
 def main(fpath: Path, args: Args):
     rfile = uproot.open(fpath)
     if args_chk(args, 'key'):
@@ -218,27 +250,8 @@ def main(fpath: Path, args: Args):
     np.set_printoptions(**npopts)
 
     for k in keys:
-        if k not in rfile:
-            print_warning(f"Key '{k}' not found in the ROOT file.")
-            continue
-        t = rfile[k].classname
-        print_key(f"{k}: {t}")
-        if t == "TCanvas":
-            show_canvas(fpath, k, args)
-        elif t.startswith("TH1"):
-            show_hist1d(rfile[k], args)
-        elif t.startswith("TH2"):
-            show_hist2d(rfile[k], args)
-        elif t == "TTree":
-            show_tree(rfile[k], args)
-        elif t == 'TProfile':
-            show_profile(rfile[k], args)
-        elif t == 'TNtuple':
-            show_tree(rfile[k], args)
-        else:
-            print_warning(f"Object type '{t}' is not supported yet."
-                          " Please let me know!"
-                          " -> https://github.com/MeF0504/aftviewer/issues")
+        show_contents(fpath, k, args, rfile)
+
     if is_drawer_mpl(args):
         if len(plt.get_fignums()) != 0:
             plt.show()
