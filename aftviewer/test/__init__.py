@@ -12,6 +12,7 @@ def chk_deps(filetype: str) -> bool:
             'fits': ['astropy'],
             'healpix': ['healpy'],
             'excel': ['openpyxl', 'xlrd'],
+            'root': ['uproot'],
             }
     if filetype not in deps:
         return True

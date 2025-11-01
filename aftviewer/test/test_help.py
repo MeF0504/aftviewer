@@ -26,6 +26,7 @@ from aftviewer.cli import get_parser_arg
     ('fits'),
     ('healpix'),
     ('excel'),
+    ('root'),
     ])
 def test_help_message(filetype):
     if not chk_deps(filetype):
