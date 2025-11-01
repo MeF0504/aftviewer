@@ -28,6 +28,7 @@ from aftviewer.cli import get_parser_arg
     ('fits', [True, False, False, False, True, True, True, False, False]),
     ('healpix', [False, False, True, False, True, True, True, False, False]),
     ('excel', [False, True, False, False, True, True, True, False, True]),
+    ('root', [False, False, False, True, True, True, True, False, False]),
     ])
 def test_args_filetypes(filetype, is_args_ok):
     if not chk_deps(filetype):

@@ -195,6 +195,11 @@ desc = """Setting to describe the coordinate system of the map,
 or a sequence of 2 of these to rotate the map
 from the first to the second coordinate system."""
 
+[config.root.drawer]
+type = "string/null"
+desc = """The method to draw the contents in the ROOT file.
+Selectable methods are null, "matplotlib" and "ROOT"."""
+
 
 [color.defaults]
 msg_error = "Color of error messages."
