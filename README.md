@@ -18,13 +18,14 @@ The basic process of this software is designed to work with standard libraries o
 To show some kinds of files, external libraries are required.
 
 e.g.)
-- [numpy](https://numpy.org/) for numpy, xpm, np_pickle
-- [h5py](https://docs.h5py.org/) for hdf5
+- [numpy](https://numpy.org/) for numpy, xpm, np_pickle.
+- [h5py](https://docs.h5py.org/) for hdf5.
 - [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
 - [numpy-stl](https://pypi.org/project/numpy-stl/) for stl.
 - [Astropy](https://www.astropy.org/) for fits.
 - [healpy](https://healpy.readthedocs.io/) for healpix.
 - [xlrd](https://xlrd.readthedocs.io/en/latest/) and/or [openpyxl](https://openpyxl.readthedocs.io/en/stable/) for excel.
+- [uproot](https://uproot.readthedocs.io/en/latest/) for root.
 
 The following libraries are not always necessary but are useful if available.
 - [numpy](https://numpy.org/) for hdf5.
