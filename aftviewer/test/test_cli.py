@@ -46,6 +46,7 @@ def test_get_args():
     ('fits'),
     ('healpix'),
     ('excel'),
+    ('root'),
     ])
 def test_show_opts(filetype):
     # check the function run correctly.
