@@ -4,8 +4,8 @@ import tempfile
 from logging import getLogger
 from typing import Any
 
-from aftviewer import GLOBAL_CONF, print_error
-from libsixel.encoder import Encoder, SIXEL_OPTFLAG_WIDTH, SIXEL_OPTFLAG_COLORS
+from aftviewer import GLOBAL_CONF, print_error, get_config
+from libsixel.encoder import Encoder, SIXEL_OPTFLAG_WIDTH
 from pymeflib.color import make_bitmap
 
 logger = getLogger(GLOBAL_CONF.logname)
@@ -15,9 +15,10 @@ def show_image_file(img_file: str) -> bool:
     if not os.path.isfile(img_file):
         print_error(f'file not found: {img_file}', file=sys.stderr)
         return False
+    width = get_config('image_width')
     encoder = Encoder()
-    encoder.setopt(SIXEL_OPTFLAG_WIDTH, '300')
-    encoder.setopt(SIXEL_OPTFLAG_COLORS, '16')
+    if width is not None:
+        encoder.setopt(SIXEL_OPTFLAG_WIDTH, f'{width}')
     encoder.encode(img_file)
     return True
 
