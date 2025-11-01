@@ -24,7 +24,7 @@ for c in cmds:
         cmd = c
         break
 
-ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2') ('bokeh'),
+ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), ('bokeh'),
        (cmd), ('not a command')]
 
 addlib = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
