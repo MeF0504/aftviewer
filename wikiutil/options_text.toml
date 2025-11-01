@@ -76,6 +76,11 @@ These arguments are passed to the [subprocess.run()](https://docs.python.org//3/
 Note that the file path does not necessarily match the file path given in the command line.
 In some types, an image file is extracted in a temporary directory."""
 
+[config.defaults.image_width]
+type = "null or integer"
+desc = """Set the default width of the image. If null, use the image width itself.
+The implementation is depend on each image viewer."""
+
 [config.defaults.system_cmd]
 type = "string/null"
 desc = """A command called when opening a file with a system command.

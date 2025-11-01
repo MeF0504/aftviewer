@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 from bokeh.plotting import figure, output_file, show
 
-from .. import GLOBAL_CONF, print_error
+from .. import GLOBAL_CONF, print_error, get_config
 
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -19,14 +19,21 @@ def show_data(data: np.ndarray):
         f'len of data shape should be 3 (h, w, 4), not {len(data.shape)}.'
     h, w, _ = data.shape
     logger.debug(f'Image shape: {data.shape}')
+    width = get_config('image_width')
+    if width is None:
+        width = w
+        height = h
+    else:
+        height = int(width*float(h)/w)
+    logger.info(f'shown image size: {width}x{height}')
     # convert uint8x4 |R|G|B|A| -> uint32 |RGBA|
     shown_data = np.empty((h, w), dtype=np.uint32)
     view = shown_data.view(dtype=np.uint8).reshape((h, w, 4))
     view[:, :, :] = data
     shown_data = np.flip(shown_data, 0)
-    p = figure(width=w, height=h)
+    p = figure(width=width, height=height)
     p.x_range.range_padding = p.y_range.range_padding = 0
-    p.image_rgba(image=[shown_data], x=0, y=0, dw=w*1.1, dh=h*1.1)
+    p.image_rgba(image=[shown_data], x=0, y=0, dw=width, dh=height)
     with tempfile.NamedTemporaryFile(suffix='.html') as tmp:
         output_file(tmp.name)
         show(p)
