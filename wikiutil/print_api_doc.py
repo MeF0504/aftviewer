@@ -41,7 +41,9 @@ def show_items(item_dict: dict[str, list[str]]):
             ret2 = eval(f'ret.{item}')
             # print('## {}'.format(ret2.__name__))
             print(f'## {item}')
+            print('```python')
             print(ret2.__doc__)
+            print('```')
             print()
 
 
