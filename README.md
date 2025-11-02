@@ -37,7 +37,8 @@ To show images, imaging-related libraries
 (Currently supporting libraries are
 [PIL (Pillow)](https://pillow.readthedocs.io/),
 [Matplotlib](https://matplotlib.org/),
-or [OpenCV](https://pypi.org/project/opencv-python/))
+[OpenCV](https://pypi.org/project/opencv-python/),
+or [bokeh](https://bokeh.org/))
 or shell commands (e.g. "open" in macOS) with supporting bitmap (.bmp) files are required.
 
 ## Install
