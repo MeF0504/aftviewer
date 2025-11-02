@@ -29,6 +29,7 @@ def add_args_imageviewer(parser: argparse.ArgumentParser, **kwargs) -> None:
                 "'matplotlib' (use matplotlib.pyplot.imshow), "
                 "'PIL' (use PIL.Image.show), "
                 "'cv2' (use cv2.imshow), "
+                "'bokeh' (use bokeh.plotting.figure.image_rgba), "
                 "and other string is treated as an external command "
                 "(e.g. display, eog, open).",
                 type=str

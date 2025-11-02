@@ -49,13 +49,14 @@ The parameters that can be set are as follows.
 type = "string/null"
 desc = """The name of the method to show images.
 The treatment of this option is the same as the command-line argument (-iv).
-If "PIL", "matplotlib", or "cv2" are set, use
+If "PIL", "matplotlib", "cv2", or "bokeh" are set, use
 [PIL.Image.show()](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.show),
 [matplotlib.pyplot.imshow()](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html),
-or [cv2.imshow()](https://docs.opencv.org/) respectively.
+[cv2.imshow()](https://docs.opencv.org/),
+or [bokeh.plotting.figure.image_rgba](https://bokeh.org/) respectively.
 If another string is given, it is treated as a shell command.
 The detailed behavior of this shell command can be set by the "iv_exec_cmd" option.
-If null is set, search the possible modules from "PIL", "matplotlib", and "cv2".
+If null is set, search the possible modules from "PIL", "matplotlib", "cv2", and "bokeh".
 If the image viewer is specified in both the json file and a command-line argument, the command-line argument is applied."""
 
 [config.defaults.image_viewer_cui]
@@ -75,6 +76,11 @@ Some special keywords are available; "%c" and "%s".
 These arguments are passed to the [subprocess.run()](https://docs.python.org//3/library/subprocess.html#subprocess.run) function after replacement.
 Note that the file path does not necessarily match the file path given in the command line.
 In some types, an image file is extracted in a temporary directory."""
+
+[config.defaults.image_width]
+type = "null or integer"
+desc = """Set the shown width of the image. If null, use the image width itself.
+The implementation depends on each image viewer."""
 
 [config.defaults.system_cmd]
 type = "string/null"
