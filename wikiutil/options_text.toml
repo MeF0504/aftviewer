@@ -78,8 +78,8 @@ In some types, an image file is extracted in a temporary directory."""
 
 [config.defaults.image_width]
 type = "null or integer"
-desc = """Set the default width of the image. If null, use the image width itself.
-The implementation is depend on each image viewer."""
+desc = """Set the shown width of the image. If null, use the image width itself.
+The implementation depends on each image viewer."""
 
 [config.defaults.system_cmd]
 type = "string/null"
