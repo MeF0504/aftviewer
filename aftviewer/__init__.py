@@ -6,6 +6,8 @@ from .core import GLOBAL_CONF
 from .core import (get_config, args_chk, cprint, print_key, get_col,
                    get_timezone, interactive_view, run_system_cmd,
                    print_error, print_warning)
+from .core.dict_viewer import (show_keys_dict, get_item_dict,
+                               get_contents_dict, show_func_dict)
 from .core.image_viewer import is_image, show_image_file, show_image_ndarray
 from .core.helpmsg import (help_template,
                            add_args_imageviewer, add_args_encoding,
