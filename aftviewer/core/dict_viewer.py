@@ -7,10 +7,10 @@ from . import GLOBAL_CONF, print_key, print_error, get_config
 from .types import ReturnMessage as RM
 
 logger = getLogger(GLOBAL_CONF.logname)
-pargs = get_config('pp_kwargs')
 
 
 def show_keys_dict(data: dict, key: Any):
+    pargs = get_config('pp_kwargs')
     if key:
         for k in key:
             if k in data:
@@ -57,6 +57,7 @@ def get_contents_dict(data: dict, path: str):
 
 def show_func_dict(data: dict, cpath: str, **kwargs):
     tmp_data = get_item_dict(data, cpath)
+    pargs = get_config('pp_kwargs')
     if tmp_data is None:
         return RM(f'warning! no key {cpath} or the value is None', False)
     res = pprint.pformat(tmp_data, **pargs)
