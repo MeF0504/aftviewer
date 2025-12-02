@@ -7,11 +7,11 @@ import numpy as np
 from numpy.lib.npyio import NpzFile
 
 from .. import (GLOBAL_CONF, args_chk, print_key, get_config,
+                show_func_dict, get_contents_dict,
                 interactive_view, interactive_cui, help_template,
                 add_args_specification, add_args_encoding)
 from .. import ReturnMessage as RM
 from .numpy import show_summary as show_numpy
-from .pickle import show_func as show_pickle, get_contents as get_pickle
 logger = getLogger(GLOBAL_CONF.logname)
 
 
@@ -24,7 +24,7 @@ def show_func(data, path, **kwargs):
     else:
         pdata = data[parts[0]]
         assert pdata.dtype == np.dtype('O'), f'incorrect type, {pdata.dtype}'
-        res = show_pickle(pdata.item(), os.sep.join(parts[1:]))
+        res = show_func_dict(pdata.item(), os.sep.join(parts[1:]))
     return res
 
 
@@ -43,7 +43,7 @@ def get_contents(data, path):
     else:
         pdata = data[parts[0]]
         assert pdata.dtype == np.dtype('O'), f'incorrect type, {pdata.dtype}'
-        dirs, files = get_pickle(pdata.item(), os.sep.join(parts[1:]))
+        dirs, files = get_contents_dict(pdata.item(), os.sep.join(parts[1:]))
     return dirs, files
 
 
