@@ -16,8 +16,8 @@ See [wiki page](https://github.com/MeF0504/aftviewer/wiki/Customization) for det
 
 ## show_image.py
 
-A sample script of additional file type viewer.
-This script shows image files using image viewer.
+A sample script of an additional file type viewer.
+This script shows how to use image-viewing related functions.
 
 ### How to use
 1. Install this script
@@ -31,10 +31,28 @@ See [wiki page](https://github.com/MeF0504/aftviewer/wiki/Extension) for details
 aftviewer sample.png [-t show_image]
 ```
 
+## show_json.py
+
+A sample script of an additional file type viewer.
+This script shows how to treat dictionary-like objects.
+
+### How to use
+1. Install this script
+```sh
+aftviewer-libinstaller show_json.py json
+```
+See [wiki page](https://github.com/MeF0504/aftviewer/wiki/Extension) for details.
+
+2. Open image files using AFTViewer.
+```sh
+aftviewer sample.json [-t show_json]
+```
+
 ## extensions
 Samples of extension scripts that are outside the basic concept.
-See README in the extensions directory for details.
+See [README](extensions/README.md) in this directory for details.
 
 ## gif
 
 Sample GIF images of `aftviewer` command with various file types.
+See [README](gif/README.md) in this directory for details.
