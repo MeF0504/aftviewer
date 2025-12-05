@@ -50,9 +50,9 @@ aftviewer sample.json [-t show_json]
 
 ## extensions
 Samples of extension scripts that are outside the basic concept.
-See [README](extensions/README.md) in this directory for details.
+See [README](extensions/README.md) in the extension directory for details.
 
 ## gif
 
 Sample GIF images of `aftviewer` command with various file types.
-See [README](gif/README.md) in this directory for details.
+See [README](gif/README.md) in the gif directory for details.
