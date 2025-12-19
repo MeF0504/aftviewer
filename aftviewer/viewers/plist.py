@@ -9,8 +9,7 @@ from logging import getLogger
 from .. import (Args, help_template, GLOBAL_CONF,
                 args_chk, get_config, show_keys_dict, get_item_dict,
                 get_contents_dict, show_func_dict,
-                interactive_view, interactive_cui,
-                add_args_specification, add_args_encoding,
+                interactive_view, interactive_cui, add_args_specification,
                 )
 
 from pymeflib.tree2 import show_tree
@@ -30,13 +29,13 @@ def add_info(data, cpath):
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
-    add_args_encoding(parser)
     add_args_specification(parser, verbose=True, key=True,
                            interactive=True, cui=True)
 
 
 def show_help() -> None:
-    helpmsg = help_template('plist', 'description.', add_args)
+    helpmsg = help_template('plist', 'Organize and display'
+                            ' the contents of a plist file.', add_args)
     print(helpmsg)
 
 
