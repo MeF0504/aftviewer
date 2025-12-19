@@ -161,25 +161,15 @@ def set_shell_comp(args: Args) -> bool:
     return True
 
 
-def update(branch: str, test: bool = False) -> bool:
-    py_cmd = None
-    py_version = f'{sys.version_info.major}.{sys.version_info.minor}'
-    for rel_path in [f'bin/python{py_version}',
-                     f'bin/python{sys.version_info.major}',
-                     'bin/python',
-                     f'python{py_version}.exe',
-                     f'python{sys.version_info.major}.exe',
-                     'python.exe',
-                     ]:
-        py_path = Path(sys.base_prefix)/rel_path
-        if py_path.is_file() and os.access(py_path, os.X_OK):
-            py_cmd = str(py_path)
-            logger.info(f'find python; {py_cmd}')
-            break
-    if py_cmd is None:
+def update(branch: str, test: bool) -> bool:
+    py_cmd = sys.executable
+    py_X = os.access(py_cmd, os.X_OK)
+    logger.info(f'python cmd: {py_cmd}')
+    if py_cmd == '' or py_cmd is None or not py_X:
         print_error('failed to find python command.')
-        logger.error(f'python not found in {sys.base_prefix}')
+        logger.error(f'python interpriter not found: {py_cmd}, {py_X}')
         return False
+
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   'aftviewer @ '
                   f'git+https://github.com/MeF0504/aftviewer@{branch}',
@@ -190,7 +180,10 @@ def update(branch: str, test: bool = False) -> bool:
         ret = out.returncode == 0
         logger.debug(f'update command results; return code {out.returncode}')
     else:
-        ret = True
+        out = subprocess.run([py_cmd, '-m', 'pip', 'show', 'aftviewer'],
+                             capture_output=False)
+        ret = out.returncode == 0
+        logger.info(f'return code: {out.returncode} => {ret}')
     return ret
 
 
@@ -210,7 +203,7 @@ def main() -> None:
         elif args.subcmd == 'shell_completion':
             ret = set_shell_comp(args)
         elif args.subcmd == 'update':
-            ret = update(args.branch)
+            ret = update(args.branch, args.test)
         elif args.subcmd == 'help':
             if args_chk(args, 'type'):
                 lib = __load_lib(args)
