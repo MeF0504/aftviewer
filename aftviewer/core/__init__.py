@@ -126,6 +126,7 @@ __type_config = {
     "healpix": "",  # extension is same as fits.
     "excel": "xls xlsx xlsm",
     "root": "root",
+    "plist": "plist",
 }
 __update_add_types()
 __type_config.update(__add_types)
