@@ -187,7 +187,7 @@ def update(branch: str, test: bool) -> bool:
         ret = out.returncode == 0
         logger.debug(f'update command results; return code {out.returncode}')
     else:
-        out = subprocess.run([py_cmd, '-m', 'pip', 'show', 'aftviewer'],
+        out = subprocess.run([py_cmd, '-m', 'pip', 'show', 'pip'],
                              capture_output=False)
         ret = out.returncode == 0
         logger.info(f'return code: {out.returncode} => {ret}')

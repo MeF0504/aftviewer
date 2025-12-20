@@ -4,7 +4,7 @@ import argparse
 import pytest
 
 from aftviewer.cli import (main, get_args, show_opts, set_shell_comp, update,
-                           get_parser_arg)
+                           update_packages, get_parser_arg)
 from aftviewer.cli.get_types import main as get_types
 from aftviewer.cli.installer import main as libinstaller
 
@@ -69,3 +69,4 @@ def test_shell_comp(shell):
 
 def test_update():
     assert update('main', True)
+    assert update_packages('tar', True)
