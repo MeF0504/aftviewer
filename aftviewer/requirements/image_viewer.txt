@@ -1,4 +1,0 @@
-Pillow
-matplotlib
-opencv-python
-bokeh

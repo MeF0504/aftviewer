@@ -26,6 +26,7 @@ _get_aftviewer_types = "aftviewer.cli.get_types:main"
 aftviewer-libinstaller = "aftviewer.cli.installer:main"
 [project.optional-dependencies]
 # https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies
+image_viewer = ["Pillow", "matplotlib", "opencv-python", "bokeh"]
 debug = ["pytest"]
 
 [tool.setuptools]
