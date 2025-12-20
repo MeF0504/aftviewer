@@ -161,15 +161,22 @@ def set_shell_comp(args: Args) -> bool:
     return True
 
 
-def update(branch: str, test: bool) -> bool:
+def __get_py_cmd() -> None | str:
     py_cmd = sys.executable
     py_X = os.access(py_cmd, os.X_OK)
     logger.info(f'python cmd: {py_cmd}')
     if py_cmd == '' or py_cmd is None or not py_X:
         print_error('failed to find python command.')
         logger.error(f'python interpriter not found: {py_cmd}, {py_X}')
-        return False
+        return None
+    else:
+        return py_cmd
 
+
+def update(branch: str, test: bool) -> bool:
+    py_cmd = __get_py_cmd()
+    if py_cmd is None:
+        return False
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   'aftviewer @ '
                   f'git+https://github.com/MeF0504/aftviewer@{branch}',
@@ -184,6 +191,31 @@ def update(branch: str, test: bool) -> bool:
                              capture_output=False)
         ret = out.returncode == 0
         logger.info(f'return code: {out.returncode} => {ret}')
+    return ret
+
+
+def update_packages(ftype: str, test: bool) -> bool:
+    py_cmd = __get_py_cmd()
+    if py_cmd is None:
+        return False
+    base_dir = Path(__file__).parent.parent
+    req_file = base_dir/f'requirements/{ftype}.txt'
+    logger.info(f'requirement file: {req_file}')
+    if not req_file.is_file():
+        logger.info('req file is not found.')
+        return True
+    update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
+                  '-r', str(req_file)]
+    if not test:
+        out = subprocess.run(update_cmd, capture_output=False)
+        ret = out.returncode == 0
+        logger.debug(f'update package results; return code {out.returncode}')
+    else:
+        print('dependencies:')
+        with open(req_file, 'r') as f:
+            [print('    ', ln, end='') for ln in f.readlines()]
+        print()
+        ret = True
     return ret
 
 
@@ -203,7 +235,10 @@ def main() -> None:
         elif args.subcmd == 'shell_completion':
             ret = set_shell_comp(args)
         elif args.subcmd == 'update':
-            ret = update(args.branch, args.test)
+            if args.type is None:
+                ret = update(args.branch, args.test)
+            else:
+                ret = update_packages(args.type, args.test)
         elif args.subcmd == 'help':
             if args_chk(args, 'type'):
                 lib = __load_lib(args)

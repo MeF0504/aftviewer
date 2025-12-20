@@ -1,2 +1,3 @@
 include aftviewer/core/default.json
 graft aftviewer/shell-completion
+graft aftviewer/requirements
