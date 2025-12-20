@@ -253,6 +253,8 @@ def add_args_update(parser: argparse.ArgumentParser) -> None:
     """
     parser.add_argument('--branch', help='set branch name',
                         default='main')
+    parser.add_argument('--test', help='test run',
+                        action='store_true')
 
 
 def help_template(filetype: str, description: str,

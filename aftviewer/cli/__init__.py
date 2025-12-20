@@ -161,24 +161,21 @@ def set_shell_comp(args: Args) -> bool:
     return True
 
 
-def update(branch: str, test: bool = False) -> bool:
-    py_cmd = None
-    py_version = f'{sys.version_info.major}.{sys.version_info.minor}'
-    for rel_path in [f'bin/python{py_version}',
-                     f'bin/python{sys.version_info.major}',
-                     'bin/python',
-                     f'python{py_version}.exe',
-                     f'python{sys.version_info.major}.exe',
-                     'python.exe',
-                     ]:
-        py_path = Path(sys.base_prefix)/rel_path
-        if py_path.is_file() and os.access(py_path, os.X_OK):
-            py_cmd = str(py_path)
-            logger.info(f'find python; {py_cmd}')
-            break
-    if py_cmd is None:
+def __get_py_cmd() -> None | str:
+    py_cmd = sys.executable
+    py_X = os.access(py_cmd, os.X_OK)
+    logger.info(f'python cmd: {py_cmd}')
+    if py_cmd == '' or py_cmd is None or not py_X:
         print_error('failed to find python command.')
-        logger.error(f'python not found in {sys.base_prefix}')
+        logger.error(f'python interpriter not found: {py_cmd}, {py_X}')
+        return None
+    else:
+        return py_cmd
+
+
+def update(branch: str, test: bool) -> bool:
+    py_cmd = __get_py_cmd()
+    if py_cmd is None:
         return False
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   'aftviewer @ '
@@ -190,6 +187,35 @@ def update(branch: str, test: bool = False) -> bool:
         ret = out.returncode == 0
         logger.debug(f'update command results; return code {out.returncode}')
     else:
+        out = subprocess.run([py_cmd, '-m', 'pip', 'show', 'pip'],
+                             capture_output=False)
+        ret = out.returncode == 0
+        logger.info(f'return code: {out.returncode} => {ret}')
+    return ret
+
+
+def update_packages(ftype: str, test: bool) -> bool:
+    py_cmd = __get_py_cmd()
+    if py_cmd is None:
+        return False
+    base_dir = Path(__file__).parent.parent
+    req_file = base_dir/f'requirements/{ftype}.txt'
+    logger.info(f'requirement file: {req_file}')
+    if not req_file.is_file():
+        print('Requirement file is not found.'
+              ' Requirements are already satisfied.')
+        return True
+    update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
+                  '-r', str(req_file)]
+    if not test:
+        out = subprocess.run(update_cmd, capture_output=False)
+        ret = out.returncode == 0
+        logger.debug(f'update package results; return code {out.returncode}')
+    else:
+        print('dependencies:')
+        with open(req_file, 'r') as f:
+            [print('    ', ln, end='') for ln in f.readlines()]
+        print()
         ret = True
     return ret
 
@@ -210,7 +236,12 @@ def main() -> None:
         elif args.subcmd == 'shell_completion':
             ret = set_shell_comp(args)
         elif args.subcmd == 'update':
-            ret = update(args.branch)
+            # update はversionが変わらないと作用しないっぽい。
+            # branch を切り替えるにもversionの違いが必要そう
+            if args.type is None:
+                ret = update(args.branch, args.test)
+            else:
+                ret = update_packages(args.type, args.test)
         elif args.subcmd == 'help':
             if args_chk(args, 'type'):
                 lib = __load_lib(args)

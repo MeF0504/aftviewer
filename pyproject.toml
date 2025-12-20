@@ -26,18 +26,7 @@ _get_aftviewer_types = "aftviewer.cli.get_types:main"
 aftviewer-libinstaller = "aftviewer.cli.installer:main"
 [project.optional-dependencies]
 # https://setuptools.pypa.io/en/latest/userguide/dependency_management.html#optional-dependencies
-numpy = ["numpy"]
-hdf5 = ["h5py", "numpy"]
-raw_image = ["rawpy"]
-sqlite3 = ["tabulate"]
-stl = ["numpy-stl", "plotly"]
-fits = ["astropy"]
-healpix = ["healpy"]
-excel = ["openpyxl", "xlrd", "tabulate"]
-jupyter = ["pygments"]
-root = ["uproot"]
-image_viewer = ["Pillow", "matplotlib", "opencv-python"]
-all = ["numpy", "h5py", "rawpy", "tabulate", "Pillow", "matplotlib", "opencv-python", "numpy-stl", "astropy", "healpy", "openpyxl", "xlrd", "pygments", "uproot"]
+image_viewer = ["Pillow", "matplotlib", "opencv-python", "bokeh"]
 debug = ["pytest"]
 
 [tool.setuptools]
