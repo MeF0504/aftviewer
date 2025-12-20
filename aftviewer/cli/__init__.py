@@ -202,7 +202,8 @@ def update_packages(ftype: str, test: bool) -> bool:
     req_file = base_dir/f'requirements/{ftype}.txt'
     logger.info(f'requirement file: {req_file}')
     if not req_file.is_file():
-        logger.info('req file is not found.')
+        print('Requirement file is not found.'
+              ' Requirements are already satisfied.')
         return True
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   '-r', str(req_file)]
@@ -235,6 +236,8 @@ def main() -> None:
         elif args.subcmd == 'shell_completion':
             ret = set_shell_comp(args)
         elif args.subcmd == 'update':
+            # update はversionが変わらないと作用しないっぽい。
+            # branch を切り替えるにもversionの違いが必要そう
             if args.type is None:
                 ret = update(args.branch, args.test)
             else:
