@@ -1,6 +1,11 @@
 from importlib import metadata
 import warnings
 
+from aftviewer.core import __def
+
+if __def:
+    warnings.warn('These tests assume fource default is OFF.')
+
 
 def chk_deps(filetype: str) -> bool:
     deps = {
