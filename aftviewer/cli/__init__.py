@@ -19,6 +19,7 @@ from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
 from ..core.__version__ import VERSION
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args
+from .updater import get_py_cmd, update_core
 
 if GLOBAL_CONF.debug:
     term_width = 80-2
@@ -161,20 +162,8 @@ def set_shell_comp(args: Args) -> bool:
     return True
 
 
-def __get_py_cmd() -> None | str:
-    py_cmd = sys.executable
-    py_X = os.access(py_cmd, os.X_OK)
-    logger.info(f'python cmd: {py_cmd}')
-    if py_cmd == '' or py_cmd is None or not py_X:
-        print_error('failed to find python command.')
-        logger.error(f'python interpriter not found: {py_cmd}, {py_X}')
-        return None
-    else:
-        return py_cmd
-
-
 def update(branch: str, test: bool) -> bool:
-    py_cmd = __get_py_cmd()
+    py_cmd = get_py_cmd()
     if py_cmd is None:
         return False
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
@@ -182,20 +171,21 @@ def update(branch: str, test: bool) -> bool:
                   f'git+https://github.com/MeF0504/aftviewer@{branch}',
                   ]
     logger.debug(f'update command: {update_cmd}')
-    if not test:
-        out = subprocess.run(update_cmd, capture_output=False)
-        ret = out.returncode == 0
-        logger.debug(f'update command results; return code {out.returncode}')
-    else:
-        out = subprocess.run([py_cmd, '-m', 'pip', 'show', 'pip'],
-                             capture_output=False)
-        ret = out.returncode == 0
-        logger.info(f'return code: {out.returncode} => {ret}')
-    return ret
+    update_core(f'{update_cmd}', test)
+    # if not test:
+    #     out = subprocess.run(update_cmd, capture_output=False)
+    #     ret = out.returncode == 0
+    #     logger.debug(f'update command results; return code {out.returncode}')
+    # else:
+    #     out = subprocess.run([py_cmd, '-m', 'pip', 'show', 'pip'],
+    #                          capture_output=False)
+    #     ret = out.returncode == 0
+    #     logger.info(f'return code: {out.returncode} => {ret}')
+    return True
 
 
 def update_packages(ftype: str, test: bool) -> bool:
-    py_cmd = __get_py_cmd()
+    py_cmd = get_py_cmd()
     if py_cmd is None:
         return False
     base_dir = Path(__file__).parent.parent
@@ -207,17 +197,18 @@ def update_packages(ftype: str, test: bool) -> bool:
         return True
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   '-r', str(req_file)]
-    if not test:
-        out = subprocess.run(update_cmd, capture_output=False)
-        ret = out.returncode == 0
-        logger.debug(f'update package results; return code {out.returncode}')
-    else:
-        print('dependencies:')
-        with open(req_file, 'r') as f:
-            [print('    ', ln, end='') for ln in f.readlines()]
-        print()
-        ret = True
-    return ret
+    update_core(f'{update_cmd}', test)
+    # if not test:
+    #     out = subprocess.run(update_cmd, capture_output=False)
+    #     ret = out.returncode == 0
+    #     logger.debug(f'update package results; return code {out.returncode}')
+    # else:
+    #     print('dependencies:')
+    #     with open(req_file, 'r') as f:
+    #         [print('    ', ln, end='') for ln in f.readlines()]
+    #     print()
+    #     ret = True
+    return True
 
 
 def main() -> None:
