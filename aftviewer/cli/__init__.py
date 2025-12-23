@@ -192,13 +192,19 @@ def update_packages(ftype: str, test: bool) -> bool:
     return True
 
 
-def main() -> None:
+def main() -> int:
+    """
+    Error code:
+        1: file not found
+        2: Invalid input
+        3: failed to load library
+    """
     args = get_args()
     if not (args.type is None or args.type in GLOBAL_CONF.types):
         supported_type = ', '.join(list(GLOBAL_CONF.types.keys()).copy())
         print(f'Please specify the type from {supported_type}.')
         print_error(f'invalid file type: {args.type}.')
-        return
+        return 2
 
     if args.subcmd is not None:
         ret = False
@@ -236,15 +242,15 @@ def main() -> None:
         if ret:
             sys.exit(0)
         else:
-            sys.exit(1)
+            sys.exit(2)
 
     fpath = Path(args.file).expanduser()
     if not fpath.exists():
         print("file doesn't exists!")
-        return
+        return 1
     if fpath.is_dir():
         print("{} is a directory.".format(fpath))
-        return
+        return 1
 
     __set_filetype(args)
 
@@ -253,14 +259,15 @@ def main() -> None:
             print('vimでも使ってろ！')
         else:
             print("Why Don't you use vim???")
-        return
+        return 2
     elif args.type is None:
         print('This is not a supported file type.')
-        return
+        return 2
 
     lib = __load_lib(args)
     if lib is None:
-        print(f'Failed to load the library for "{args.type}".')
+        print_error(f'Failed to load the library for "{args.type}".')
+        return 3
     else:
         lib.main(fpath, args)
-    return
+        return 0
