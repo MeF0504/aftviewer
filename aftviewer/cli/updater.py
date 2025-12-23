@@ -39,8 +39,10 @@ def get_py_cmd() -> None | str:
         return py_cmd
 
 
-def update_core(cmd_str: str, test: bool):
+def update_core(cmd_str: str, test: bool) -> bool:
     py_cmd = get_py_cmd()
+    if py_cmd is None:
+        return False
     tfile = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
     with open(tfile.name, 'w') as f:
         print(UPDATER.format(cmd_str), file=f)
@@ -50,6 +52,7 @@ def update_core(cmd_str: str, test: bool):
             [print(ln, end='') for ln in f.readlines()]
         print('----------')
         tfile.close()
+        return True
     else:
         if hasattr(subprocess, 'DETACHED_PROCESS'):
             cflag = subprocess.DETACHED_PROCESS
@@ -58,3 +61,4 @@ def update_core(cmd_str: str, test: bool):
         print('run the update process...')
         subprocess.Popen([py_cmd, tfile.name],
                          creationflags=cflag, close_fds=True)
+        return True

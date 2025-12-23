@@ -8,7 +8,6 @@ from pathlib import Path
 from types import FunctionType
 from typing import Any
 from logging import getLogger
-import subprocess
 import shutil
 import textwrap
 
@@ -171,8 +170,8 @@ def update(branch: str, test: bool) -> bool:
                   f'git+https://github.com/MeF0504/aftviewer@{branch}',
                   ]
     logger.debug(f'update command: {update_cmd}')
-    update_core(f'{update_cmd}', test)
-    return True
+    ret = update_core(f'{update_cmd}', test)
+    return ret
 
 
 def update_packages(ftype: str, test: bool) -> bool:
@@ -188,8 +187,8 @@ def update_packages(ftype: str, test: bool) -> bool:
         return True
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   '-r', str(req_file)]
-    update_core(f'{update_cmd}', test)
-    return True
+    ret = update_core(f'{update_cmd}', test)
+    return ret
 
 
 def main() -> int:
