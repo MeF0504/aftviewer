@@ -19,9 +19,14 @@ time.sleep(1)
 
 subprocess.check_call({})
 """
+__py_cmd: str | None = None
 
 
 def get_py_cmd() -> None | str:
+    global __py_cmd
+    if __py_cmd is not None:
+        return __py_cmd
+
     py_cmd = sys.executable
     py_X = os.access(py_cmd, os.X_OK)
     logger.info(f'python cmd: {py_cmd}')
@@ -30,6 +35,7 @@ def get_py_cmd() -> None | str:
         logger.error(f'python interpriter not found: {py_cmd}, {py_X}')
         return None
     else:
+        __py_cmd = py_cmd
         return py_cmd
 
 

@@ -172,15 +172,6 @@ def update(branch: str, test: bool) -> bool:
                   ]
     logger.debug(f'update command: {update_cmd}')
     update_core(f'{update_cmd}', test)
-    # if not test:
-    #     out = subprocess.run(update_cmd, capture_output=False)
-    #     ret = out.returncode == 0
-    #     logger.debug(f'update command results; return code {out.returncode}')
-    # else:
-    #     out = subprocess.run([py_cmd, '-m', 'pip', 'show', 'pip'],
-    #                          capture_output=False)
-    #     ret = out.returncode == 0
-    #     logger.info(f'return code: {out.returncode} => {ret}')
     return True
 
 
@@ -198,16 +189,6 @@ def update_packages(ftype: str, test: bool) -> bool:
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   '-r', str(req_file)]
     update_core(f'{update_cmd}', test)
-    # if not test:
-    #     out = subprocess.run(update_cmd, capture_output=False)
-    #     ret = out.returncode == 0
-    #     logger.debug(f'update package results; return code {out.returncode}')
-    # else:
-    #     print('dependencies:')
-    #     with open(req_file, 'r') as f:
-    #         [print('    ', ln, end='') for ln in f.readlines()]
-    #     print()
-    #     ret = True
     return True
 
 
