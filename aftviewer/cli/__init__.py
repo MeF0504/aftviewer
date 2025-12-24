@@ -43,7 +43,9 @@ Supported file types ... {', '.join(supported_type)}."""
  - aftviewer - help -t TYPE
        shows detailed help and available options for the TYPE.
  - aftviewer - update
-       runs the update command of AFTViewer.
+       runs the update of AFTViewer.
+ - aftviewer - update -t TYPE
+       install/update the packages required in the TYPE.
  - aftviewer - config_list [-t TYPE]
        shows the current optional configuration.
        If TYPE is specified, shows the configuration for the TYPE.
