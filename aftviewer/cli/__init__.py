@@ -8,7 +8,6 @@ from pathlib import Path
 from types import FunctionType
 from typing import Any
 from logging import getLogger
-import subprocess
 import shutil
 import textwrap
 
@@ -19,6 +18,7 @@ from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
 from ..core.__version__ import VERSION
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args
+from .updater import get_py_cmd, update_core
 
 if GLOBAL_CONF.debug:
     term_width = 80-2
@@ -43,7 +43,9 @@ Supported file types ... {', '.join(supported_type)}."""
  - aftviewer - help -t TYPE
        shows detailed help and available options for the TYPE.
  - aftviewer - update
-       runs the update command of AFTViewer.
+       runs the update of AFTViewer.
+ - aftviewer - update -t TYPE
+       install/update the packages required in the TYPE.
  - aftviewer - config_list [-t TYPE]
        shows the current optional configuration.
        If TYPE is specified, shows the configuration for the TYPE.
@@ -161,20 +163,8 @@ def set_shell_comp(args: Args) -> bool:
     return True
 
 
-def __get_py_cmd() -> None | str:
-    py_cmd = sys.executable
-    py_X = os.access(py_cmd, os.X_OK)
-    logger.info(f'python cmd: {py_cmd}')
-    if py_cmd == '' or py_cmd is None or not py_X:
-        print_error('failed to find python command.')
-        logger.error(f'python interpriter not found: {py_cmd}, {py_X}')
-        return None
-    else:
-        return py_cmd
-
-
 def update(branch: str, test: bool) -> bool:
-    py_cmd = __get_py_cmd()
+    py_cmd = get_py_cmd()
     if py_cmd is None:
         return False
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
@@ -182,20 +172,12 @@ def update(branch: str, test: bool) -> bool:
                   f'git+https://github.com/MeF0504/aftviewer@{branch}',
                   ]
     logger.debug(f'update command: {update_cmd}')
-    if not test:
-        out = subprocess.run(update_cmd, capture_output=False)
-        ret = out.returncode == 0
-        logger.debug(f'update command results; return code {out.returncode}')
-    else:
-        out = subprocess.run([py_cmd, '-m', 'pip', 'show', 'pip'],
-                             capture_output=False)
-        ret = out.returncode == 0
-        logger.info(f'return code: {out.returncode} => {ret}')
+    ret = update_core(f'{update_cmd}', test)
     return ret
 
 
 def update_packages(ftype: str, test: bool) -> bool:
-    py_cmd = __get_py_cmd()
+    py_cmd = get_py_cmd()
     if py_cmd is None:
         return False
     base_dir = Path(__file__).parent.parent
@@ -207,26 +189,23 @@ def update_packages(ftype: str, test: bool) -> bool:
         return True
     update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
                   '-r', str(req_file)]
-    if not test:
-        out = subprocess.run(update_cmd, capture_output=False)
-        ret = out.returncode == 0
-        logger.debug(f'update package results; return code {out.returncode}')
-    else:
-        print('dependencies:')
-        with open(req_file, 'r') as f:
-            [print('    ', ln, end='') for ln in f.readlines()]
-        print()
-        ret = True
+    ret = update_core(f'{update_cmd}', test)
     return ret
 
 
-def main() -> None:
+def main() -> int:
+    """
+    Error code:
+        1: file not found
+        2: Invalid input
+        3: failed to load library
+    """
     args = get_args()
     if not (args.type is None or args.type in GLOBAL_CONF.types):
         supported_type = ', '.join(list(GLOBAL_CONF.types.keys()).copy())
         print(f'Please specify the type from {supported_type}.')
         print_error(f'invalid file type: {args.type}.')
-        return
+        return 2
 
     if args.subcmd is not None:
         ret = False
@@ -264,15 +243,15 @@ def main() -> None:
         if ret:
             sys.exit(0)
         else:
-            sys.exit(1)
+            sys.exit(2)
 
     fpath = Path(args.file).expanduser()
     if not fpath.exists():
         print("file doesn't exists!")
-        return
+        return 1
     if fpath.is_dir():
         print("{} is a directory.".format(fpath))
-        return
+        return 1
 
     __set_filetype(args)
 
@@ -281,14 +260,15 @@ def main() -> None:
             print('vimでも使ってろ！')
         else:
             print("Why Don't you use vim???")
-        return
+        return 2
     elif args.type is None:
         print('This is not a supported file type.')
-        return
+        return 2
 
     lib = __load_lib(args)
     if lib is None:
-        print(f'Failed to load the library for "{args.type}".')
+        print_error(f'Failed to load the library for "{args.type}".')
+        return 3
     else:
         lib.main(fpath, args)
-    return
+        return 0

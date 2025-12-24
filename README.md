@@ -51,13 +51,6 @@ or in Windows OS,
 py -m pip install git+https://github.com/MeF0504/aftviewer
 ```
 
-If you want to install all modules used in AFTViewer,
-```bash
-python -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
-# or
-py -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
-```
-
 ## Usage
 ```bash
 aftviewer [-t TYPE] file
