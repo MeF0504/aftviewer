@@ -47,6 +47,8 @@ def update_core(cmd_str: str, test: bool) -> bool:
     with open(tfile.name, 'w') as f:
         print(UPDATER.format(cmd_str), file=f)
     if test:
+        cmd = eval(cmd_str)
+        assert type(cmd) is list, f'Invalid cmd type: {type(cmd)}'
         print('----------')
         with open(tfile.name, 'r') as f:
             [print(ln, end='') for ln in f.readlines()]
