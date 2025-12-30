@@ -9,21 +9,21 @@ from pathlib import Path
 from logging import getLogger
 from typing import Any
 
-try:
+from .. import (GLOBAL_CONF, Args, args_chk, cprint, show_image_file,
+                print_error, get_config, get_col, help_template,
+                add_args_imageviewer, add_args_output, add_args_verbose,
+                add_args_encoding)
+
+if 'Pygments' in GLOBAL_CONF.pack_list:
     from pygments import highlight
     from pygments.lexer import Lexer
     from pygments.lexers import get_lexer_by_name
     from pygments.formatters import TerminalFormatter, Terminal256Formatter
     from pygments.util import ClassNotFound
-except ImportError:
-    use_pygments = False
-else:
     use_pygments = True
+else:
+    use_pygments = False
 
-from .. import (GLOBAL_CONF, Args, args_chk, cprint, show_image_file,
-                print_error, get_config, get_col, help_template,
-                add_args_imageviewer, add_args_output, add_args_verbose,
-                add_args_encoding)
 logger = getLogger(GLOBAL_CONF.logname)
 logger.info(f'use_pygments: {use_pygments}')
 
@@ -105,20 +105,6 @@ def main(fpath, args):
     else:
         enc = get_config('encoding')
 
-    if args.language is not None:
-        lang = args.language
-    else:
-        lang = get_config('language')
-    if lang is None:
-        lexer = None
-    else:
-        try:
-            lexer = get_lexer_by_name(lang)
-        except ClassNotFound:
-            logger.warning(f'lexer for {lang} not found.')
-            lexer = None
-    logger.info(f'lexer: {lexer}')
-
     with open(fpath, 'r', encoding=enc) as f:
         data = json.load(f)
     logger.debug(f'keys: {data.keys()}')
@@ -167,6 +153,24 @@ def main(fpath, args):
     else:
         fmter = TerminalFormatter(style=fmt_style)
     logger.debug(f'formatter: {fmter} / {fmt_style}')
+
+    # set language and Lexer
+    if args.language is not None:
+        lang = args.language
+    else:
+        lang = get_config('language')
+    if lang is None and 'language_info' in meta:
+        lang = meta['language_info']['name']
+    logger.info(f'language: {lang}')
+    if lang is None or not use_pygments:
+        lexer = None
+    else:
+        try:
+            lexer = get_lexer_by_name(lang)
+        except ClassNotFound:
+            logger.warning(f'lexer for {lang} not found.')
+            lexer = None
+    logger.debug(f'lexer: {lexer}')
 
     L = len(data['cells'])
     show_num = get_config('show_number')

@@ -153,7 +153,7 @@ desc = """If true and 'pygments' is installed, syntax highlight is applied to th
 [config.jupyter.language]
 type = "null/string"
 desc = """default language for pygments syntax highlight.
-If null is set, syntax highlight is not used.
+If null is set, try to set language from meta data of notebook.
 See https://pygments.org/languages/ for available languages."""
 
 [config.jupyter.highlight_style]
