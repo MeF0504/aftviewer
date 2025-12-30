@@ -15,6 +15,7 @@ from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
                     __add_types, __get_opt_keys, __get_color_names,
                     print_key, print_error, cprint,
                     args_chk, get_config, get_col)
+from ..core import __set_args as set_args
 from ..core.__version__ import VERSION
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args
@@ -218,6 +219,7 @@ def main() -> int:
         3: failed to load library
     """
     args = get_args()
+    set_args(args)
     if not (args.type is None or args.type in GLOBAL_CONF.types):
         supported_type = ', '.join(list(GLOBAL_CONF.types.keys()).copy())
         print(f'Please specify the type from {supported_type}.')

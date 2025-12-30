@@ -1,13 +1,14 @@
 from typing import Any
 from logging import getLogger
 import tempfile
+import time
 
 # bokeh depends on both numpy and pillow!
 import numpy as np
 from PIL import Image
 from bokeh.plotting import figure, output_file, show
 
-from .. import GLOBAL_CONF, print_error, get_config
+from .. import GLOBAL_CONF, print_error, get_config, args_chk, get_args
 
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -34,10 +35,17 @@ def show_data(data: np.ndarray):
     p = figure(width=width, height=height)
     p.x_range.range_padding = p.y_range.range_padding = 0
     p.image_rgba(image=[shown_data], x=0, y=0, dw=width, dh=height)
-    with tempfile.NamedTemporaryFile(suffix='.html') as tmp:
-        output_file(tmp.name)
-        show(p)
+    tmp = tempfile.NamedTemporaryFile(suffix='.html')
+    output_file(tmp.name)
+    show(p)
+    args = get_args()
+    logger.debug(f'get args: {args}')
+    if not args_chk(args, 'cui'):
         input('Enter to close.')
+        tmp.close()
+    else:
+        # Is 3 seconds stable?
+        time.sleep(3)
 
 
 def show_image_file(img_file: str) -> bool:
