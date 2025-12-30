@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Callable, Union, Optional
 
 
@@ -18,18 +19,18 @@ class CONF:
     conf_dir: pathlib.Path
         Configuration directory.
         default: "$XDG_CONFIG_HOME/aftviewer" or "~/.config/aftviewer"
-    types: dict
+    types: MappingProxyType[str, str]
         Supported file types and its extensions.
     logname: str
         Log name used in logger.
-    pack_list: list[str]
+    pack_list: tuple[str, ...]
         List of package names that are installed.
     """
     debug: bool
     conf_dir: Path
-    types: dict
+    types: MappingProxyType[str, str]
     logname: str
-    pack_list: list[str]
+    pack_list: tuple[str, ...]
 
 
 @dataclass

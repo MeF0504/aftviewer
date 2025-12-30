@@ -13,7 +13,7 @@ import copy
 from importlib import import_module, metadata
 from pathlib import Path, PurePath
 from typing import Any, Literal
-from types import ModuleType
+from types import ModuleType, MappingProxyType
 from logging import (getLogger, StreamHandler, FileHandler, NullHandler,
                      Formatter, DEBUG as logDEBUG, INFO as logINFO)
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -160,9 +160,9 @@ def __get_packs() -> list[str]:
 # global variables
 GLOBAL_CONF = CONF(__debug,
                    __conf_dir,
-                   __type_config,
+                   MappingProxyType(__type_config),
                    __logname,
-                   __get_packs(),
+                   tuple(__get_packs()),
                    )
 
 
