@@ -24,6 +24,7 @@
             "show_number": false,
             "encoding": "utf-8",
             "syntax_highlight": true,
+            "language": "python",
             "highlight_style": "default"
         },
         "stl": {

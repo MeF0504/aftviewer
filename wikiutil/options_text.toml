@@ -150,6 +150,12 @@ desc = """The encoding used to load the Jupyter file."""
 type = "bool"
 desc = """If true and 'pygments' is installed, syntax highlight is applied to the code cells in Jupyter file."""
 
+[config.jupyter.language]
+type = "null/string"
+desc = """default language for pygments syntax highlight.
+If null is set, syntax highlight is not used.
+See https://pygments.org/languages/ for available languages."""
+
 [config.jupyter.highlight_style]
 type = "string"
 desc = """The style of syntax highlight. See [Pygments styles](https://pygments.org/styles/) for available styles."""

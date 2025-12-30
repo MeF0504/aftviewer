@@ -11,8 +11,10 @@ from typing import Any
 
 try:
     from pygments import highlight
-    from pygments.lexers import PythonLexer
+    from pygments.lexer import Lexer
+    from pygments.lexers import get_lexer_by_name
     from pygments.formatters import TerminalFormatter, Terminal256Formatter
+    from pygments.util import ClassNotFound
 except ImportError:
     use_pygments = False
 else:
@@ -63,19 +65,21 @@ def show_output(output: dict[str, Any], args: Args, cnt: str,
                     print_error('failed to open an image.')
 
 
-def syntax_text(text: str, out_obj,
+def syntax_text(text: str, out_obj, lexer: Lexer | None,
                 fmter: TerminalFormatter | Terminal256Formatter | None
                 ) -> str:
     if not use_pygments:
         return text
     elif fmter is None:
         return text
+    elif lexer is None:
+        return text
     elif text.startswith('!') or text.startswith('%'):
         return text
     elif out_obj != sys.stdout:
         return text
     else:
-        return highlight(text, PythonLexer(), fmter)
+        return highlight(text, lexer, fmter)
 
 
 def add_args(parser):
@@ -84,6 +88,9 @@ def add_args(parser):
     add_args_output(parser, help='Output the information to'
                     ' the specified file as a Python script.')
     add_args_encoding(parser)
+    parser.add_argument('--language', '-l',
+                        help='Specify the language for syntax highlight.',
+                        default=None)
 
 
 def show_help():
@@ -97,6 +104,20 @@ def main(fpath, args):
         enc = args.encoding
     else:
         enc = get_config('encoding')
+
+    if args.language is not None:
+        lang = args.language
+    else:
+        lang = get_config('language')
+    if lang is None:
+        lexer = None
+    else:
+        try:
+            lexer = get_lexer_by_name(lang)
+        except ClassNotFound:
+            logger.warning(f'lexer for {lang} not found.')
+            lexer = None
+    logger.info(f'lexer: {lexer}')
 
     with open(fpath, 'r', encoding=enc) as f:
         data = json.load(f)
@@ -170,7 +191,7 @@ def main(fpath, args):
                     # magic command
                     outtext = f'{header}{instr}'
                 else:
-                    outtext = syntax_text(instr, outf, fmter)
+                    outtext = syntax_text(instr, outf, lexer, fmter)
                 print(outtext, end='', file=outf)
             print(file=outf)
             # Output
