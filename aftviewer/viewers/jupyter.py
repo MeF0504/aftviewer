@@ -135,13 +135,16 @@ def main(fpath, args):
     meta = data['metadata']
     logger.debug(f'meta data: {meta}')
     if args_chk(args, 'verbose'):
-        print(f'{header}kernel   : {meta["kernelspec"]["display_name"]}',
-              file=outf)
+        if 'kernelspec' in meta:
+            ker = meta['kernelspec'].get('display_name', '???')
+            print(f'{header}kernel   : {ker}', file=outf)
         if 'language_info' in meta:
-            print(f'{header}language : {meta["language_info"]["name"]}-{meta["language_info"]["version"]}',
-                  file=outf)
+            lname = meta['language_info'].get('name', '???')
+            lver = meta['language_info'].get('version', '???')
+            print(f'{header}language : {lname} {lver}', file=outf)
         if 'colab' in meta:
-            print(f'{header}colab : {meta["colab"]["name"]}', file=outf)
+            coname = meta['colab'].get('name', '???')
+            print(f'{header}colab : {coname}', file=outf)
 
     # set formatter
     hi_text = get_config('syntax_highlight')
@@ -160,7 +163,7 @@ def main(fpath, args):
     else:
         lang = get_config('language')
     if lang is None and 'language_info' in meta:
-        lang = meta['language_info']['name']
+        lang = meta['language_info'].get('name', None)
     logger.info(f'language: {lang}')
     if lang is None or not use_pygments:
         lexer = None
