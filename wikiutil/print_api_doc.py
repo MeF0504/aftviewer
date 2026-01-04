@@ -18,7 +18,7 @@ types = {
         }
 
 funcs = {
-        '.core': ['args_chk', 'get_config', 'get_col',
+        '.core': ['args_chk', 'get_config', 'get_col', 'get_args',
                   'cprint', 'print_key', 'print_error', 'print_warning',
                   'interactive_view', 'run_system_cmd',
                   ],

@@ -24,6 +24,7 @@
             "show_number": false,
             "encoding": "utf-8",
             "syntax_highlight": true,
+            "language": null,
             "highlight_style": "default"
         },
         "stl": {

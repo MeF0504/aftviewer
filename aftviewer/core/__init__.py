@@ -9,10 +9,11 @@ import subprocess
 import tarfile
 import mimetypes
 import pprint
+import copy
 from importlib import import_module, metadata
 from pathlib import Path, PurePath
 from typing import Any, Literal
-from types import ModuleType
+from types import ModuleType, MappingProxyType
 from logging import (getLogger, StreamHandler, FileHandler, NullHandler,
                      Formatter, DEBUG as logDEBUG, INFO as logINFO)
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -27,6 +28,7 @@ __def = False
 __add_types = {}
 __user_opts = {}
 __filetype: str | None = None
+__args: Args | None = None
 if 'XDG_CONFIG_HOME' in os.environ:
     __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'aftviewer'
 else:
@@ -158,9 +160,9 @@ def __get_packs() -> list[str]:
 # global variables
 GLOBAL_CONF = CONF(__debug,
                    __conf_dir,
-                   __type_config,
+                   MappingProxyType(__type_config),
                    __logname,
-                   __get_packs(),
+                   tuple(__get_packs()),
                    )
 
 
@@ -706,3 +708,24 @@ def __get_color_names(filetype: str | None) -> list[str]:
             res = list(set(res))
             res.sort()
             return res
+
+
+def __set_args(args: Args):
+    global __args
+    __args = args
+
+
+def get_args() -> None | Args:
+    """
+    Return the NameSpace of the argument specified on the command line.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    Args
+        NameSpace of the argument
+    """
+    return copy.deepcopy(__args)

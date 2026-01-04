@@ -18,6 +18,10 @@ import subprocess
 time.sleep(1)
 
 subprocess.check_call({})
+try:
+    input('Enter to close')
+except EOFError:
+    print('Update finished')
 """
 __py_cmd: str | None = None
 

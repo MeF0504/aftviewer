@@ -15,6 +15,7 @@ from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
                     __add_types, __get_opt_keys, __get_color_names,
                     print_key, print_error, cprint,
                     args_chk, get_config, get_col)
+from ..core import __set_args as set_args
 from ..core.__version__ import VERSION
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args
@@ -33,6 +34,13 @@ class MyHelpFormatter(argparse.RawDescriptionHelpFormatter):
     def __init__(self, prog, indent_increment=2,
                  max_help_position=24, width=term_width):
         super().__init__(prog, indent_increment, max_help_position, width)
+
+
+def __chk_argv(kw: list[str], argv: list[str]) -> bool:
+    for k in kw:
+        if k in argv:
+            return True
+    return False
 
 
 def get_parser_arg() -> dict[str, Any]:
@@ -68,11 +76,12 @@ Supported file types ... {', '.join(supported_type)}."""
 
 def get_args(argv: None | list[str] = None) -> Args:
     parser = argparse.ArgumentParser(**get_parser_arg())
-    if (argv is None and '-' not in sys.argv[1:]) or \
-       (argv is not None and '-' not in argv):
+    skip_kw = ['-', '--V2']
+    if (argv is None and not __chk_argv(skip_kw, sys.argv[1:])) or \
+       (argv is not None and not __chk_argv(skip_kw, argv)):
         parser.add_argument('file', help='input file')
-        parser.add_argument('--version', '-V', action='version',
-                            version=f'%(prog)s {VERSION}')
+    parser.add_argument('--version', '-V', action='version',
+                        version=f'%(prog)s {VERSION}')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type.'
                         ' See above for available file types.'
@@ -81,6 +90,15 @@ def get_args(argv: None | list[str] = None) -> Args:
     parser.add_argument('-', help='run subcommand and exit',
                         choices=__subcmds, default=None, dest='subcmd')
     tmpargs, rems = parser.parse_known_args(argv, namespace=Args())
+    if GLOBAL_CONF.debug:
+        parser.add_argument('--V2', help="show verbose version and exit",
+                            action='version', version=f'%(prog)s {VERSION}\n'
+                            f'Python version: {sys.version}\n'
+                            f'  @ {sys.executable}\n'
+                            f'cmd: {sys.argv[0]}\n'
+                            f'code: {__file__}')
+        # ↓ To execute "exit" here for V2.
+        parser.parse_known_args(argv)
     if tmpargs.subcmd == 'shell_completion':
         add_args_shell_cmp(parser)
     elif tmpargs.subcmd == 'update':
@@ -201,6 +219,7 @@ def main() -> int:
         3: failed to load library
     """
     args = get_args()
+    set_args(args)
     if not (args.type is None or args.type in GLOBAL_CONF.types):
         supported_type = ', '.join(list(GLOBAL_CONF.types.keys()).copy())
         print(f'Please specify the type from {supported_type}.')
