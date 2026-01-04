@@ -21,7 +21,7 @@ subprocess.check_call({})
 try:
     input('Enter to close')
 except EOFError:
-    print('Enter to close')
+    print('Update finished')
 """
 __py_cmd: str | None = None
 
