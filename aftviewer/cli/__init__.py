@@ -227,42 +227,41 @@ def main() -> int:
         return 2
 
     if args.subcmd is not None:
-        ret = False
         if args.subcmd == 'config_list':
             show_opts(args.type)
-            ret = True
+            return 0
         elif args.subcmd == 'shell_completion':
             ret = set_shell_comp(args)
+            return 0 if ret else 2
         elif args.subcmd == 'update':
             # update はversionが変わらないと作用しないっぽい。
             # branch を切り替えるにもversionの違いが必要そう
             if args.type is None:
                 ret = update(args.branch, args.test)
+                return 0 if ret else 2
             else:
                 ret = update_packages(args.type, args.test)
+                return 0 if ret else 2
         elif args.subcmd == 'help':
             if args_chk(args, 'type'):
                 lib = __load_lib(args)
                 if lib is None:
                     print('Failed to load the library.')
-                    ret = False
+                    return 3
                 else:
                     if hasattr(lib, 'show_help') and \
                        type(lib.show_help) is FunctionType:
                         lib.show_help()
                     else:
                         print("this type does not support showing help.")
-                    ret = True
+                    return 0
             else:
                 print('please set --type to see the details.')
-                ret = False
+                return 2
         else:
             print_error(f'Invalid subcommand: {args.subcmd}.')
-            ret = False
-        if ret:
-            sys.exit(0)
-        else:
-            sys.exit(2)
+            return 2
+        return 2
 
     fpath = Path(args.file).expanduser()
     if not fpath.exists():
