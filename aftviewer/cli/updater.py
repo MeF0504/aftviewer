@@ -43,7 +43,14 @@ def get_py_cmd() -> None | str:
         return py_cmd
 
 
-def update_core(cmd_str: str, test: bool) -> bool:
+def update_core(cmd_list: list[str, ...], test: bool) -> bool:
+    if test:
+        print(cmd_list)
+    else:
+        subprocess.run(cmd_list)
+
+
+def __update_core(cmd_str: str, test: bool) -> bool:
     py_cmd = get_py_cmd()
     if py_cmd is None:
         return False
