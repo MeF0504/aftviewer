@@ -190,7 +190,6 @@ def update(branch: str, test: bool) -> bool:
                   f'git+https://github.com/MeF0504/aftviewer@{branch}',
                   ]
     logger.debug(f'update command: {update_cmd}')
-    # ret = update_core(f'{update_cmd}', test)
     ret = update_core(update_cmd, test)
     return ret
 
