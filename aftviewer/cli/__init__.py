@@ -104,7 +104,7 @@ def get_args(argv: None | list[str] = None) -> Args:
     elif tmpargs.subcmd == 'update':
         add_args_update(parser)
     __set_filetype(tmpargs)
-    lib = __load_lib(tmpargs)
+    lib, err = __load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
     args = parser.parse_args(argv, namespace=Args())
@@ -244,9 +244,9 @@ def main() -> int:
                 return 0 if ret else 2
         elif args.subcmd == 'help':
             if args_chk(args, 'type'):
-                lib = __load_lib(args)
+                lib, err = __load_lib(args)
                 if lib is None:
-                    print('Failed to load the library.')
+                    print(f'Failed to load the library ({err}).')
                     return 3
                 else:
                     if hasattr(lib, 'show_help') and \
@@ -283,9 +283,9 @@ def main() -> int:
         print('This is not a supported file type.')
         return 2
 
-    lib = __load_lib(args)
+    lib, err = __load_lib(args)
     if lib is None:
-        print_error(f'Failed to load the library for "{args.type}".')
+        print_error(f'Failed to load the library for "{args.type}" ({err}).')
         return 3
     else:
         lib.main(fpath, args)

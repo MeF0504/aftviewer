@@ -37,8 +37,8 @@ def test_help_message(filetype):
     args = parser.parse_args([])
     args.file = 'help'
     args.type = filetype
-    lib = __load_lib(args)
-    assert lib is not None, 'failed to load library.'
+    lib, err = __load_lib(args)
+    assert lib is not None, f'failed to load library ({err}).'
     if hasattr(lib, 'show_help') and type(lib.show_help) is FunctionType:
         lib.show_help()
     else:

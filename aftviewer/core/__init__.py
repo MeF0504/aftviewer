@@ -625,13 +625,15 @@ def __add_lib2path():
         sys.path.insert(0, add_lib_str)
 
 
-def __load_lib(args: Args) -> None | ModuleType:
+def __load_lib(args: Args) -> tuple[None | ModuleType, str]:
     if args.type is None:
-        __logger.debug('file type is None')
-        return None
+        logmsg = 'file type is None'
+        __logger.debug(logmsg)
+        return None, logmsg
     elif args.type == 'text':
-        __logger.debug('file type is text.')
-        return None
+        logmsg = 'file type is text.'
+        __logger.debug(logmsg)
+        return None, logmsg
 
     # lib_path  -> python import style
     # lib_path2 -> file path
@@ -645,14 +647,14 @@ def __load_lib(args: Args) -> None | ModuleType:
         lib_path2 /= f'viewers/{args.type}.py'
     if not lib_path2.is_file():
         __logger.error(f'Library file {lib_path2} is not found.')
-        return None
+        return None, 'Library file is not found.'
     try:
         lib = import_module(lib_path)
     except ImportError as e:
         __logger.error('Failed to load library '
                        f'(lib: {lib_path2}, error: {e})')
-        return None
-    return lib
+        return None, f'{type(e).__name__}: {e}'
+    return lib, ''
 
 
 def __get_opt_keys() -> dict[str, list[str]]:

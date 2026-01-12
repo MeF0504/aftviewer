@@ -65,8 +65,8 @@ def test_load_lib(filetype):
         warnings.warn(f'skip cheking {filetype}')
         return
     args = get_args(['file', '-t', filetype])
-    lib = __load_lib(args)
-    assert lib is not None, f'failed to load library; {args.type}'
+    lib, err = __load_lib(args)
+    assert lib is not None, f'failed to load library; {args.type} ({err})'
     if not hasattr(lib, 'show_help'):
         warnings.warn(f'showing help is not supported; {args.type}')
     assert hasattr(lib, 'main')
