@@ -4,26 +4,20 @@ from __future__ import annotations
 import os
 import sys
 import subprocess
-import tempfile
 from logging import getLogger
 
 from ..core import GLOBAL_CONF, print_error
 logger = getLogger(GLOBAL_CONF.logname)
 
 
-UPDATER = """
-import time
-import subprocess
-
-time.sleep(1)
-
-subprocess.check_call({})
-try:
-    input('Enter to close')
-except EOFError:
-    print('Update finished')
-"""
 __py_cmd: str | None = None
+
+
+def is_win_aft():
+    # ref: pip._internal.utils.misc.protect_pip_from_modification_on_windows
+    windows = sys.platform.startswith("win") \
+        or (sys.platform == "cli" and os.name == "nt")
+    return windows and os.path.basename(sys.argv[0]) == 'aftviewer'
 
 
 def get_py_cmd() -> None | str:
@@ -43,28 +37,22 @@ def get_py_cmd() -> None | str:
         return py_cmd
 
 
-def update_core(cmd_str: str, test: bool) -> bool:
+def update_core(pip_opt: list[str], test: bool) -> bool:
+    if is_win_aft():
+        new_cmd = [sys.executable, "-m", "aftviewer"] + sys.argv[1:]
+        cmd_str = ' '.join(new_cmd)
+        print(f'To update the aftviewer, please run "{cmd_str}".')
+        return False
+
     py_cmd = get_py_cmd()
     if py_cmd is None:
         return False
-    tfile = tempfile.NamedTemporaryFile(suffix='.py', delete=False)
-    with open(tfile.name, 'w') as f:
-        print(UPDATER.format(cmd_str), file=f)
+    cmd_list = [py_cmd, '-m', 'pip', 'install', '--upgrade']
     if test:
-        cmd = eval(cmd_str)
-        assert type(cmd) is list, f'Invalid cmd type: {type(cmd)}'
-        print('----------')
-        with open(tfile.name, 'r') as f:
-            [print(ln, end='') for ln in f.readlines()]
-        print('----------')
-        tfile.close()
-        return True
-    else:
-        if hasattr(subprocess, 'DETACHED_PROCESS'):
-            cflag = subprocess.DETACHED_PROCESS
-        else:
-            cflag = 0
-        print('run the update process...')
-        subprocess.Popen([py_cmd, tfile.name],
-                         creationflags=cflag, close_fds=True)
-        return True
+        cmd_list += ['--dry-run']
+    cmd_list += pip_opt
+    if test:
+        print(f'run {cmd_list}')
+    logger.debug(f'update command: {cmd_list}')
+    subprocess.run(cmd_list)
+    return True

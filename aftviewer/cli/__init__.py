@@ -19,7 +19,7 @@ from ..core import __set_args as set_args
 from ..core.__version__ import VERSION
 from ..core.helpmsg import add_args_shell_cmp, add_args_update
 from ..core.types import Args
-from .updater import get_py_cmd, update_core
+from .updater import update_core
 
 if GLOBAL_CONF.debug:
     term_width = 80-2
@@ -104,7 +104,7 @@ def get_args(argv: None | list[str] = None) -> Args:
     elif tmpargs.subcmd == 'update':
         add_args_update(parser)
     __set_filetype(tmpargs)
-    lib = __load_lib(tmpargs)
+    lib, err = __load_lib(tmpargs)
     if lib is not None:
         lib.add_args(parser)
     args = parser.parse_args(argv, namespace=Args())
@@ -182,22 +182,13 @@ def set_shell_comp(args: Args) -> bool:
 
 
 def update(branch: str, test: bool) -> bool:
-    py_cmd = get_py_cmd()
-    if py_cmd is None:
-        return False
-    update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
-                  'aftviewer @ '
-                  f'git+https://github.com/MeF0504/aftviewer@{branch}',
-                  ]
-    logger.debug(f'update command: {update_cmd}')
-    ret = update_core(f'{update_cmd}', test)
+    url = 'https://github.com/MeF0504/aftviewer'
+    pip_opt = [f'aftviewer @ git+{url}@{branch}']
+    ret = update_core(pip_opt, test)
     return ret
 
 
 def update_packages(ftype: str, test: bool) -> bool:
-    py_cmd = get_py_cmd()
-    if py_cmd is None:
-        return False
     base_dir = Path(__file__).parent.parent
     req_file = base_dir/f'requirements/{ftype}.txt'
     logger.info(f'requirement file: {req_file}')
@@ -205,9 +196,8 @@ def update_packages(ftype: str, test: bool) -> bool:
         print('Requirement file is not found.'
               ' Requirements are already satisfied.')
         return True
-    update_cmd = [py_cmd, '-m', 'pip', 'install', '--upgrade',
-                  '-r', str(req_file)]
-    ret = update_core(f'{update_cmd}', test)
+    pip_opt = ['-r', str(req_file)]
+    ret = update_core(pip_opt, test)
     return ret
 
 
@@ -227,42 +217,41 @@ def main() -> int:
         return 2
 
     if args.subcmd is not None:
-        ret = False
         if args.subcmd == 'config_list':
             show_opts(args.type)
-            ret = True
+            return 0
         elif args.subcmd == 'shell_completion':
             ret = set_shell_comp(args)
+            return 0 if ret else 2
         elif args.subcmd == 'update':
             # update はversionが変わらないと作用しないっぽい。
             # branch を切り替えるにもversionの違いが必要そう
             if args.type is None:
                 ret = update(args.branch, args.test)
+                return 0 if ret else 2
             else:
                 ret = update_packages(args.type, args.test)
+                return 0 if ret else 2
         elif args.subcmd == 'help':
             if args_chk(args, 'type'):
-                lib = __load_lib(args)
+                lib, err = __load_lib(args)
                 if lib is None:
-                    print('Failed to load the library.')
-                    ret = False
+                    print(f'Failed to load the library ({err}).')
+                    return 3
                 else:
                     if hasattr(lib, 'show_help') and \
                        type(lib.show_help) is FunctionType:
                         lib.show_help()
                     else:
                         print("this type does not support showing help.")
-                    ret = True
+                    return 0
             else:
                 print('please set --type to see the details.')
-                ret = False
+                return 2
         else:
             print_error(f'Invalid subcommand: {args.subcmd}.')
-            ret = False
-        if ret:
-            sys.exit(0)
-        else:
-            sys.exit(2)
+            return 2
+        return 2
 
     fpath = Path(args.file).expanduser()
     if not fpath.exists():
@@ -284,9 +273,9 @@ def main() -> int:
         print('This is not a supported file type.')
         return 2
 
-    lib = __load_lib(args)
+    lib, err = __load_lib(args)
     if lib is None:
-        print_error(f'Failed to load the library for "{args.type}".')
+        print_error(f'Failed to load the library for "{args.type}" ({err}).')
         return 3
     else:
         lib.main(fpath, args)
