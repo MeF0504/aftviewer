@@ -148,6 +148,7 @@ def __set_image_viewer(args: Args) -> None:
         msg = f'non-supported image viewer is set: {tmp_iv}'
         print_error(msg)
         logger.error(msg)
+        __ImgViewer = None
     __set_ImgViewer = True
     logger.debug(f'image viewer: {__ImgViewer} (None?:{__ImgViewer is None})')
 

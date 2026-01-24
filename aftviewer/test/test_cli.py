@@ -1,5 +1,6 @@
 # test functions in aftviewer/cli/__init__.py
 import argparse
+from unittest.mock import patch
 
 import pytest
 
@@ -11,7 +12,8 @@ from aftviewer.cli.installer import main as libinstaller
 
 def test_main():
     # syntax check?
-    main()
+    with patch('sys.argv', ["aftviewer", "file"]):
+        main()
 
 
 def test_get_types():
@@ -21,12 +23,13 @@ def test_get_types():
 
 def test_libinstaller():
     # syntax check?
-    libinstaller()
+    with patch('sys.argv', ["aftviewer-libinstaller", "file", "ext"]):
+        libinstaller()
 
 
 def test_get_args():
     # check the function run correctly.
-    get_args()
+    get_args(['file'])
 
 
 @pytest.mark.parametrize(('filetype'), [

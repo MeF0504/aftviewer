@@ -39,8 +39,9 @@ def test_get_image_viewer_args(iv):
     if cmd is None:
         warnings.warn(f'not supported OS [{uname}]. skip.')
         return
+    __set_user_opts({'defaults': {'iv_cmds': {cmd: [cmd, '%s']}}}, None)
     image_viewer.__set_ImgViewer = False
-    image_viewers = image_viewer.__collect_image_viewers()
+    none_iv, mod_iv, cmd_iv = image_viewer.__collect_image_viewers()
     parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
@@ -49,18 +50,18 @@ def test_get_image_viewer_args(iv):
     args = parser.parse_args(['test', '-iv', iv])
     image_viewer.__set_image_viewer(args)
     msg = f'image viewer check, {iv}, {image_viewer.__ImgViewer}'
-    if iv == 'None':
+    if iv in none_iv:
         assert image_viewer.__ImgViewer == 'None', msg
-    elif iv in image_viewers:
+    elif iv in mod_iv:
         if type(image_viewer.__ImgViewer) is ModuleType:
             assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
             assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
         else:
             warnings.warn(f'skip checking iv: {iv}')
-    elif iv == 'not a command':
-        assert image_viewer.__ImgViewer is None, msg
-    else:
+    elif iv in cmd_iv:
         assert image_viewer.__ImgViewer == iv, msg
+    else:
+        assert image_viewer.__ImgViewer is None, msg
 
 
 @pytest.mark.parametrize(('iv'), ivs)
@@ -70,8 +71,10 @@ def test_get_image_viewer_cui(iv):
         warnings.warn(f'not supported OS [{uname}]. skip.')
         return
     image_viewer.__set_ImgViewer = False
-    image_viewers = image_viewer.__collect_image_viewers()
-    __set_user_opts({'defaults': {'image_viewer_cui': iv}}, None)
+    none_iv, mod_iv, cmd_iv = image_viewer.__collect_image_viewers()
+    uopts = {'image_viewer_cui': iv,
+             'iv_cmds': {cmd: [cmd, '%s']}}
+    __set_user_opts({'defaults': uopts}, None)
     parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
@@ -81,15 +84,15 @@ def test_get_image_viewer_cui(iv):
     args = parser.parse_args(['test', '-c'])
     image_viewer.__set_image_viewer(args)
     msg = f'image viewer check, {iv}, {image_viewer.__ImgViewer}'
-    if iv == 'None':
+    if iv in none_iv:
         assert image_viewer.__ImgViewer == 'None', msg
-    elif iv in image_viewers:
+    elif iv in mod_iv:
         if type(image_viewer.__ImgViewer) is ModuleType:
             assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
             assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
         else:
             warnings.warn(f'skip checking iv: {iv}')
-    elif iv == 'not a command':
+    elif iv in cmd_iv:
         assert image_viewer.__ImgViewer is None, msg
     else:
         assert image_viewer.__ImgViewer is None, msg
@@ -102,8 +105,10 @@ def test_get_image_viewer_conf(iv):
         warnings.warn(f'not supported OS [{uname}]. skip.')
         return
     image_viewer.__set_ImgViewer = False
-    image_viewers = image_viewer.__collect_image_viewers()
-    __set_user_opts({'defaults': {'image_viewer': iv}}, None)
+    none_iv, mod_iv, cmd_iv = image_viewer.__collect_image_viewers()
+    uopts = {'image_viewer': iv,
+             'iv_cmds': {cmd: [cmd, '%s']}}
+    __set_user_opts({'defaults': uopts}, None)
     parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
@@ -112,18 +117,18 @@ def test_get_image_viewer_conf(iv):
     args = parser.parse_args(['test'])
     image_viewer.__set_image_viewer(args)
     msg = f'image viewer check, {iv}, {image_viewer.__ImgViewer}'
-    if iv == 'None':
+    if iv in none_iv:
         assert image_viewer.__ImgViewer == 'None', msg
-    elif iv in image_viewers:
+    elif iv in mod_iv:
         if type(image_viewer.__ImgViewer) is ModuleType:
             assert hasattr(image_viewer.__ImgViewer, 'show_image_file')
             assert hasattr(image_viewer.__ImgViewer, 'show_image_ndarray')
         else:
             warnings.warn(f'skip checking iv: {iv}')
-    elif iv == 'not a command':
-        assert image_viewer.__ImgViewer is None, msg
-    else:
+    elif iv in cmd_iv:
         assert image_viewer.__ImgViewer == iv, msg
+    else:
+        assert image_viewer.__ImgViewer is None, msg
 
 
 def test_get_image_viewer_search():
