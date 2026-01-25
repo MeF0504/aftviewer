@@ -28,7 +28,7 @@ jobs:
           for rfile in $(ls aftviewer/requirements); do
             rfile2="aftviewer/requirements/$rfile"
             echo "requirements file: $rfile2"
-            if [ -f "$rfile2" ]; then pip install "$rfile2" -r ; fi
+            if [ -f "$rfile2" ]; then pip install -r "$rfile2"; fi
             done
       - name: Run pytest
         run: |
