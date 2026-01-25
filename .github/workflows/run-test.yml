@@ -26,6 +26,7 @@ jobs:
           pip install pytest matplotlib Pillow opencv-python tomli
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           for rfile in $(ls aftviewer/requirements); do
+            echo "requirements file: $rfile"
             if [ -f $rfile ]; then pip install -r $rfile; fi
             done
       - name: Run pytest
