@@ -48,34 +48,33 @@ The parameters that can be set are as follows.
 [config.defaults.image_viewer]
 type = "string/null"
 desc = """The name of the method to show images.
-The treatment of this option is the same as the command-line argument (-iv).
+This option sets the default value of the image viewer.
 If "PIL", "matplotlib", "cv2", or "bokeh" are set, use
 [PIL.Image.show()](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.show),
 [matplotlib.pyplot.imshow()](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html),
 [cv2.imshow()](https://docs.opencv.org/),
 or [bokeh.plotting.figure.image_rgba](https://bokeh.org/) respectively.
-If another string is given, it is treated as a shell command.
-The detailed behavior of this shell command can be set by the "iv_exec_cmd" option.
+Key names in "iv_cmds" are also settable.
+See the "iv_cmds" section below for more details.
 If null is set, search the possible modules from "PIL", "matplotlib", "cv2", and "bokeh".
 If the image viewer is specified in both the json file and a command-line argument, the command-line argument is applied."""
 
 [config.defaults.image_viewer_cui]
 type = "string/null"
 desc = """This is the same as "image_viewer", but used when opening a file with CUI mode.
-If both "image_viewer" and "image_viewer_cui" are set, the value of "image_viewer_cui" is used in CUI mode and that of "image_viewer" is used in other cases.
+If both "image_viewer" and "image_viewer_cui" are set, the value of "image_viewer_cui" is used in CUI mode, and that of "image_viewer" is used in other cases.
 If this option is not set and "image_viewer" is set, the value of "image_viewer" is used in CUI mode and other cases.
-This option is useful when a shell command is set in "image_viewer" since a shell command is not supported in CUI mode."""
+Note that image viewers in "iv_cmds" are not available in CUI mode.
+Thus, this option is useful when a shell command is set in "image_viewer"."""
 
-[config.defaults.iv_exec_cmd]
-type = "list of string"
-desc = """Arguments used when the shell command is specified as the image viewer.
-This option is not used when the image viewer command is set from command line.
-Some special keywords are available; "%c" and "%s".
-"%c" is replaced by the command (image viewer).
-"%s" is replaced by the file path of the image.
-These arguments are passed to the [subprocess.run()](https://docs.python.org//3/library/subprocess.html#subprocess.run) function after replacement.
-Note that the file path does not necessarily match the file path given in the command line.
-In some types, an image file is extracted in a temporary directory."""
+[config.defaults.iv_cmds]
+type = "dictionary"
+desc = """A dictionary consisting of {"name": ["command", "option", "%s"]}.
+The key is used as the shortcut name to specify the image viewer. Also see the "image_viewer" section.
+The value is the command list to show an image.
+Note that the first component is assumed to be a command and checks its existence and executable.
+"%s" is replaced with the path of the image file.
+"""
 
 [config.defaults.image_width]
 type = "null or integer"
@@ -91,7 +90,7 @@ If set to null, "start", "open" or "xdg-open" is set in Windows OS, macOS, and L
 [config.defaults.system_cmd_args]
 type = "list of string"
 desc = """Arguments used when opening a file with system command in interactive_cui mode.
-"%c" and "%s" are replaced like "iv_exec_cmd" case,
+"%c" and "%s" are replaced as follows,
 "%c" is replaced by "system_cmd" and "%s" is replaced by the file path to open."""
 
 [config.defaults.timezone]
