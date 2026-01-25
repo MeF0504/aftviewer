@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
-import pprint
 from logging import getLogger
-
+from types import ModuleType
 
 import uproot
 import numpy as np  # uproot requires NumPy!
@@ -16,7 +17,15 @@ from pymeflib import plot as mefplot
 
 logger = getLogger(GLOBAL_CONF.logname)
 __drawer: None | str = None
-__pargs = get_config('pp_kwargs')
+__dr_err_msg = 'Drawer ({}) is not available. Cannot display {}.'
+
+plt: None | ModuleType = None
+ROOT: None | ModuleType = None
+if 'matplotlib' in GLOBAL_CONF.pack_list:
+    import matplotlib.pyplot as plt
+else:
+    plt = None
+    logger.debug('matplotlib is not installed.')
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
@@ -39,12 +48,12 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def chk_drawer(drawer: str, args: Args) -> bool:
-    res = False
-    if args.drawer == drawer:
-        res = True
-    elif args.drawer is None and get_config('drawer') == drawer:
-        res = True
+def get_drawer(args: Args) -> str | None:
+    res = None
+    if args.drawer is not None:
+        res = args.drawer
+    else:
+        res = get_config('drawer')
     return res
 
 
@@ -54,11 +63,12 @@ def is_drawer_root(args) -> bool:
     if __drawer == 'ROOT':
         return True
 
-    if chk_drawer('ROOT', args):
+    if get_drawer(args) == 'ROOT':
+        # ROOTはpipで入れられないので，必要になるまでimportしないようにする
         try:
             import ROOT
         except ImportError as e:
-            logger.debug(f'failed to import ROOT: {e}')
+            logger.error(f'failed to import ROOT: {e}')
             return False
         else:
             __drawer = 'ROOT'
@@ -69,16 +79,12 @@ def is_drawer_root(args) -> bool:
 
 
 def is_drawer_mpl(args) -> bool:
-    global plt
     global __drawer
     if __drawer == 'matplotlib':
         return True
 
-    if chk_drawer('matplotlib', args):
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError as e:
-            logger.debug(f'failed to import mpl: {e}')
+    if get_drawer(args) == 'matplotlib':
+        if plt is None:
             return False
         else:
             __drawer = 'matplotlib'
@@ -150,7 +156,7 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
         # 複数のhist表示がこれだと出来ない？ fを出しても駄目
         draw_root(hist.file.file_path, hist.name)
     else:
-        print('Neither matplotlib nor ROOT is available. Cannot display TH1.')
+        print(__dr_err_msg.format(get_drawer(args), 'TH1'))
 
 
 def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4, args: Args) -> None:
@@ -174,7 +180,7 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4, args: Args) -> None:
     elif is_drawer_root(args):
         draw_root(hist.file.file_path, hist.name)
     else:
-        print('Neither matplotlib nor ROOT is available. Cannot display TH2.')
+        print(__dr_err_msg.format(get_drawer(args), 'TH2'))
 
 
 def show_profile(prof: uproot.models.TH.Model_TProfile_v7, args: Args):
@@ -197,7 +203,7 @@ def show_profile(prof: uproot.models.TH.Model_TProfile_v7, args: Args):
     elif is_drawer_root(args):
         draw_root(prof.file.file_path, prof.name)
     else:
-        print('Neither matplotlib nor ROOT is available. Cannot display TH1.')
+        print(__dr_err_msg.format(get_drawer(args), 'Profile'))
 
 
 def show_contents(fpath: Path, key: str, args: Args,

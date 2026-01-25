@@ -19,6 +19,7 @@ def main():
         supported_type = list(GLOBAL_CONF.types.keys()).copy()
         print(' '.join(supported_type))
     elif sys.argv[1] == 'image_viewer':
-        print(' '.join(__collect_image_viewers()))
+        none_iv, mod_iv, cmd_iv = __collect_image_viewers()
+        print(' '.join(none_iv+mod_iv+cmd_iv))
     elif sys.argv[1] == 'subcmds':
         print(' '.join(__subcmds))

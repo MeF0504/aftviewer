@@ -10,7 +10,8 @@ from importlib import import_module
 from pathlib import Path
 from logging import getLogger
 
-from .. import GLOBAL_CONF, args_chk, get_config, Args, __add_lib2path, __def
+from .. import (GLOBAL_CONF, args_chk, get_config, print_error, print_warning,
+                Args, __add_lib2path, __def)
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
@@ -22,21 +23,25 @@ __ImgViewer: None | ModuleType | str = None
 __set_ImgViewer = False
 
 
-def __get_exec_cmds(image_viewer, fname):
+def __get_exec_cmds(fname) -> list[str]:
+    global __ImgViewer
+    assert type(__ImgViewer) is str, 'Something wrong:' \
+        f' image viewer is not set yet? {__ImgViewer}'
     res = []
-    for cmd in get_config('iv_exec_cmd'):
+    for cmd in get_config('iv_cmds').get(__ImgViewer, []):
         if cmd == '%s':
             res.append(fname)
-        elif cmd == '%c':
-            res.append(image_viewer)
         else:
             res.append(cmd)
     logger.debug(f'executed command: {res}')
     return res
 
 
-def __collect_image_viewers() -> list[str]:
-    img_viewers = ['None']
+def __collect_image_viewers() -> tuple[list[str], ...]:
+    viewers_none = ['None']
+    viewers_module: list[str] = []
+    viewers_cmd: list[str] = list(get_config('iv_cmds').keys())
+
     file_dir = Path(__file__).parent
     for fy in file_dir.glob('*'):
         if not fy.is_file():
@@ -44,9 +49,9 @@ def __collect_image_viewers() -> list[str]:
         if fy.name.startswith('__'):
             continue
         iv_name = os.path.splitext(fy.name)[0]
-        logger.debug(f'add {iv_name} to img_viewers')
+        logger.debug(f'add {iv_name} to viewers_module')
         # arbitary setting?
-        img_viewers.insert(0, iv_name)
+        viewers_module.append(iv_name)
     if not __def:
         add_dir = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
         for fy in add_dir.glob('*'):
@@ -55,10 +60,15 @@ def __collect_image_viewers() -> list[str]:
             if fy.name.startswith('__'):
                 continue
             iv_name = os.path.splitext(fy.name)[0]
-            logger.debug(f'add {iv_name} to img_viewers from additional dir')
-            img_viewers.insert(0, iv_name)
+            logger.debug(f'add {iv_name} to viewers_module from add dir')
+            viewers_module.append(iv_name)
 
-    return img_viewers
+    for vc in viewers_cmd:
+        assert vc not in viewers_none \
+            or vc not in viewers_module, \
+            f'The key name {vc} in "iv_cmds" is a reserved name.' \
+            ' Please change to other name.'
+    return viewers_none, viewers_module, viewers_cmd
 
 
 def __get_mod(img_viewer: None | str) -> None | ModuleType:
@@ -79,7 +89,7 @@ def __get_mod(img_viewer: None | str) -> None | ModuleType:
 
 def __set_image_viewer(args: Args) -> None:
     global __ImgViewer, __set_ImgViewer
-    img_viewers = __collect_image_viewers()
+    none_iv, mod_iv, cmd_iv = __collect_image_viewers()
     iv_config = get_config('image_viewer')
     iv_cui_config = get_config('image_viewer_cui')
 
@@ -94,36 +104,51 @@ def __set_image_viewer(args: Args) -> None:
         logger.info('set image viewer from config file')
         tmp_iv = iv_config
     else:
-        logger.info('search available image_viewer')
-        for iv in img_viewers:
+        logger.info('search available image viewer')
+        for iv in mod_iv:
             logger.debug(f'iv: {iv}')
-            if iv == 'None':
-                __ImgViewer = iv
+            mod = __get_mod(iv)
+            if mod is not None:
+                logger.info(f'find image_viewer: {iv}')
+                __ImgViewer = mod
                 break
-            else:
-                mod = __get_mod(iv)
-                if mod is not None:
-                    logger.info(f'find image_viewer: {iv}')
-                    __ImgViewer = mod
-                    break
+
     if tmp_iv is None:
         # image viewer is already searched.
         pass
-    elif tmp_iv in img_viewers:
-        if tmp_iv == 'None':
-            __ImgViewer = 'None'
-        else:
-            __ImgViewer = __get_mod(tmp_iv)
-    else:
+    elif tmp_iv in none_iv:
+        __ImgViewer = 'None'
+    elif tmp_iv in mod_iv:
+        __ImgViewer = __get_mod(tmp_iv)
+    elif tmp_iv in cmd_iv:
         # external command
         if args_chk(args, 'cui'):
             logger.error('external command is not supported in CUI mode.')
             __ImgViewer = None
-        elif not chk_cmd(tmp_iv, logger=logger):
-            logger.error(f'command {tmp_iv} is not executable')
-            __ImgViewer = None
         else:
-            __ImgViewer = tmp_iv
+            cmd_list = get_config('iv_cmds').get(tmp_iv, None)
+            if cmd_list is None:
+                msg = f'{tmp_iv} is not found in "iv_cmds".'
+                print_error(msg)
+                logger.error(msg)
+                __ImgViewer = None
+            elif not chk_cmd(cmd_list[0], logger=logger):
+                msg = f'command {cmd_list[0]} is not executable.'
+                print_error(msg)
+                logger.error(msg)
+                __ImgViewer = None
+            else:
+                if '%s' not in cmd_list:
+                    msg = 'Special character to specify image file path' \
+                        ' "%s" is not in the specified iv commands.' \
+                        ' The image file may not be shown.'
+                    print_warning(msg)
+                __ImgViewer = tmp_iv
+    else:
+        msg = f'non-supported image viewer is set: {tmp_iv}'
+        print_error(msg)
+        logger.error(msg)
+        __ImgViewer = None
     __set_ImgViewer = True
     logger.debug(f'image viewer: {__ImgViewer} (None?:{__ImgViewer is None})')
 
@@ -174,25 +199,15 @@ def show_image_file(img_file: str, args: Args,
                          f'({__ImgViewer}).')
             ret = None
     elif type(__ImgViewer) is str:
-        if True:  # chk_cmd(__ImgViewer, logger=logger):
-            # ↑ __ImgViewer is already checked in __set_image_viewer.
-            if args_chk(args, 'image_viewer'):
-                # if command is set by args, just run it with the file name.
-                cmds = [__ImgViewer, img_file]
-            else:
-                # if command is set by config, run it with arguments set from config.
-                cmds = __get_exec_cmds(__ImgViewer, img_file)
-            out = subprocess.run(cmds)
-            if wait:
-                # wait to open file. this supports stable behavior
-                # for, e.g., open command on Mac OS.
-                input('Press Enter to continue')
-            if out.returncode == 0:
-                ret = True
-            else:
-                ret = False
+        cmds = __get_exec_cmds(img_file)
+        out = subprocess.run(cmds)
+        if wait:
+            # wait to open file. this supports stable behavior
+            # for, e.g., open command on Mac OS.
+            input('Press Enter to continue')
+        if out.returncode == 0:
+            ret = True
         else:
-            logger.error(f'{__ImgViewer} is not executable')
             ret = False
     return ret
 
@@ -247,38 +262,28 @@ def show_image_ndarray(data: Any, name: str, args: Args,
                          f'({__ImgViewer}).')
             ret = None
     elif type(__ImgViewer) is str:
-        if True:  # chk_cmd(__ImgViewer, logger=logger):
-            # ↑ __ImgViewer is already checked in __set_image_viewer.
-            if os.name == 'nt':  # Windows
-                # Because Windows does not allow "with" statement in temp file.
-                # delete_on_close is supported in >= 3.12
-                tmpd = False
-            else:
-                tmpd = True
-            with tempfile.NamedTemporaryFile(suffix='.bmp',
-                                             delete=tmpd) as tmp:
-                make_bitmap(tmp.name, data, verbose=False, logger=logger)
-                if args_chk(args, 'image_viewer'):
-                    # if command is set by args, just run it with the file name.
-                    cmds = [__ImgViewer, tmp.name]
-                else:
-                    # if command is set by config, run it with arguments set from config.
-                    cmds = __get_exec_cmds(__ImgViewer, tmp.name)
-                out = subprocess.run(cmds)
-                if wait:
-                    # wait to open file. this supports stable behavior
-                    # for, e.g., open command on Mac OS.
-                    input('Press Enter to continue')
-                if out.returncode == 0:
-                    ret = True
-                else:
-                    ret = False
-            if not tmpd and os.path.isfile(tmp.name):
-                os.remove(tmp.name)
-                logger.debug(f'tmp file {tmp.name} is deleted')
+        if os.name == 'nt':  # Windows
+            # Because Windows does not allow "with" statement in temp file.
+            # delete_on_close is supported in >= 3.12
+            tmpd = False
         else:
-            logger.error(f'{__ImgViewer} is not executable')
-            ret = False
+            tmpd = True
+        with tempfile.NamedTemporaryFile(suffix='.bmp',
+                                         delete=tmpd) as tmp:
+            make_bitmap(tmp.name, data, verbose=False, logger=logger)
+            cmds = __get_exec_cmds(tmp.name)
+            out = subprocess.run(cmds)
+            if wait:
+                # wait to open file. this supports stable behavior
+                # for, e.g., open command on Mac OS.
+                input('Press Enter to continue')
+            if out.returncode == 0:
+                ret = True
+            else:
+                ret = False
+        if not tmpd and os.path.isfile(tmp.name):
+            os.remove(tmp.name)
+            logger.debug(f'tmp file {tmp.name} is deleted')
     return ret
 
 
