@@ -1,4 +1,3 @@
-import os
 import pprint
 import argparse
 import plistlib
@@ -39,11 +38,11 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def main(fpath: Path, args: Args):
+def main(fpath: Path, args: Args) -> int:
     with open(fpath, 'rb') as f:
         pl = plistlib.load(f, dict_type=dict)
 
-    fname = os.path.basename(fpath)
+    fname = fpath.name
     gc = partial(get_contents_dict, pl)
 
     if isinstance(pl, dict):
@@ -61,3 +60,4 @@ def main(fpath: Path, args: Args):
             show_tree(fname, gc, logger=logger, add_info=addinfo)
     else:
         pprint.pprint(pl, **pargs)
+    return 0

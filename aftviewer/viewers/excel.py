@@ -49,7 +49,7 @@ def get_contents(allsheets: list[str], path: Path) -> tuple[list, list]:
         return [], []
 
 
-def get_sheets(allsheets: list[str], args: Args) -> list[str]:
+def get_sheets(allsheets: list[str], args: Args) -> None | list[str]:
     if args.key is None:
         return allsheets
     elif len(args.key) == 0:
@@ -124,7 +124,7 @@ def get_data_xlsx(fpath: Path, args: Args,
     res = {}
     for sh in sheets:
         ws = book[sh]
-        vals = []
+        vals: list[list[str]] = []
         res[sh] = vals
         if not hasattr(ws, 'iter_rows'):
             logger.warning(f'Sheet "{sh}" does not support iter_rows')
@@ -135,7 +135,7 @@ def get_data_xlsx(fpath: Path, args: Args,
     return res
 
 
-def main(fpath: Path, args: Args):
+def main(fpath: Path, args: Args) -> int:
     if args.ext is None:
         excelver = fpath.suffix.lower()[1:]
     else:
@@ -143,7 +143,7 @@ def main(fpath: Path, args: Args):
 
     if excelver not in ['xls', 'xlsx', 'xlsm']:
         print_error(f'Unsupported Excel file version: {excelver}')
-        return
+        return 2
     if excelver == 'xls':
         data = get_data_xls(fpath, args)
     elif excelver == 'xlsx':
@@ -152,17 +152,19 @@ def main(fpath: Path, args: Args):
         data = get_data_xlsx(fpath, args, keep_vba=True)
     else:
         logger.error(f'Unsupported Excel version?? {excelver}')
-        return
+        return 2
     if data is None:
         # showing all sheets case.
-        return
+        return 0
 
     if args.cui:
         gc = partial(get_contents, list(data.keys()))
         sf = partial(show_table, data)
-        interactive_cui(fpath, gc, sf)
+        interactive_cui(fpath.name, gc, sf)
         pass
     else:
         for sheet in data:
             print_key(sheet)
             print(show_table(data, sheet).message)
+
+    return 0

@@ -1,10 +1,11 @@
 import sys
 import shutil
+from pathlib import Path
 
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from .. import (args_chk, print_key, get_config,
+from .. import (Args, args_chk, print_key, get_config,
                 help_template, add_args_specification)
 
 __detail_opts = dict(precision=None,
@@ -139,7 +140,7 @@ def main_npz(data, args):
             show_summary(data[k])
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
     opts = get_config('numpy_printoptions')
     np.set_printoptions(**opts)
     data = np.load(fpath, allow_pickle=False)
@@ -147,3 +148,4 @@ def main(fpath, args):
         main_npz(data, args)
     else:
         main_npy(data, args)
+    return 0

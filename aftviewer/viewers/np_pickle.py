@@ -1,12 +1,12 @@
 import os
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from functools import partial
 from logging import getLogger
 
 import numpy as np
 from numpy.lib.npyio import NpzFile
 
-from .. import (GLOBAL_CONF, args_chk, print_key, get_config,
+from .. import (GLOBAL_CONF, Args, args_chk, print_key, get_config,
                 show_func_dict, get_contents_dict,
                 interactive_view, interactive_cui, help_template,
                 add_args_specification, add_args_encoding)
@@ -70,20 +70,23 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
+    encs = ('ASCII', 'latin1', 'bytes')
     if args_chk(args, 'encoding'):
         logger.info('set encoding from args')
         encoding = args.encoding
     else:
         encoding = get_config('encoding')
     logger.info(f'encoding: {encoding}')
+    if encoding not in encs:
+        encoding = 'ASCII'
     opts = get_config('numpy_printoptions')
     np.set_printoptions(**opts)
 
     data = np.load(fpath, allow_pickle=True, encoding=encoding)
     if type(data) is not NpzFile:
         print('please use --type numpy')
-        return
+        return 2
     fname = os.path.basename(fpath)
     gc = partial(get_contents, data)
     sf = partial(show_func, data)
@@ -107,3 +110,5 @@ def main(fpath, args):
         for k in data.keys():
             print_key(k)
             show_numpy(data[k])
+
+    return 0

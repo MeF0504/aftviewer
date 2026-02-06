@@ -61,7 +61,7 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def main(fpath: Path, args: Args):
+def main(fpath: Path, args: Args) -> int:
     assert hasattr(args, 'viewer'), 'something wrong; viewer is not in args.'
     if args.viewer is None:
         viewer = get_config('viewer')
@@ -150,3 +150,4 @@ def main(fpath: Path, args: Args):
         print('viewer is not found.')
     else:
         print(f'incorrect viewer: "{viewer}".')
+    return 0

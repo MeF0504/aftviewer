@@ -1,7 +1,8 @@
 import os
 from logging import getLogger
+from pathlib import Path
 
-from .. import (GLOBAL_CONF, show_image_ndarray, help_template,
+from .. import (GLOBAL_CONF, Args, show_image_ndarray, help_template,
                 add_args_imageviewer)
 from pymeflib.xpm_loader import XPMLoader
 logger = getLogger(GLOBAL_CONF.logname)
@@ -20,7 +21,7 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
     xpm = XPMLoader(fpath, logger=logger)
     if use_numpy:
         xpm.xpm_to_ndarray()
@@ -29,4 +30,10 @@ def main(fpath, args):
         xpm.xpm_to_list()
         data = xpm.rgb_list
 
-    show_image_ndarray(data, os.path.basename(fpath), args)
+    ret = show_image_ndarray(data, os.path.basename(fpath), args)
+    if ret is None:
+        return 3
+    elif ret:
+        return 0
+    else:
+        return 2

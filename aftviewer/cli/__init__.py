@@ -201,6 +201,43 @@ def update_packages(ftype: str, test: bool) -> bool:
     return ret
 
 
+def run_subcmd(args: Args) -> int:
+    if args.subcmd == 'config_list':
+        show_opts(args.type)
+        return 0
+    elif args.subcmd == 'shell_completion':
+        ret = set_shell_comp(args)
+        return 0 if ret else 2
+    elif args.subcmd == 'update':
+        # update はversionが変わらないと作用しないっぽい。
+        # branch を切り替えるにもversionの違いが必要そう
+        if args.type is None:
+            ret = update(args.branch, args.test)
+            return 0 if ret else 2
+        else:
+            ret = update_packages(args.type, args.test)
+            return 0 if ret else 2
+    elif args.subcmd == 'help':
+        if args_chk(args, 'type'):
+            lib, err = __load_lib(args)
+            if lib is None:
+                print(f'Failed to load the library ({err}).')
+                return 3
+            else:
+                if hasattr(lib, 'show_help') and \
+                   type(lib.show_help) is FunctionType:
+                    lib.show_help()
+                else:
+                    print("this type does not support showing help.")
+                return 0
+        else:
+            print('please set --type to see the details.')
+            return 2
+    else:
+        print_error(f'Invalid subcommand: {args.subcmd}.')
+        return 2
+
+
 def main() -> int:
     """
     Error code:
@@ -217,41 +254,8 @@ def main() -> int:
         return 2
 
     if args.subcmd is not None:
-        if args.subcmd == 'config_list':
-            show_opts(args.type)
-            return 0
-        elif args.subcmd == 'shell_completion':
-            ret = set_shell_comp(args)
-            return 0 if ret else 2
-        elif args.subcmd == 'update':
-            # update はversionが変わらないと作用しないっぽい。
-            # branch を切り替えるにもversionの違いが必要そう
-            if args.type is None:
-                ret = update(args.branch, args.test)
-                return 0 if ret else 2
-            else:
-                ret = update_packages(args.type, args.test)
-                return 0 if ret else 2
-        elif args.subcmd == 'help':
-            if args_chk(args, 'type'):
-                lib, err = __load_lib(args)
-                if lib is None:
-                    print(f'Failed to load the library ({err}).')
-                    return 3
-                else:
-                    if hasattr(lib, 'show_help') and \
-                       type(lib.show_help) is FunctionType:
-                        lib.show_help()
-                    else:
-                        print("this type does not support showing help.")
-                    return 0
-            else:
-                print('please set --type to see the details.')
-                return 2
-        else:
-            print_error(f'Invalid subcommand: {args.subcmd}.')
-            return 2
-        return 2
+        ret = run_subcmd(args)
+        return ret
 
     fpath = Path(args.file).expanduser()
     if not fpath.exists():
@@ -278,5 +282,5 @@ def main() -> int:
         print_error(f'Failed to load the library for "{args.type}" ({err}).')
         return 3
     else:
-        lib.main(fpath, args)
-        return 0
+        ret = lib.main(fpath, args)
+        return ret

@@ -1,8 +1,9 @@
 import os
+from pathlib import Path
 
 import rawpy
 
-from .. import show_image_ndarray, help_template, add_args_imageviewer
+from .. import Args, show_image_ndarray, help_template, add_args_imageviewer
 
 
 def add_args(parser):
@@ -15,8 +16,14 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
     with rawpy.imread(str(fpath)) as raw:
         rgb = raw.postprocess(demosaic_algorithm=rawpy.DemosaicAlgorithm.LINEAR)
 
-    show_image_ndarray(rgb, os.path.basename(fpath), args)
+    ret = show_image_ndarray(rgb, os.path.basename(fpath), args)
+    if ret is None:
+        return 3
+    elif ret:
+        return 0
+    else:
+        return 2
