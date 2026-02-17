@@ -142,19 +142,19 @@ def show_header(fpath: Path):
         print(msg)
 
 
-def main(fpath: Path, args: LocalArgs):
-    fname = Path(fpath).name
+def main(fpath: Path, args: LocalArgs) -> int:
+    fname = fpath.name
     if args_chk(args, 'key'):
         if len(args.key) == 0:
             show_header(fpath)
-            return
+            return 0
         else:
             try:
                 idcs = [int(k) for k in args.key]
             except ValueError as e:
                 print_error('--key arguments should be indices (numbers).')
                 logger.debug(f'failed to convert int, {type(e).__name__}, {e}')
-                return
+                return 2
     else:
         idcs = None
 
@@ -177,7 +177,7 @@ def main(fpath: Path, args: LocalArgs):
         viewer = hp.orthview
     else:
         print_error(f'incorrect projection: {projection}')
-        return
+        return 2
 
     mmin, mmax = set_limits()
     coord = set_coordinate(args)
@@ -203,14 +203,14 @@ def main(fpath: Path, args: LocalArgs):
     assert len(names) == len(heal_maps), 'Number of names and maps' \
         f' does not match: {len(names)}, {len(heal_maps)}.'
     if idcs is None:
-        map_idcs = np.arange(len(names))
+        map_idcs = np.arange(len(names), dtype=np.int32)
     else:
-        map_idcs = np.array(idcs)-1
+        map_idcs = np.array(idcs, dtype=np.int32)-1
     Lmaps = len(map_idcs)
     MaxMaps = len(heal_maps)
     if np.any(map_idcs < 0) or np.any(map_idcs >= MaxMaps):
         print_error(f'The acceptable range of --key is 1 <= KEY < {MaxMaps}.')
-        return
+        return 2
     for i, x in enumerate(map_idcs):
         name = names[x]
         if norm == 'log':
@@ -265,3 +265,5 @@ def main(fpath: Path, args: LocalArgs):
         plt.show()
     else:
         plt.close()
+
+    return 0

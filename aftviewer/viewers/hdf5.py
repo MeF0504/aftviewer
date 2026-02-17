@@ -1,12 +1,12 @@
 import os
 import pprint
 from functools import partial
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from logging import getLogger
 
 import h5py
 
-from .. import (GLOBAL_CONF, args_chk, print_key, print_error,
+from .. import (GLOBAL_CONF, Args, args_chk, print_key, print_error,
                 FG, BG, FG256, BG256, END, get_config, get_col,
                 interactive_view, interactive_cui,
                 help_template, add_args_specification
@@ -138,7 +138,7 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
     fname = os.path.basename(fpath)
 
     h5_file = h5py.File(fpath, 'r')
@@ -148,7 +148,7 @@ def main(fpath, args):
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, gc, sf, PurePosixPath)
+        interactive_cui(fpath.name, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         if args.key:
             for k in args.key:
@@ -167,3 +167,4 @@ def main(fpath, args):
         show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     h5_file.close()
+    return 0

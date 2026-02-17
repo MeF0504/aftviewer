@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from functools import partial
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from logging import getLogger
 # curses is not supported on Windows by default.
 try:
@@ -11,7 +11,7 @@ except ImportError:
 else:
     import_curses = True
 
-from .. import (GLOBAL_CONF, args_chk, print_key, cprint, print_error,
+from .. import (GLOBAL_CONF, Args, args_chk, print_key, cprint, print_error,
                 interactive_view, help_template, add_args_specification,
                 add_args_output)
 from .. import ReturnMessage as RM
@@ -228,12 +228,12 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
     database = sqlite3.connect(fpath)
     cursor = database.cursor()
     cursor.execute("select name from sqlite_master where type='table'")
     tables = [table[0] for table in cursor.fetchall()]
-    fname = os.path.basename(fpath)
+    fname = fpath.name
 
     if args_chk(args, 'interactive'):
         gc = partial(get_contents_i, cursor, tables)
@@ -241,7 +241,7 @@ def main(fpath, args):
     elif args_chk(args, 'cui'):
         if not import_curses:
             print('failed to import curses.')
-            return
+            return 3
         gc = partial(get_contents_c, cursor, tables)
         tv = TreeViewer('.', gc, purepath=PurePosixPath, logger=logger)
         curses_cui = CursesCUI()
@@ -269,10 +269,10 @@ def main(fpath, args):
         if len(args.key) == 0:
             for t in tables:
                 print(t)
-            return
+            return 0
         if not init_outfile(args.output):
             cprint('failed to created an output file.')
-            return
+            return 2
         for k in args.key:
             print_key(k)
             info = show_table(cursor, tables, k, verbose=True,
@@ -286,9 +286,11 @@ def main(fpath, args):
         if args_chk(args, 'verbose'):
             if not init_outfile(args.output):
                 cprint('failed to created an output file.')
-                return
+                return 2
         for table in tables:
             info = show_table(cursor, tables, table, verbose=args.verbose,
                               output=args.output)
             if not info.error:
                 print(info.message)
+
+    return 0

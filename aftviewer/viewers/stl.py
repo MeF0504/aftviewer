@@ -61,7 +61,7 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def main(fpath: Path, args: Args):
+def main(fpath: Path, args: Args) -> int:
     assert hasattr(args, 'viewer'), 'something wrong; viewer is not in args.'
     if args.viewer is None:
         viewer = get_config('viewer')
@@ -134,9 +134,9 @@ def main(fpath: Path, args: Args):
                            )
         fig1 = go.Figure(data=[mesh3D], layout=layout)
         fig1.update_layout(scene=dict(
-            xaxis_title='',
-            yaxis_title='',
-            zaxis_title='',
+            xaxis_title='X',
+            yaxis_title='Y',
+            zaxis_title='Z',
             xaxis=dict(backgroundcolor=bcol,
                        ),
             yaxis=dict(backgroundcolor=bcol,
@@ -150,3 +150,4 @@ def main(fpath: Path, args: Args):
         print('viewer is not found.')
     else:
         print(f'incorrect viewer: "{viewer}".')
+    return 0

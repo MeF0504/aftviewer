@@ -34,13 +34,13 @@ def show_help() -> None:
     print(helpmsg)
 
 
-def main(fpath: Path, args: LocalArgs):
+def main(fpath: Path, args: LocalArgs) -> int:
     fname = fpath.name
     if args_chk(args, 'key'):
         if len(args.key) == 0:
             with fits.open(fpath) as hdul:
                 hdul.info()
-            return
+            return 0
         else:
             idx = int(args.key[0])
     else:
@@ -48,20 +48,20 @@ def main(fpath: Path, args: LocalArgs):
     if hasattr(args, 'header') and args.header:
         with fits.open(fpath) as hdul:
             print(repr(hdul[idx].header))
-        return
+        return 0
 
     with fits.open(fpath) as hdul:
         if idx >= len(hdul):
             print_error(f'key index {idx} > num of HDU (max: {len(hdul)-1})')
-            return
+            return 2
         data = hdul[idx].data
 
     if not hasattr(data, 'shape'):
         print_error(f'data type may not correct: {type(data)}')
-        return
+        return 2
     if len(data.shape) != 2:
         print_error(f'This function assumes 2D image. this is {data.shape}.')
-        return
+        return 2
     logger.debug(f'value: {np.nanmin(data)} - {np.nanmax(data)}')
     # ignore values less than or equal to 0
     data = np.where(data <= 0, np.nan, data)
@@ -80,4 +80,10 @@ def main(fpath: Path, args: LocalArgs):
     data2 = data2.astype(np.uint8)
     # flip upside down (required??)
     data2 = data2[::-1]
-    show_image_ndarray(data2, fname, args)
+    ret = show_image_ndarray(data2, fname, args)
+    if ret is None:
+        return 3
+    elif ret:
+        return 0
+    else:
+        return 2

@@ -99,7 +99,7 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
     if args_chk(args, 'encoding'):
         enc = args.encoding
     else:
@@ -112,7 +112,7 @@ def main(fpath, args):
         outp = Path(args.output)
         if outp.is_dir():
             print_error(f'{args.output} is a directory. please specify a file.')
-            return
+            return 2
         if not outp.parent.is_dir():
             outp.parent.mkdir(parents=True)
         with open(outp, 'w') as f:
@@ -233,3 +233,4 @@ def main(fpath, args):
     outf.close()
     tmpdir.cleanup()
     logger.info('cleanup tmpdir.')
+    return 0

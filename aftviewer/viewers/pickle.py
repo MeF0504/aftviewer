@@ -1,11 +1,10 @@
 import pickle
-import os
 import pprint
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from functools import partial
 from logging import getLogger
 
-from .. import (GLOBAL_CONF, args_chk, get_config,
+from .. import (GLOBAL_CONF, Args, args_chk, get_config,
                 show_keys_dict, get_item_dict,
                 get_contents_dict, show_func_dict,
                 interactive_view, interactive_cui,
@@ -40,7 +39,7 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
     if args_chk(args, 'encoding'):
         logger.info('set encoding from args')
         encoding = args.encoding
@@ -49,7 +48,7 @@ def main(fpath, args):
     logger.info(f'encoding: {encoding}')
     with open(fpath, 'rb') as f:
         data = pickle.load(f, encoding=encoding)
-    fname = os.path.basename(fpath)
+    fname = fpath.name
     gc = partial(get_contents_dict, data)
 
     if isinstance(data, dict):
@@ -67,3 +66,4 @@ def main(fpath, args):
             show_tree(fname, gc, logger=logger, add_info=addinfo)
     else:
         pprint.pprint(data, **pargs)
+    return 0

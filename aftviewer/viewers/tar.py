@@ -53,22 +53,22 @@ def show_tar(tar_file: tarfile.TarFile,
         if 'system' in kwargs and kwargs['system']:
             tar_file.extract(tarinfo, path=tmpdir.name)
             tmpfile = os.path.join(tmpdir.name, cpath)
-            ret = run_system_cmd(tmpfile)
-            if ret:
-                return RM('open {}'.format(cpath), False)
+            ret_cmd = run_system_cmd(tmpfile)
+            if ret_cmd:
+                return RM(f'open {cpath}', False)
             else:
-                return RM('Failed to open {}.'.format(cpath), True)
+                return RM(f'Failed to open {cpath}.', True)
         elif is_image(key_name):
             tar_file.extract(tarinfo, path=tmpdir.name)
             tmpfile = os.path.join(tmpdir.name, cpath)
-            ret = show_image_file(tmpfile, args)
-            if ret is None:
+            ret_im = show_image_file(tmpfile, args)
+            if ret_im is None:
                 msg = 'image viewer not found.'
                 if args_chk(args, 'cui'):
                     msg += '\nNOTE: external command is not supported' + \
                         ' in CUI mode.'
                 return RM(msg, True)
-            elif not ret:
+            elif not ret_im:
                 return RM('Failed to show image.', True)
 
         else:
@@ -77,17 +77,17 @@ def show_tar(tar_file: tarfile.TarFile,
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:
-                    return RM('Error!! {}'.format(e), True)
+                    return RM(f'Error!! {e}', True)
         res.append('')
 
     # directory
     elif tarinfo.isdir():
-        res.append('{}/'.format(key_name))
+        res.append(f'{key_name}/')
         dirs, files = get_contents(key_name)
         for f in files:
-            res.append('{}{}'.format(BRANCH_STR1, f))
+            res.append(f'{BRANCH_STR1}{f}')
         for d in dirs:
-            res.append('{}{}/'.format(BRANCH_STR1, d))
+            res.append(f'{BRANCH_STR1}{d}/')
     else:
         res.append('sorry, I can\'t show information.\n')
 
@@ -146,10 +146,10 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath, args):
+def main(fpath: Path, args: Args) -> int:
     if not tarfile.is_tarfile(fpath):
-        print('{} is not a tar file.'.format(fpath))
-        return
+        print(f'{fpath} is not a tar file.')
+        return 1
     tar_file = tarfile.open(fpath, 'r:*')
     need_tmp = (args_chk(args, 'key') and not args_chk(args, 'output')) or \
         args_chk(args, 'interactive') or args_chk(args, 'cui')
@@ -166,12 +166,12 @@ def main(fpath, args):
     if args_chk(args, 'output'):
         if not args_chk(args, 'key') or len(args.key) == 0:
             print('output is specified but key is not specified')
-            return
+            return 2
 
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, gc, sf, PurePosixPath)
+        interactive_cui(fpath.name, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             tar_file.list(verbose=False)
@@ -189,6 +189,7 @@ def main(fpath, args):
         show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     tar_file.close()
-    if need_tmp:
+    if need_tmp and tmpdir is not None:
         tmpdir.cleanup()
         logger.debug('close tmpdir')
+    return 0

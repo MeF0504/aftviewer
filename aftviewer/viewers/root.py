@@ -95,6 +95,7 @@ def is_drawer_mpl(args) -> bool:
 
 
 def draw_root(fpath: str, cname: str) -> None:
+    assert ROOT is not None, 'Something wrong; ROOT is not imported.'
     f = ROOT.TFile.Open(fpath)
     c = f.Get(cname)
     c.Draw()
@@ -143,6 +144,7 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
+        assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals, edges = hist.to_numpy(flow=True)
         xlabel = hist.axis().all_members.get('fTitle', '')
         title = hist.title if hist.title else ''
@@ -163,6 +165,7 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
+        assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals, edgex, edgey = hist.to_numpy(flow=False)
         xlabel = hist.axis(0).all_members.get('fTitle', '')
         ylabel = hist.axis(1).all_members.get('fTitle', '')
@@ -187,6 +190,7 @@ def show_profile(prof: uproot.models.TH.Model_TProfile_v7, args: Args):
     if args.verbose > 0:
         show_all_members(prof)
     if is_drawer_mpl(args):
+        assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals = prof.values(flow=False)
         errs = prof.errors(flow=False)
         edges = prof.axis().edges(flow=False)
@@ -238,7 +242,7 @@ def show_contents(fpath: Path, key: str, args: Args,
                           " -> https://github.com/MeF0504/aftviewer/issues")
 
 
-def main(fpath: Path, args: Args):
+def main(fpath: Path, args: Args) -> int:
     rfile = uproot.open(fpath)
     if args_chk(args, 'key'):
         if len(args.key) == 0:
@@ -246,7 +250,7 @@ def main(fpath: Path, args: Args):
             for k, t in rfile.classnames().items():
                 print(f"{k}: {t}")
             rfile.close()
-            return
+            return 0
         else:
             keys = args.key
     else:
@@ -262,3 +266,4 @@ def main(fpath: Path, args: Args):
         if len(plt.get_fignums()) != 0:
             plt.show()
     rfile.close()
+    return 0

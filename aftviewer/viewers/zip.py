@@ -97,12 +97,12 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: None | bytes,
     assert tmpdir is not None, "something strange; tmpdir is not set."
     if zipinfo.is_dir():
         # directory
-        res.append('{}'.format(key_name))
+        res.append(f'{key_name}')
         dirs, files = get_contents(key_name)
         for f in files:
-            res.append('{}{}'.format(BRANCH_STR1, f))
+            res.append(f'{BRANCH_STR1}{f}')
         for d in dirs:
-            res.append('{}{}/'.format(BRANCH_STR1, d))
+            res.append(f'{BRANCH_STR1}{d}/')
 
     else:
         # file
@@ -111,9 +111,9 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: None | bytes,
             tmpfile = os.path.join(tmpdir.name, cpath)
             ret1 = run_system_cmd(tmpfile)
             if ret1:
-                return RM('open {}'.format(cpath), False)
+                return RM(f'open {cpath}', False)
             else:
-                return RM('Failed to open {}.'.format(cpath), True)
+                return RM(f'Failed to open {cpath}.', True)
         elif is_image(key_name):
             zip_file.extract(zipinfo, path=tmpdir.name, pwd=pwd)
             tmpfile = os.path.join(tmpdir.name, cpath)
@@ -133,7 +133,7 @@ def show_zip(zip_file: zipfile.ZipFile, pwd: None | bytes,
                 try:
                     res.append(line.decode().replace("\n", ''))
                 except UnicodeDecodeError as e:
-                    return RM('Error!! {}'.format(e), True)
+                    return RM(f'Error!! {e}', True)
 
     return RM('\n'.join(res), False)
 
@@ -160,10 +160,10 @@ def show_help():
     print(helpmsg)
 
 
-def main(fpath: str, args: LocalArgs):
+def main(fpath: Path, args: LocalArgs) -> int:
     if not zipfile.is_zipfile(fpath):
-        print('{} is not a zip file.'.format(fpath))
-        return
+        print(f'{fpath} is not a zip file.')
+        return 1
     zip_file = zipfile.ZipFile(fpath, 'r')
     need_tmp = (args_chk(args, 'key') and not args_chk(args, 'output')) or \
         args_chk(args, 'interactive') or args_chk(args, 'cui')
@@ -184,17 +184,17 @@ def main(fpath: str, args: LocalArgs):
     if args_chk(args, 'output'):
         if not args_chk(args, 'key') or len(args.key) == 0:
             print('output is specified but key is not specified')
-            return
+            return 2
 
     if args_chk(args, 'interactive'):
         interactive_view(fname, gc, sf, PurePosixPath)
     elif args_chk(args, 'cui'):
-        interactive_cui(fpath, gc, sf, PurePosixPath)
+        interactive_cui(fpath.name, gc, sf, PurePosixPath)
     elif args_chk(args, 'key'):
         if len(args.key) == 0:
             for fy in zip_file.namelist():
                 print(fy)
-            return
+            return 0
         for k in args.key:
             print_key(k)
             info = show_zip(zip_file, pwd, tmpdir, args, gc, k)
@@ -209,6 +209,7 @@ def main(fpath: str, args: LocalArgs):
         show_tree(fname, gc, logger=logger, purepath=PurePosixPath)
 
     zip_file.close()
-    if need_tmp:
+    if need_tmp and tmpdir is not None:
         tmpdir.cleanup()
         logger.debug('close tmpdir')
+    return 0

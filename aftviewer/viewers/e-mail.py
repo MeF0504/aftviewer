@@ -200,7 +200,7 @@ def show_mbox(fpath: Path, args: Args):
     tmpdir.cleanup()
 
 
-def main(fpath: Path, args: Args):
+def main(fpath: Path, args: Args) -> int:
     if args.mailtype == 'eml':
         show_eml(fpath, args)
     elif args.mailtype == 'mbox':
@@ -211,3 +211,5 @@ def main(fpath: Path, args: Args):
         show_mbox(fpath, args)
     else:
         print_error(f'Not supported file extension: {fpath}.')
+        return 2
+    return 0
