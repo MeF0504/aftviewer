@@ -134,9 +134,9 @@ def main(fpath: Path, args: Args) -> int:
                            )
         fig1 = go.Figure(data=[mesh3D], layout=layout)
         fig1.update_layout(scene=dict(
-            xaxis_title='',
-            yaxis_title='',
-            zaxis_title='',
+            xaxis_title='X',
+            yaxis_title='Y',
+            zaxis_title='Z',
             xaxis=dict(backgroundcolor=bcol,
                        ),
             yaxis=dict(backgroundcolor=bcol,
