@@ -23,6 +23,7 @@ from pymeflib.tree2 import TreeViewer, GC, PPath
 from .types import CONF, Args, SF, COLType
 
 
+__debug = False
 __def = False
 __add_types = {}
 __user_opts = {}
