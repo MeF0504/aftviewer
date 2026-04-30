@@ -29,10 +29,8 @@ __add_types = {}
 __user_opts = {}
 __filetype: str | None = None
 __args: Args | None = None
-if 'XDG_CONFIG_HOME' in os.environ:
-    __conf_dir = Path(os.environ['XDG_CONFIG_HOME'])/'aftviewer'
-else:
-    __conf_dir = Path(os.path.expanduser('~/.config'))/'aftviewer'
+__conf_dir = Path(os.environ.get('XDG_CONFIG_HOME',
+                                 os.path.expanduser('~/.config')))/'aftviewer'
 if not __conf_dir.exists():
     (__conf_dir/'.lib').mkdir(mode=0o755, parents=True)
 
@@ -42,8 +40,7 @@ with (Path(__file__).parent/'default.json').open('r') as f:
 if (__conf_dir/'setting.json').is_file():
     with open(__conf_dir/'setting.json') as f:
         __user_opts = json.load(f)
-        if 'debug' in __user_opts:
-            __debug = bool(__user_opts['debug'])
+        __debug = bool(__user_opts.get('debug', False))
         if 'force_default' in __user_opts and __user_opts['force_default']:
             __def = True
             __user_opts = {}
@@ -232,10 +229,7 @@ def get_config(key: str, filetype: str | None = None) -> Any:
         filetype = __filetype
     if filetype is None:
         __logger.warning(f'filetype is not set? (get_config, {key})')
-    if 'config' in __user_opts:
-        user_opts = __user_opts['config']
-    else:
-        user_opts = {}
+    user_opts = __user_opts.get('config', {})
     def_opts = __def_opts['config']
 
     if filetype in user_opts and key in user_opts[filetype]:
@@ -348,10 +342,7 @@ def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
         filetype = __filetype
     if filetype is None:
         __logger.warning(f'filetype is not set? (get_col, {name})')
-    if 'colors' in __user_opts:
-        user_cols = __user_opts['colors']
-    else:
-        user_cols = {}
+    user_cols = __user_opts.get('colors', {})
     def_cols = __def_opts['colors']
 
     if filetype in user_cols and name in user_cols[filetype]:
@@ -659,10 +650,7 @@ def __load_lib(args: Args) -> tuple[None | ModuleType, str]:
 
 def __get_opt_keys() -> dict[str, list[str]]:
     def_opts = __def_opts['config']
-    if 'config' in __user_opts:
-        user_opts = __user_opts['config']
-    else:
-        user_opts = {}
+    user_opts = __user_opts.get('config', {})
     res: dict[str, list[str]] = {}
     res['defaults'] = list(def_opts['defaults'].keys())
     for t in __type_config:
@@ -687,10 +675,7 @@ def __get_opt_keys() -> dict[str, list[str]]:
 
 def __get_color_names(filetype: str | None) -> list[str]:
     def_cols = __def_opts['colors']
-    if 'colors' in __user_opts:
-        user_cols = __user_opts['colors']
-    else:
-        user_cols = {}
+    user_cols = __user_opts.get('colors', {})
     if filetype is None:
         return list(def_cols['defaults'].keys())
     else:

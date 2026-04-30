@@ -102,6 +102,9 @@ def main(fpath: Path, args: Args) -> int:
                                                 facecolors=fcol,
                                                 )
         ax11.add_collection3d(d3_pol)
+        ax11.set_xlabel('X')
+        ax11.set_ylabel('Y')
+        ax11.set_zlabel('Z')
         ax11.xaxis.pane.set_facecolor(bcol)
         ax11.yaxis.pane.set_facecolor(bcol)
         ax11.zaxis.pane.set_facecolor(bcol)
