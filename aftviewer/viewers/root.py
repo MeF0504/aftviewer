@@ -140,6 +140,20 @@ def show_tree(tree: uproot.models.TTree.Model_TTree_v20, args: Args) -> None:
             print()
 
 
+def show_macro(macro: uproot.dynamic.Model_TMacro_v1, args: Args) -> None:
+    if args.verbose > 0:
+        show_all_members(macro)
+        print()
+
+    mems = macro.all_members
+    if 'fName' in mems:
+        fname = macro.member('fName')
+        print(f'=== file name: {fname} ===\n')
+    if 'fLines' in mems:
+        for ln in macro.member('fLines'):
+            print(ln)
+
+
 def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
@@ -236,6 +250,8 @@ def show_contents(fpath: Path, key: str, args: Args,
             show_profile(rfile[key], args)
         elif t == 'TNtuple':
             show_tree(rfile[key], args)
+        elif t == 'TMacro':
+            show_macro(rfile[key], args)
         else:
             print_warning(f"Object type '{t}' is not supported yet."
                           " Please let me know!"
