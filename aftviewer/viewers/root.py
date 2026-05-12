@@ -9,7 +9,7 @@ import uproot
 import numpy as np  # uproot requires NumPy!
 
 from .. import (GLOBAL_CONF, Args, get_config, args_chk,
-                print_key, print_warning,
+                get_col, print_key, print_warning, cprint,
                 help_template, add_args_key, add_args_verbose)
 from .numpy import show_summary
 from pymeflib import plot as mefplot
@@ -35,7 +35,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     add_args_verbose(parser,
                      help='show details.'
                      ' In TTree object, use -v to show summary of each branch,'
-                     ' and -vv to show full contents.'
+                     ' -vv to show values, and -vvv to show full contents.'
                      ' In other objects, -v show all members.',
                      action='count', default=0)
     parser.add_argument('--drawer', '-d', help='Specify the Object drawer.',
@@ -46,6 +46,11 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 def show_help() -> None:
     helpmsg = help_template('root', 'Open a ROOT file.', add_args)
     print(helpmsg)
+
+
+def print_header(header: str, after: str, **kwargs) -> None:
+    fg, bg = get_col('header_color')
+    cprint(header, after, fg=fg, bg=bg, **kwargs)
 
 
 def get_drawer(args: Args) -> str | None:
@@ -129,13 +134,14 @@ def show_tree(tree: uproot.models.TTree.Model_TTree_v20, args: Args) -> None:
     print(f'=== Title: {tree.title} ===')
     for key in tree.keys():
         array = tree[key].array(library='np')
-        print(f'--- Branch: {key} ---')
+        print_header(f'--- Branch: {key} ---', '')
         if args.verbose == 1:
             show_summary(array)
         else:
-            print(' ~~~ All members ~~~')
-            show_all_members(tree[key])
-            print('~~~ Values ~~~')
+            if args.verbose >= 3:
+                print(' ~~~ All members ~~~')
+                show_all_members(tree[key])
+                print('\n~~~ Values ~~~')
             print(array)
             print()
 
@@ -148,7 +154,7 @@ def show_macro(macro: uproot.dynamic.Model_TMacro_v1, args: Args) -> None:
     mems = macro.all_members
     if 'fName' in mems:
         fname = macro.member('fName')
-        print(f'=== file name: {fname} ===\n')
+        print_header(f'=== file name: {fname} ===', '\n')
     if 'fLines' in mems:
         for ln in macro.member('fLines'):
             print(ln)
