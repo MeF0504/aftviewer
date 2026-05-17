@@ -235,3 +235,6 @@ type_color = "Color to highlight cell type in jupyter file."
 
 [color.hdf5]
 type_color = "Color to highlight attributes of data in hdf5 file."
+
+[color.root]
+header_color = "Color to highlight some headers in the root file."
