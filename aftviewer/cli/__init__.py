@@ -221,7 +221,7 @@ def run_subcmd(args: Args) -> int:
         if args_chk(args, 'type'):
             lib, err = __load_lib(args)
             if lib is None:
-                print(f'Failed to load the library ({err}).')
+                print_error(f'Failed to load the library ({err}).')
                 return 3
             else:
                 if hasattr(lib, 'show_help') and \
@@ -262,7 +262,7 @@ def main() -> int:
         print("file doesn't exists!")
         return 1
     if fpath.is_dir():
-        print("{} is a directory.".format(fpath))
+        print(f'{fpath} is a directory.')
         return 1
 
     __set_filetype(args)
