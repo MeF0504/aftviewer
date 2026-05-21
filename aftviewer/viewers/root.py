@@ -268,19 +268,24 @@ def show_contents(fpath: Path, key: str, args: Args,
                           " -> https://github.com/MeF0504/aftviewer/issues")
 
 
+def show_objs(rfile: uproot.ReadOnlyDirectory):
+    print("List of objects in the ROOT file:")
+    for k, t in rfile.classnames().items():
+        print(f"{k}: {t}")
+    rfile.close()
+
+
 def main(fpath: Path, args: Args) -> int:
     rfile = uproot.open(fpath)
     if args_chk(args, 'key'):
         if len(args.key) == 0:
-            print("List of objects in the ROOT file:")
-            for k, t in rfile.classnames().items():
-                print(f"{k}: {t}")
-            rfile.close()
+            show_objs(rfile)
             return 0
         else:
             keys = args.key
     else:
-        keys = rfile.keys()
+        show_objs(rfile)
+        return 0
 
     npopts = get_config('numpy_printoptions')
     np.set_printoptions(**npopts)
