@@ -102,6 +102,7 @@ def is_drawer_mpl(args) -> bool:
 def draw_root(fpath: str, cname: str) -> None:
     assert ROOT is not None, 'Something wrong; ROOT is not imported.'
     f = ROOT.TFile.Open(fpath)
+    logger.info(f'path: {fpath}, cname: {cname}')
     c = f.Get(cname)
     c.Draw()
     ROOT.gApplication.Run()()
@@ -160,7 +161,8 @@ def show_macro(macro: uproot.dynamic.Model_TMacro_v1, args: Args) -> None:
             print(ln)
 
 
-def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
+def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3,
+                key: str, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
@@ -176,12 +178,13 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3, args: Args) -> None:
         ax11.grid(False)
     elif is_drawer_root(args):
         # 複数のhist表示がこれだと出来ない？ fを出しても駄目
-        draw_root(hist.file.file_path, hist.name)
+        draw_root(hist.file.file_path, key)
     else:
         print(__dr_err_msg.format(get_drawer(args), 'TH1'))
 
 
-def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4, args: Args) -> None:
+def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4,
+                key: str, args: Args) -> None:
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
@@ -201,12 +204,13 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4, args: Args) -> None:
         mefplot.add_1_colorbar(fig1, im1,
                                rect=[0.92, 0.1, 0.02, 0.8])
     elif is_drawer_root(args):
-        draw_root(hist.file.file_path, hist.name)
+        draw_root(hist.file.file_path, key)
     else:
         print(__dr_err_msg.format(get_drawer(args), 'TH2'))
 
 
-def show_profile(prof: uproot.models.TH.Model_TProfile_v7, args: Args):
+def show_profile(prof: uproot.models.TH.Model_TProfile_v7,
+                 key: str, args: Args):
     if args.verbose > 0:
         show_all_members(prof)
     if is_drawer_mpl(args):
@@ -225,7 +229,7 @@ def show_profile(prof: uproot.models.TH.Model_TProfile_v7, args: Args):
         ax11.set_title(f'{title} ({prof.name})' if title else prof.name)
         ax11.grid(False)
     elif is_drawer_root(args):
-        draw_root(prof.file.file_path, prof.name)
+        draw_root(prof.file.file_path, key)
     else:
         print(__dr_err_msg.format(get_drawer(args), 'Profile'))
 
@@ -247,13 +251,13 @@ def show_contents(fpath: Path, key: str, args: Args,
         if t == "TCanvas":
             show_canvas(fpath, key, args)
         elif t.startswith("TH1"):
-            show_hist1d(rfile[key], args)
+            show_hist1d(rfile[key], key, args)
         elif t.startswith("TH2"):
-            show_hist2d(rfile[key], args)
+            show_hist2d(rfile[key], key, args)
         elif t == "TTree":
             show_tree(rfile[key], args)
         elif t == 'TProfile':
-            show_profile(rfile[key], args)
+            show_profile(rfile[key], key, args)
         elif t == 'TNtuple':
             show_tree(rfile[key], args)
         elif t == 'TMacro':
