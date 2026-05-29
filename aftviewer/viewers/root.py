@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from logging import getLogger
 from types import ModuleType
+from typing import Literal
 
 import uproot
 import numpy as np  # uproot requires NumPy!
@@ -16,7 +17,7 @@ from pymeflib import plot as mefplot
 
 
 logger = getLogger(GLOBAL_CONF.logname)
-__drawer: None | str = None
+__drawer: None | Literal["matplotlib", "ROOT", "None"] = None
 __dr_err_msg = 'Drawer ({}) is not available. Cannot display {}.'
 
 plt: None | ModuleType = None
@@ -67,6 +68,8 @@ def is_drawer_root(args) -> bool:
     global __drawer
     if __drawer == 'ROOT':
         return True
+    elif __drawer is not None:
+        return False
 
     if get_drawer(args) == 'ROOT':
         # ROOTはpipで入れられないので，必要になるまでimportしないようにする
@@ -74,6 +77,8 @@ def is_drawer_root(args) -> bool:
             import ROOT
         except ImportError as e:
             logger.error(f'failed to import ROOT: {e}')
+            print_warning('Failed to set ROOT as drawer.')
+            __drawer = 'None'
             return False
         else:
             __drawer = 'ROOT'
@@ -87,9 +92,13 @@ def is_drawer_mpl(args) -> bool:
     global __drawer
     if __drawer == 'matplotlib':
         return True
+    elif __drawer is not None:
+        return False
 
     if get_drawer(args) == 'matplotlib':
         if plt is None:
+            print_warning('matplotlib is not installed.')
+            __drawer = 'None'
             return False
         else:
             __drawer = 'matplotlib'
@@ -294,6 +303,8 @@ def main(fpath: Path, args: Args) -> int:
         show_contents(fpath, k, args, rfile)
 
     if is_drawer_mpl(args):
+        assert plt is not None, 'Something wrong; plt is None.' + \
+                                ' Disable to show figures'
         if len(plt.get_fignums()) != 0:
             plt.show()
     rfile.close()
