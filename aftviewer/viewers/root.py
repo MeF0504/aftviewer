@@ -118,6 +118,13 @@ def draw_root(fpath: str, cname: str) -> None:
     f.close()
 
 
+def is_normal(args: Args) -> bool:
+    if not args_chk(args, 'key'):
+        return True
+    else:
+        return False
+
+
 def show_all_members(obj, shift: str = ' ') -> None:
     if hasattr(obj, 'all_members'):
         for key, val in obj.all_members.items():
@@ -129,6 +136,9 @@ def show_all_members(obj, shift: str = ' ') -> None:
 
 
 def show_canvas(fpath: Path, cname: str, args: Args) -> None:
+    if is_normal(args):
+        return
+
     if is_drawer_root(args):
         draw_root(str(fpath), cname)
     else:
@@ -157,11 +167,25 @@ def show_tree(tree: uproot.models.TTree.Model_TTree_v20, args: Args) -> None:
 
 
 def show_macro(macro: uproot.dynamic.Model_TMacro_v1, args: Args) -> None:
-    if args.verbose > 0:
+    mems = macro.all_members
+    if is_normal(args) and args.verbose == 0:
+        lns = 0
+        wds = 0
+        if 'fLines' in mems:
+            for ln in macro.member('fLines'):
+                lns += 1
+                wds += len(ln)
+            print(f'lines: {lns}, words: {wds}')
+        else:
+            print('lines not found.')
+        return
+    elif is_normal(args) and args.verbose > 1:
+        show_all_members(macro)
+        print()
+    elif not is_normal(args) and args.verbose > 0:
         show_all_members(macro)
         print()
 
-    mems = macro.all_members
     if 'fName' in mems:
         fname = macro.member('fName')
         print_header(f'=== file name: {fname} ===', '\n')
@@ -172,6 +196,17 @@ def show_macro(macro: uproot.dynamic.Model_TMacro_v1, args: Args) -> None:
 
 def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3,
                 key: str, args: Args) -> None:
+    if is_normal(args):
+        val = hist.values()
+        if args.verbose == 0:
+            bins = len(val)
+            vmax = np.max(val)
+            vmin = np.min(val)
+            print(f'  bins: {bins}, {vmax} - {vmin}')
+        else:
+            print(val)
+        return
+
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
@@ -194,6 +229,17 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3,
 
 def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4,
                 key: str, args: Args) -> None:
+    if is_normal(args):
+        val = hist.values()
+        if args.verbose == 0:
+            shape = val.shape
+            vmax = np.max(val)
+            vmin = np.min(val)
+            print(f'  shape: {shape}, {vmax} - {vmin}')
+        else:
+            print(val)
+        return
+
     if args.verbose > 0:
         show_all_members(hist)
     if is_drawer_mpl(args):
@@ -220,6 +266,17 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4,
 
 def show_profile(prof: uproot.models.TH.Model_TProfile_v7,
                  key: str, args: Args):
+    if is_normal(args):
+        val = prof.values(flow=False)
+        if args.verbose == 0:
+            vnum = len(val)
+            vmax = np.max(val)
+            vmin = np.min(val)
+            print(f'  data num: {vnum}, {vmax} - {vmin}')
+        else:
+            print(val)
+        return
+
     if args.verbose > 0:
         show_all_members(prof)
     if is_drawer_mpl(args):
@@ -277,24 +334,19 @@ def show_contents(fpath: Path, key: str, args: Args,
                           " -> https://github.com/MeF0504/aftviewer/issues")
 
 
-def show_objs(rfile: uproot.ReadOnlyDirectory):
-    print("List of objects in the ROOT file:")
-    for k, t in rfile.classnames().items():
-        print(f"{k}: {t}")
-    rfile.close()
-
-
 def main(fpath: Path, args: Args) -> int:
     rfile = uproot.open(fpath)
     if args_chk(args, 'key'):
         if len(args.key) == 0:
-            show_objs(rfile)
+            print("List of objects in the ROOT file:")
+            for k, t in rfile.classnames().items():
+                print(f"{k}: {t}")
+            rfile.close()
             return 0
         else:
             keys = args.key
     else:
-        show_objs(rfile)
-        return 0
+        keys = rfile.keys()
 
     npopts = get_config('numpy_printoptions')
     np.set_printoptions(**npopts)
