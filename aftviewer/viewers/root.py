@@ -313,6 +313,46 @@ def show_profile(prof: uproot.models.TH.Model_TProfile_v7,
         print(__dr_err_msg.format(get_drawer(args), 'Profile'))
 
 
+def show_profile2d(prof: uproot.models.TH.Model_TProfile_v7,
+                 key: str, args: Args):
+    if is_normal(args):
+        val = prof.values(flow=False)
+        if args.verbose == 0:
+            shape = val.shape
+            vmax = np.max(val)
+            vmin = np.min(val)
+            print(f'  shape: {shape}, {vmax} - {vmin}')
+        else:
+            print(val)
+        return
+
+    if args.verbose > 0:
+        show_members(prof, args.verbose > 1)
+    if is_drawer_mpl(args):
+        assert plt is not None, 'Something wrong; matplotlib is not imported.'
+        vals = prof.values(flow=False)
+        edgex = prof.axis(0).edges(flow=False)
+        edgey = prof.axis(1).edges(flow=False)
+        xlabel = prof.axis(0).all_members.get('fTitle', '')
+        ylabel = prof.axis(1).all_members.get('fTitle', '')
+        title = prof.title if prof.title else ''
+        fig1 = plt.figure()
+        ax11 = fig1.add_subplot(1, 1, 1)
+        im1 = ax11.imshow(vals.T, origin='lower',
+                          extent=[edgex[0], edgex[-1], edgey[0], edgey[-1]],
+                          aspect='auto')
+        ax11.set_xlabel(xlabel)
+        ax11.set_ylabel(ylabel)
+        ax11.set_title(f'{title} ({prof.name})' if title else prof.name)
+        mefplot.add_1_colorbar(fig1, im1,
+                               rect=[0.92, 0.1, 0.02, 0.8])
+        ax11.grid(False)
+    elif is_drawer_root(args):
+        draw_root(prof.file.file_path, key)
+    else:
+        print(__dr_err_msg.format(get_drawer(args), 'Profile'))
+
+
 def show_contents(fpath: Path, key: str, args: Args,
                   rfile: uproot.reading.ReadOnlyDirectory):
     if key not in rfile:
@@ -337,6 +377,8 @@ def show_contents(fpath: Path, key: str, args: Args,
             show_tree(rfile[key], args)
         elif t == 'TProfile':
             show_profile(rfile[key], key, args)
+        elif t == 'TProfile2D':
+            show_profile2d(rfile[key], key, args)
         elif t == 'TNtuple':
             show_tree(rfile[key], args)
         elif t == 'TMacro':
