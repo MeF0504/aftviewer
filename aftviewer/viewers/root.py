@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import time
 from pathlib import Path
 from logging import getLogger
 from types import ModuleType
@@ -112,10 +113,18 @@ def draw_root(fpath: str, cname: str) -> None:
     assert ROOT is not None, 'Something wrong; ROOT is not imported.'
     f = ROOT.TFile.Open(fpath)
     logger.info(f'path: {fpath}, cname: {cname}')
-    c = f.Get(cname)
-    c.Draw()
-    ROOT.gApplication.Run()()
-    f.close()
+    c1 = ROOT.TCanvas('canvas')
+    v = f.Get(cname)
+    v.Draw()
+    c1.Update()
+    print('Enter ctrl-c to exit.')
+    while True:
+        try:
+            ROOT.gSystem.ProcessEvents()
+            time.sleep(0.1)
+        except KeyboardInterrupt:
+            break
+    f.Close()
 
 
 def is_normal(args: Args) -> bool:
