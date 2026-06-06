@@ -385,8 +385,7 @@ def show_contents(fpath: Path, key: str, args: Args,
             show_macro(rfile[key], args)
         else:
             if args.verbose > 0:
-                if hasattr(rfile[key], 'members'):
-                    show_members(rfile[key], args.verbose > 1)
+                show_members(rfile[key], args.verbose > 1)
             print_warning(f"Object type '{t}' is not supported yet."
                           " Please let me know!"
                           " -> https://github.com/MeF0504/aftviewer/issues")
