@@ -27,7 +27,7 @@ else:
     term_width = shutil.get_terminal_size().columns-2
 
 logger = getLogger(GLOBAL_CONF.logname)
-__subcmds = ['help', 'update', 'config_list', 'shell_completion']
+__subcmds = ['help', 'update', 'config_list', 'shell_completion', 'version']
 
 
 class MyHelpFormatter(argparse.RawDescriptionHelpFormatter):
@@ -51,12 +51,14 @@ Supported file types ... {', '.join(supported_type)}."""
  - aftviewer - help -t TYPE
        shows detailed help and available options for the TYPE.
  - aftviewer - update
-       runs the update of AFTViewer.
+       runs the update of this software.
  - aftviewer - update -t TYPE
        install/update the packages required in the TYPE.
  - aftviewer - config_list [-t TYPE]
        shows the current optional configuration.
        If TYPE is specified, shows the configuration for the TYPE.
+ - aftviewer - version
+       shows detailed version information.
  - aftviewer - shell_completion --bash >> ~/.bashrc
    aftviewer - shell_completion --zsh >> ~/.zshrc
         sets the completion script for bash/zsh."""
@@ -76,7 +78,7 @@ Supported file types ... {', '.join(supported_type)}."""
 
 def get_args(argv: None | list[str] = None) -> Args:
     parser = argparse.ArgumentParser(**get_parser_arg())
-    skip_kw = ['-', '--V2']
+    skip_kw = ['-']
     if (argv is None and not __chk_argv(skip_kw, sys.argv[1:])) or \
        (argv is not None and not __chk_argv(skip_kw, argv)):
         parser.add_argument('file', help='input file')
@@ -90,15 +92,6 @@ def get_args(argv: None | list[str] = None) -> Args:
     parser.add_argument('-', help='run subcommand and exit',
                         choices=__subcmds, default=None, dest='subcmd')
     tmpargs, rems = parser.parse_known_args(argv, namespace=Args())
-    if GLOBAL_CONF.debug:
-        parser.add_argument('--V2', help="show verbose version and exit",
-                            action='version', version=f'%(prog)s {VERSION}\n'
-                            f'Python version: {sys.version}\n'
-                            f'  @ {sys.executable}\n'
-                            f'cmd: {sys.argv[0]}\n'
-                            f'code: {__file__}')
-        # ↓ To execute "exit" here for V2.
-        parser.parse_known_args(argv)
     if tmpargs.subcmd == 'shell_completion':
         add_args_shell_cmp(parser)
     elif tmpargs.subcmd == 'update':
@@ -233,6 +226,13 @@ def run_subcmd(args: Args) -> int:
         else:
             print('please set --type to see the details.')
             return 2
+    elif args.subcmd == 'version':
+        print(f'''aftviewer: {VERSION}
+  Python version: {sys.version}
+      @ {sys.executable}
+  command: {sys.argv[0]}
+  source: {__file__}''')
+        return 0
     else:
         print_error(f'Invalid subcommand: {args.subcmd}.')
         return 2

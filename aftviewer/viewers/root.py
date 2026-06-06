@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import time
 from pathlib import Path
 from logging import getLogger
 from types import ModuleType
+from typing import Literal
 
 import uproot
 import numpy as np  # uproot requires NumPy!
@@ -16,7 +18,7 @@ from pymeflib import plot as mefplot
 
 
 logger = getLogger(GLOBAL_CONF.logname)
-__drawer: None | str = None
+__drawer: None | Literal["matplotlib", "ROOT", "None"] = None
 __dr_err_msg = 'Drawer ({}) is not available. Cannot display {}.'
 
 plt: None | ModuleType = None
@@ -34,9 +36,8 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                       ' If nothing is specified, show the list of objects.')
     add_args_verbose(parser,
                      help='show details.'
-                     ' In TTree object, use -v to show summary of each branch,'
-                     ' -vv to show values, and -vvv to show full contents.'
-                     ' In other objects, -v show all members.',
+                     ' For many objects, -v/-vv/-vvv shows'
+                     ' different levels of information.',
                      action='count', default=0)
     parser.add_argument('--drawer', '-d', help='Specify the Object drawer.',
                         choices=['ROOT', 'matplotlib'],
@@ -67,6 +68,8 @@ def is_drawer_root(args) -> bool:
     global __drawer
     if __drawer == 'ROOT':
         return True
+    elif __drawer is not None:
+        return False
 
     if get_drawer(args) == 'ROOT':
         # ROOTはpipで入れられないので，必要になるまでimportしないようにする
@@ -74,6 +77,8 @@ def is_drawer_root(args) -> bool:
             import ROOT
         except ImportError as e:
             logger.error(f'failed to import ROOT: {e}')
+            print_warning('Failed to set ROOT as drawer.')
+            __drawer = 'None'
             return False
         else:
             __drawer = 'ROOT'
@@ -87,9 +92,13 @@ def is_drawer_mpl(args) -> bool:
     global __drawer
     if __drawer == 'matplotlib':
         return True
+    elif __drawer is not None:
+        return False
 
     if get_drawer(args) == 'matplotlib':
         if plt is None:
+            print_warning('matplotlib is not installed.')
+            __drawer = 'None'
             return False
         else:
             __drawer = 'matplotlib'
@@ -103,23 +112,46 @@ def draw_root(fpath: str, cname: str) -> None:
     assert ROOT is not None, 'Something wrong; ROOT is not imported.'
     f = ROOT.TFile.Open(fpath)
     logger.info(f'path: {fpath}, cname: {cname}')
-    c = f.Get(cname)
-    c.Draw()
-    ROOT.gApplication.Run()()
-    f.close()
+    c1 = ROOT.TCanvas('canvas')
+    v = f.Get(cname)
+    v.Draw()
+    c1.Update()
+    print('Enter ctrl-c to exit.')
+    while True:
+        try:
+            ROOT.gSystem.ProcessEvents()
+            time.sleep(0.1)
+        except KeyboardInterrupt:
+            break
+    f.Close()
 
 
-def show_all_members(obj, shift: str = ' ') -> None:
-    if hasattr(obj, 'all_members'):
-        for key, val in obj.all_members.items():
-            if hasattr(val, 'all_members'):
-                print(f'{shift}{key}:')
-                show_all_members(val, shift=shift + '  ')
-            else:
-                print(f'{shift}{key}: {val}')
+def is_normal(args: Args) -> bool:
+    if not args_chk(args, 'key'):
+        return True
+    else:
+        return False
+
+
+def show_members(obj, verbose: bool = False, shift: str = ' ') -> None:
+    if verbose and hasattr(obj, 'all_members'):
+        mems = obj.all_members
+    elif hasattr(obj, 'members'):
+        mems = obj.members
+    else:
+        return
+    for key, val in mems.items():
+        if hasattr(val, 'all_members'):
+            print(f'{shift}{key}:')
+            show_members(val, verbose, shift=shift + '  ')
+        else:
+            print(f'{shift}{key}: {val}')
 
 
 def show_canvas(fpath: Path, cname: str, args: Args) -> None:
+    if is_normal(args):
+        return
+
     if is_drawer_root(args):
         draw_root(str(fpath), cname)
     else:
@@ -141,18 +173,32 @@ def show_tree(tree: uproot.models.TTree.Model_TTree_v20, args: Args) -> None:
         else:
             if args.verbose >= 3:
                 print(' ~~~ All members ~~~')
-                show_all_members(tree[key])
+                show_members(tree[key], True)
                 print('\n~~~ Values ~~~')
             print(array)
             print()
 
 
 def show_macro(macro: uproot.dynamic.Model_TMacro_v1, args: Args) -> None:
-    if args.verbose > 0:
-        show_all_members(macro)
+    mems = macro.all_members
+    if is_normal(args) and args.verbose == 0:
+        lns = 0
+        wds = 0
+        if 'fLines' in mems:
+            for ln in macro.member('fLines'):
+                lns += 1
+                wds += len(ln)
+            print(f'lines: {lns}, words: {wds}')
+        else:
+            print('lines not found.')
+        return
+    elif is_normal(args) and args.verbose > 1:
+        show_members(macro, args.verbose > 2)
+        print()
+    elif not is_normal(args) and args.verbose > 0:
+        show_members(macro, args.verbose > 1)
         print()
 
-    mems = macro.all_members
     if 'fName' in mems:
         fname = macro.member('fName')
         print_header(f'=== file name: {fname} ===', '\n')
@@ -163,8 +209,19 @@ def show_macro(macro: uproot.dynamic.Model_TMacro_v1, args: Args) -> None:
 
 def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3,
                 key: str, args: Args) -> None:
+    if is_normal(args):
+        val = hist.values()
+        if args.verbose == 0:
+            bins = len(val)
+            vmax = np.max(val)
+            vmin = np.min(val)
+            print(f'  bins: {bins}, {vmax} - {vmin}')
+        else:
+            print(val)
+        return
+
     if args.verbose > 0:
-        show_all_members(hist)
+        show_members(hist, args.verbose > 1)
     if is_drawer_mpl(args):
         assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals, edges = hist.to_numpy(flow=True)
@@ -185,8 +242,19 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3,
 
 def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4,
                 key: str, args: Args) -> None:
+    if is_normal(args):
+        val = hist.values()
+        if args.verbose == 0:
+            shape = val.shape
+            vmax = np.max(val)
+            vmin = np.min(val)
+            print(f'  shape: {shape}, {vmax} - {vmin}')
+        else:
+            print(val)
+        return
+
     if args.verbose > 0:
-        show_all_members(hist)
+        show_members(hist, args.verbose > 1)
     if is_drawer_mpl(args):
         assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals, edgex, edgey = hist.to_numpy(flow=False)
@@ -211,8 +279,19 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4,
 
 def show_profile(prof: uproot.models.TH.Model_TProfile_v7,
                  key: str, args: Args):
+    if is_normal(args):
+        val = prof.values(flow=False)
+        if args.verbose == 0:
+            vnum = len(val)
+            vmax = np.max(val)
+            vmin = np.min(val)
+            print(f'  data num: {vnum}, {vmax} - {vmin}')
+        else:
+            print(val)
+        return
+
     if args.verbose > 0:
-        show_all_members(prof)
+        show_members(prof, args.verbose > 1)
     if is_drawer_mpl(args):
         assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals = prof.values(flow=False)
@@ -227,6 +306,46 @@ def show_profile(prof: uproot.models.TH.Model_TProfile_v7,
                       fmt='.')
         ax11.set_xlabel(xlabel)
         ax11.set_title(f'{title} ({prof.name})' if title else prof.name)
+        ax11.grid(False)
+    elif is_drawer_root(args):
+        draw_root(prof.file.file_path, key)
+    else:
+        print(__dr_err_msg.format(get_drawer(args), 'Profile'))
+
+
+def show_profile2d(prof: uproot.models.TH.Model_TProfile_v7,
+                 key: str, args: Args):
+    if is_normal(args):
+        val = prof.values(flow=False)
+        if args.verbose == 0:
+            shape = val.shape
+            vmax = np.max(val)
+            vmin = np.min(val)
+            print(f'  shape: {shape}, {vmax} - {vmin}')
+        else:
+            print(val)
+        return
+
+    if args.verbose > 0:
+        show_members(prof, args.verbose > 1)
+    if is_drawer_mpl(args):
+        assert plt is not None, 'Something wrong; matplotlib is not imported.'
+        vals = prof.values(flow=False)
+        edgex = prof.axis(0).edges(flow=False)
+        edgey = prof.axis(1).edges(flow=False)
+        xlabel = prof.axis(0).all_members.get('fTitle', '')
+        ylabel = prof.axis(1).all_members.get('fTitle', '')
+        title = prof.title if prof.title else ''
+        fig1 = plt.figure()
+        ax11 = fig1.add_subplot(1, 1, 1)
+        im1 = ax11.imshow(vals.T, origin='lower',
+                          extent=[edgex[0], edgex[-1], edgey[0], edgey[-1]],
+                          aspect='auto')
+        ax11.set_xlabel(xlabel)
+        ax11.set_ylabel(ylabel)
+        ax11.set_title(f'{title} ({prof.name})' if title else prof.name)
+        mefplot.add_1_colorbar(fig1, im1,
+                               rect=[0.92, 0.1, 0.02, 0.8])
         ax11.grid(False)
     elif is_drawer_root(args):
         draw_root(prof.file.file_path, key)
@@ -258,34 +377,33 @@ def show_contents(fpath: Path, key: str, args: Args,
             show_tree(rfile[key], args)
         elif t == 'TProfile':
             show_profile(rfile[key], key, args)
+        elif t == 'TProfile2D':
+            show_profile2d(rfile[key], key, args)
         elif t == 'TNtuple':
             show_tree(rfile[key], args)
         elif t == 'TMacro':
             show_macro(rfile[key], args)
         else:
+            if args.verbose > 0:
+                show_members(rfile[key], args.verbose > 1)
             print_warning(f"Object type '{t}' is not supported yet."
                           " Please let me know!"
                           " -> https://github.com/MeF0504/aftviewer/issues")
-
-
-def show_objs(rfile: uproot.ReadOnlyDirectory):
-    print("List of objects in the ROOT file:")
-    for k, t in rfile.classnames().items():
-        print(f"{k}: {t}")
-    rfile.close()
 
 
 def main(fpath: Path, args: Args) -> int:
     rfile = uproot.open(fpath)
     if args_chk(args, 'key'):
         if len(args.key) == 0:
-            show_objs(rfile)
+            print("List of objects in the ROOT file:")
+            for k, t in rfile.classnames().items():
+                print(f"{k}: {t}")
+            rfile.close()
             return 0
         else:
             keys = args.key
     else:
-        show_objs(rfile)
-        return 0
+        keys = rfile.keys()
 
     npopts = get_config('numpy_printoptions')
     np.set_printoptions(**npopts)
@@ -294,6 +412,8 @@ def main(fpath: Path, args: Args) -> int:
         show_contents(fpath, k, args, rfile)
 
     if is_drawer_mpl(args):
+        assert plt is not None, \
+            'Something is wrong: plt is None. Figures are not shown.'
         if len(plt.get_fignums()) != 0:
             plt.show()
     rfile.close()
