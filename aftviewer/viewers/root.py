@@ -36,9 +36,8 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                       ' If nothing is specified, show the list of objects.')
     add_args_verbose(parser,
                      help='show details.'
-                     ' In TTree object, use -v to show summary of each branch,'
-                     ' -vv to show values, and -vvv to show full contents.'
-                     ' In other objects, -v show all members.',
+                     ' For many objects, -v/-vv/-vvv shows'
+                     ' different levels of information.',
                      action='count', default=0)
     parser.add_argument('--drawer', '-d', help='Specify the Object drawer.',
                         choices=['ROOT', 'matplotlib'],
@@ -134,14 +133,19 @@ def is_normal(args: Args) -> bool:
         return False
 
 
-def show_all_members(obj, shift: str = ' ') -> None:
-    if hasattr(obj, 'all_members'):
-        for key, val in obj.all_members.items():
-            if hasattr(val, 'all_members'):
-                print(f'{shift}{key}:')
-                show_all_members(val, shift=shift + '  ')
-            else:
-                print(f'{shift}{key}: {val}')
+def show_members(obj, verbose: bool = False, shift: str = ' ') -> None:
+    if verbose and hasattr(obj, 'all_members'):
+        mems = obj.all_members
+    elif hasattr(obj, 'members'):
+        mems = obj.members
+    else:
+        return
+    for key, val in mems.items():
+        if hasattr(val, 'all_members'):
+            print(f'{shift}{key}:')
+            show_members(val, verbose, shift=shift + '  ')
+        else:
+            print(f'{shift}{key}: {val}')
 
 
 def show_canvas(fpath: Path, cname: str, args: Args) -> None:
@@ -169,7 +173,7 @@ def show_tree(tree: uproot.models.TTree.Model_TTree_v20, args: Args) -> None:
         else:
             if args.verbose >= 3:
                 print(' ~~~ All members ~~~')
-                show_all_members(tree[key])
+                show_members(tree[key], True)
                 print('\n~~~ Values ~~~')
             print(array)
             print()
@@ -189,10 +193,10 @@ def show_macro(macro: uproot.dynamic.Model_TMacro_v1, args: Args) -> None:
             print('lines not found.')
         return
     elif is_normal(args) and args.verbose > 1:
-        show_all_members(macro)
+        show_members(macro, args.verbose > 2)
         print()
     elif not is_normal(args) and args.verbose > 0:
-        show_all_members(macro)
+        show_members(macro, args.verbose > 1)
         print()
 
     if 'fName' in mems:
@@ -217,7 +221,7 @@ def show_hist1d(hist: uproot.models.TH.Model_TH1D_v3,
         return
 
     if args.verbose > 0:
-        show_all_members(hist)
+        show_members(hist, args.verbose > 1)
     if is_drawer_mpl(args):
         assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals, edges = hist.to_numpy(flow=True)
@@ -250,7 +254,7 @@ def show_hist2d(hist: uproot.models.TH.Model_TH2F_v4,
         return
 
     if args.verbose > 0:
-        show_all_members(hist)
+        show_members(hist, args.verbose > 1)
     if is_drawer_mpl(args):
         assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals, edgex, edgey = hist.to_numpy(flow=False)
@@ -287,7 +291,7 @@ def show_profile(prof: uproot.models.TH.Model_TProfile_v7,
         return
 
     if args.verbose > 0:
-        show_all_members(prof)
+        show_members(prof, args.verbose > 1)
     if is_drawer_mpl(args):
         assert plt is not None, 'Something wrong; matplotlib is not imported.'
         vals = prof.values(flow=False)
@@ -338,6 +342,9 @@ def show_contents(fpath: Path, key: str, args: Args,
         elif t == 'TMacro':
             show_macro(rfile[key], args)
         else:
+            if args.verbose > 0:
+                if hasattr(rfile[key], 'members'):
+                    show_members(rfile[key], args.verbose > 1)
             print_warning(f"Object type '{t}' is not supported yet."
                           " Please let me know!"
                           " -> https://github.com/MeF0504/aftviewer/issues")
@@ -364,8 +371,8 @@ def main(fpath: Path, args: Args) -> int:
         show_contents(fpath, k, args, rfile)
 
     if is_drawer_mpl(args):
-        assert plt is not None, 'Something wrong; plt is None.' + \
-                                ' Disable to show figures'
+        assert plt is not None, \
+            'Something is wrong: plt is None. Figures are not shown.'
         if len(plt.get_fignums()) != 0:
             plt.show()
     rfile.close()
