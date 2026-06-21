@@ -96,15 +96,16 @@ def __update_add_types():
     if __def:
         __logger.info('force default.')
         return
-    if (__conf_dir/'.lib/add_types.txt').is_file():
-        with open(__conf_dir/'.lib/add_types.txt', 'r') as f:
-            for line in f:
-                line = line.replace('\n', '')
-                add_type, exts = line.split('\t')
-                __add_types[add_type] = exts
-                __logger.debug(f'add {add_type}, "{exts}" in add_types.')
-    else:
-        __logger.info('add_types is not found.')
+    conf_files = GLOBAL_CONF.conf_dir/'.lib/exlibs/*/config.toml'
+    # if (__conf_dir/'.lib/add_types.txt').is_file():
+    #     with open(__conf_dir/'.lib/add_types.txt', 'r') as f:
+    #         for line in f:
+    #             line = line.replace('\n', '')
+    #             add_type, exts = line.split('\t')
+    #             __add_types[add_type] = exts
+    #             __logger.debug(f'add {add_type}, "{exts}" in add_types.')
+    # else:
+    #     __logger.info('add_types is not found.')
 
 
 # set supported file types

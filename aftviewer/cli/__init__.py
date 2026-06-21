@@ -17,9 +17,11 @@ from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
                     args_chk, get_config, get_col)
 from ..core import __set_args as set_args
 from ..core.__version__ import VERSION
-from ..core.helpmsg import add_args_shell_cmp, add_args_update
+from ..core.helpmsg import (add_args_shell_cmp,
+                            add_args_update, add_args_install)
 from ..core.types import Args
 from .updater import update_core
+from .installer import install_viewer
 
 if GLOBAL_CONF.debug:
     term_width = 80-2
@@ -27,7 +29,8 @@ else:
     term_width = shutil.get_terminal_size().columns-2
 
 logger = getLogger(GLOBAL_CONF.logname)
-__subcmds = ['help', 'update', 'config_list', 'shell_completion', 'version']
+__subcmds = ['help', 'version', 'update', 'libinstall',
+             'config_list', 'shell_completion']
 
 
 class MyHelpFormatter(argparse.RawDescriptionHelpFormatter):
@@ -96,6 +99,8 @@ def get_args(argv: None | list[str] = None) -> Args:
         add_args_shell_cmp(parser)
     elif tmpargs.subcmd == 'update':
         add_args_update(parser)
+    elif tmpargs.subcmd == 'libinstall':
+        add_args_install(parser)
     __set_filetype(tmpargs)
     lib, err = __load_lib(tmpargs)
     if lib is not None:
@@ -233,6 +238,8 @@ def run_subcmd(args: Args) -> int:
   command: {sys.argv[0]}
   source: {__file__}''')
         return 0
+    elif args.subcmd == 'libinstall':
+        return install_viewer(args)
     else:
         print_error(f'Invalid subcommand: {args.subcmd}.')
         return 2

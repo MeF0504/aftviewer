@@ -257,6 +257,22 @@ def add_args_update(parser: argparse.ArgumentParser) -> None:
                         action='store_true')
 
 
+def add_args_install(parser: argparse.ArgumentParser) -> None:
+    """
+    add optional argument for install subcommand.
+
+    Parameters
+    ----------
+    parser: ArgumentParser
+        ArgumentParser which optional arguments will be added.
+
+    Returns
+    -------
+    None
+    """
+    parser.add_argument('url', help='URL of external viewer.',)
+
+
 def help_template(filetype: str, description: str,
                   add_args: None | Callable[[argparse.ArgumentParser],
                                             None] = None
