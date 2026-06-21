@@ -12,7 +12,7 @@ import shutil
 import textwrap
 
 from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
-                    __add_types, __get_opt_keys, __get_color_names,
+                    __add_libs, __get_opt_keys, __get_color_names,
                     print_key, print_error, cprint,
                     args_chk, get_config, get_col)
 from ..core import __set_args as set_args
@@ -136,10 +136,10 @@ def show_opts(filetype: str | None) -> None:
         return
 
     # filetype is None -> show all.
-    if len(__add_types.keys()) != 0:
+    if len(__add_libs.keys()) != 0:
         print_key('additional_types')
-        for ft in __add_types:
-            print(f'  {ft}: {__add_types[ft]}')
+        for ft in __add_libs:
+            print(f'  {ft}: {__add_libs[ft]}')
     print_key('config')
     print_key('defaults')
     for key in opts['defaults']:
@@ -199,6 +199,18 @@ def update_packages(ftype: str, test: bool) -> bool:
     return ret
 
 
+def show_version():
+    print(f'''aftviewer: {VERSION}
+  Python version: {sys.version}
+      @ {sys.executable}
+  command: {sys.argv[0]}
+  source: {__file__}
+''')
+    print('--- additional libraries ---')
+    for ty, info in __add_libs.items():
+        print(f'    {ty}: {info[0]}')
+
+
 def run_subcmd(args: Args) -> int:
     if args.subcmd == 'config_list':
         show_opts(args.type)
@@ -232,11 +244,7 @@ def run_subcmd(args: Args) -> int:
             print('please set --type to see the details.')
             return 2
     elif args.subcmd == 'version':
-        print(f'''aftviewer: {VERSION}
-  Python version: {sys.version}
-      @ {sys.executable}
-  command: {sys.argv[0]}
-  source: {__file__}''')
+        show_version()
         return 0
     elif args.subcmd == 'libinstall':
         return install_viewer(args)

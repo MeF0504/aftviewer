@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import sys
 import shutil
-import json
 import platform
 import subprocess
 import tarfile
@@ -21,11 +20,22 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pymeflib.color import FG, BG, FG256, BG256, END
 from pymeflib.tree2 import TreeViewer, GC, PPath
 from .types import CONF, Args, SF, COLType
+from ..core.__version__ import VERSION
+
+sysver = sys.version_info
+if sysver.major*100+sysver.minor >= 311:
+    import tomllib
+else:
+    try:
+        import tomli as tomllib
+    except ImportError as e:
+        print(f'aftviewer requires Python >= 3.11 or tomli: {e}')
+        sys.exit(1)
 
 
 __debug = False
 __def = False
-__add_types = {}
+__add_libs = {}
 __user_opts = {}
 __filetype: str | None = None
 __args: Args | None = None
@@ -35,11 +45,11 @@ if not __conf_dir.exists():
     (__conf_dir/'.lib').mkdir(mode=0o755, parents=True)
 
 # load config file.
-with (Path(__file__).parent/'default.json').open('r') as f:
-    __def_opts = json.load(f)
-if (__conf_dir/'setting.json').is_file():
-    with open(__conf_dir/'setting.json') as f:
-        __user_opts = json.load(f)
+with (Path(__file__).parent/'default.toml').open('rb') as f:
+    __def_opts = tomllib.load(f)
+if (__conf_dir/'setting.toml').is_file():
+    with open(__conf_dir/'setting.toml', 'rb') as f:
+        __user_opts = tomllib.load(f)
         __debug = bool(__user_opts.get('debug', False))
         if 'force_default' in __user_opts and __user_opts['force_default']:
             __def = True
@@ -96,7 +106,17 @@ def __update_add_types():
     if __def:
         __logger.info('force default.')
         return
-    conf_files = GLOBAL_CONF.conf_dir/'.lib/exlibs/*/config.toml'
+    for fy in (__conf_dir/'.lib/exlibs').glob('*/config.toml'):
+        try:
+            with open(fy, 'rb') as f:
+                conf = tomllib.load(f)
+                for name in conf:
+                    ext = conf[name]['ext']
+                    ver = conf[name]['version']
+                    __add_libs[name] = [ver, ext]
+                    __logger.debug(f'add {name}, "{ext}" in add_types.')
+        except Exception as e:
+            __logger.error(f'failed to import {fy}: {e}')
     # if (__conf_dir/'.lib/add_types.txt').is_file():
     #     with open(__conf_dir/'.lib/add_types.txt', 'r') as f:
     #         for line in f:
@@ -110,26 +130,26 @@ def __update_add_types():
 
 # set supported file types
 __type_config = {
-    "hdf5": "hdf5",
-    "pickle": "pkl pickle",
-    "numpy": "npy npz",
-    "np_pickle": "",
-    "tar": "",  # tar is identified by tarfile module.
+    "hdf5": [VERSION, "hdf5"],
+    "pickle": [VERSION, "pkl pickle"],
+    "numpy": [VERSION, "npy npz"],
+    "np_pickle": [VERSION, ""],
+    "tar": [VERSION, ""],  # tar is identified by tarfile module.
     "zip": "zip",
-    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
-    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
-    "jupyter": "ipynb",
-    "e-mail": "eml mbox",
-    "xpm": "xpm",
-    "stl": "stl",
-    "fits": "fits fit",
+    "sqlite3": [VERSION, "db db3 sqp sqp3 sqlite sqlite3"],
+    "raw_image": [VERSION, "raw nef nrw cr3 cr2 crw tif arw"],  # nikon, canon, sony
+    "jupyter": [VERSION, "ipynb"],
+    "e-mail": [VERSION, "eml mbox"],
+    "xpm": [VERSION, "xpm"],
+    "stl": [VERSION, "stl"],
+    "fits": [VERSION, "fits fit"],
     "healpix": "",  # extension is same as fits.
-    "excel": "xls xlsx xlsm",
-    "root": "root",
-    "plist": "plist",
+    "excel": [VERSION, "xls xlsx xlsm"],
+    "root": [VERSION, "root"],
+    "plist": [VERSION, "plist"],
 }
 __update_add_types()
-__type_config.update(__add_types)
+__type_config.update(__add_libs)
 
 
 def __set_user_opts(config: None | dict[str, Any],
@@ -629,7 +649,7 @@ def __load_lib(args: Args) -> tuple[None | ModuleType, str]:
 
     # lib_path  -> python import style
     # lib_path2 -> file path
-    if args.type in __add_types:
+    if args.type in __add_libs:
         __add_lib2path()
         lib_path = f'add_viewers.{args.type}'
         lib_path2 = __conf_dir/f'.lib/add_viewers/{args.type}.py'
@@ -655,7 +675,7 @@ def __get_opt_keys() -> dict[str, list[str]]:
     res: dict[str, list[str]] = {}
     res['defaults'] = list(def_opts['defaults'].keys())
     for t in __type_config:
-        if t in __add_types:
+        if t in __add_libs:
             # only user_set config
             res[t] = []
             if t in user_opts:
@@ -680,7 +700,7 @@ def __get_color_names(filetype: str | None) -> list[str]:
     if filetype is None:
         return list(def_cols['defaults'].keys())
     else:
-        if filetype in __add_types:
+        if filetype in __add_libs:
             if filetype in user_cols:
                 return list(user_cols[filetype].keys())
             else:
