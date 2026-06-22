@@ -299,7 +299,7 @@ def help_template(filetype: str, description: str,
     if filetype not in GLOBAL_CONF.types:
         logger.warning(f'not a valid type: {filetype}')
         return ''
-    ex = GLOBAL_CONF.types[filetype].split()
+    ex = GLOBAL_CONF.types[filetype][1].split()
     if len(ex) != 0:
         exs = ', '.join(ex)
         description += f' The corresponding extensions are [{exs}].'

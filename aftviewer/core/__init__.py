@@ -117,9 +117,9 @@ def __update_add_types():
             with open(fy, 'rb') as f:
                 conf = tomllib.load(f)
                 for name in conf:
-                    ext = conf[name]['ext']
+                    ext = conf[name].get('ext', '')
                     ver = conf[name]['version']
-                    __add_libs[name] = [ver, ext, str(fy)]
+                    __add_libs[name] = [ver, ext, str(fy.parent)]
                     __add_lib2path(str(fy.parent))
                     __logger.debug(f'add {name}, "{ext}" in add_types.')
         except Exception as e:
@@ -614,7 +614,7 @@ def __set_filetype(args: Args) -> None:
         return
     else:
         for typ, exts in __type_config.items():
-            if ext in exts.split():
+            if ext in exts[1].split():
                 __logger.debug(f'set file type: {typ}')
                 args.type = typ
                 __filetype = args.type
@@ -642,7 +642,7 @@ def __load_lib(args: Args) -> tuple[None | ModuleType, str]:
     # lib_path2 -> file path
     if args.type in __add_libs:
         lib_path = f'viewers.{args.type}'
-        lib_path2 = Path(__add_libs[args.type][2])/'viewers/{args.type}.py'
+        lib_path2 = Path(__add_libs[args.type][2])/f'viewers/{args.type}.py'
     else:
         lib_path = f'aftviewer.viewers.{args.type}'
         lib_path2 = Path(__file__).parent.parent

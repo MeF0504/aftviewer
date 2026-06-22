@@ -21,6 +21,7 @@ logger = getLogger(GLOBAL_CONF.logname)
 # not set, module in this package, or external command.
 __ImgViewer: None | ModuleType | str = None
 __set_ImgViewer = False
+__add_ImgViewers: list[str, ...] = []
 
 
 def __get_exec_cmds(fname) -> list[str]:
@@ -53,14 +54,15 @@ def __collect_image_viewers() -> tuple[list[str], ...]:
         # arbitary setting?
         viewers_module.append(iv_name)
     if not __def:
-        add_dir = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
-        for fy in add_dir.glob('*'):
+        add_dir = GLOBAL_CONF.conf_dir/'.lib/exlibs'
+        for fy in add_dir.glob('*/image_viewers/*.py'):
             if not fy.is_file():
                 continue
             if fy.name.startswith('__'):
                 continue
             iv_name = os.path.splitext(fy.name)[0]
             logger.debug(f'add {iv_name} to viewers_module from add dir')
+            __add_ImgViewers.append(iv_name)
             viewers_module.append(iv_name)
 
     for vc in viewers_cmd:
@@ -72,16 +74,20 @@ def __collect_image_viewers() -> tuple[list[str], ...]:
 
 
 def __get_mod(img_viewer: None | str) -> None | ModuleType:
+    if img_viewer is None:
+        logger.warning('image viewer is None.')
+        return None
     try:
-        add_path = GLOBAL_CONF.conf_dir/f'.lib/add_image_viewers/{img_viewer}.py'
-        if (Path(__file__).parent/f'{img_viewer}.py').is_file():
+        if img_viewer in __add_ImgViewers:
+            mod = import_module(f'image_viewers.{img_viewer}')
+        elif (Path(__file__).parent/f'{img_viewer}.py').is_file():
             mod = import_module(f'aftviewer.core.image_viewer.{img_viewer}')
-        elif add_path.is_file():
-            mod = import_module(f'add_image_viewers.{img_viewer}')
         else:
             raise OSError(f'library {img_viewer} is not found.')
     except Exception as e:
-        logger.error(f'load image viewer failed({type(e).__name__}: {e})')
+        errmsg = f'load image viewer failed ({type(e).__name__}: {e})'
+        logger.error(errmsg)
+        print_error(errmsg)
         return None
     return mod
 
