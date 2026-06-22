@@ -19,8 +19,8 @@ class CONF:
     conf_dir: pathlib.Path
         Configuration directory.
         default: "$XDG_CONFIG_HOME/aftviewer" or "~/.config/aftviewer"
-    types: MappingProxyType[str, [str, str]]
-        Supported file types and its version, extensions.
+    types: MappingProxyType[str, [str, str, None|str]]
+        Supported file types and its version, extensions, and path.
     logname: str
         Log name used in logger.
     pack_list: tuple[str, ...]
@@ -28,7 +28,7 @@ class CONF:
     """
     debug: bool
     conf_dir: Path
-    types: MappingProxyType[str, str]
+    types: MappingProxyType[str, str, None | str]
     logname: str
     pack_list: tuple[str, ...]
 

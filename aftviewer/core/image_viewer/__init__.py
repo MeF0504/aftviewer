@@ -11,7 +11,7 @@ from pathlib import Path
 from logging import getLogger
 
 from .. import (GLOBAL_CONF, args_chk, get_config, print_error, print_warning,
-                Args, __add_lib2path, __def)
+                Args, __def)
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
@@ -72,7 +72,6 @@ def __collect_image_viewers() -> tuple[list[str], ...]:
 
 
 def __get_mod(img_viewer: None | str) -> None | ModuleType:
-    __add_lib2path()
     try:
         add_path = GLOBAL_CONF.conf_dir/f'.lib/add_image_viewers/{img_viewer}.py'
         if (Path(__file__).parent/f'{img_viewer}.py').is_file():

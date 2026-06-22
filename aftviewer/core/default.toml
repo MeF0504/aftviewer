@@ -20,7 +20,7 @@ syntax_highlight = true
 language = ""
 highlight_style = "default"
 
-[color.defaults]
+[colors.defaults]
 msg_error = ["r", ""]
 msg_warn = ["y", ""]
 msg_key_name = ["k", "y"]
@@ -35,7 +35,7 @@ cui_search = ["w", "m"]
 cui_file_info = ["y", "k"]
 cui_dir_index = ["g", "w"]
 cui_file_index = ["m", "w"]
-[color.jupyter]
+[colors.jupyter]
 input_color = ["c", ""]
 output_color = ["r", ""]
 type_color = ["g", ""]

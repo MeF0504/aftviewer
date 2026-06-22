@@ -102,6 +102,12 @@ __logger = __set_logger()
 __logger.debug(f'src: {__file__}, cmd: {__logname}')
 
 
+def __add_lib2path(path: str):
+    if path not in sys.path:
+        __logger.debug(f'add {path} to sys.path.')
+        sys.path.insert(0, path)
+
+
 def __update_add_types():
     if __def:
         __logger.info('force default.')
@@ -113,40 +119,32 @@ def __update_add_types():
                 for name in conf:
                     ext = conf[name]['ext']
                     ver = conf[name]['version']
-                    __add_libs[name] = [ver, ext]
+                    __add_libs[name] = [ver, ext, str(fy)]
+                    __add_lib2path(str(fy.parent))
                     __logger.debug(f'add {name}, "{ext}" in add_types.')
         except Exception as e:
             __logger.error(f'failed to import {fy}: {e}')
-    # if (__conf_dir/'.lib/add_types.txt').is_file():
-    #     with open(__conf_dir/'.lib/add_types.txt', 'r') as f:
-    #         for line in f:
-    #             line = line.replace('\n', '')
-    #             add_type, exts = line.split('\t')
-    #             __add_types[add_type] = exts
-    #             __logger.debug(f'add {add_type}, "{exts}" in add_types.')
-    # else:
-    #     __logger.info('add_types is not found.')
 
 
 # set supported file types
 __type_config = {
-    "hdf5": [VERSION, "hdf5"],
-    "pickle": [VERSION, "pkl pickle"],
-    "numpy": [VERSION, "npy npz"],
-    "np_pickle": [VERSION, ""],
-    "tar": [VERSION, ""],  # tar is identified by tarfile module.
-    "zip": "zip",
-    "sqlite3": [VERSION, "db db3 sqp sqp3 sqlite sqlite3"],
-    "raw_image": [VERSION, "raw nef nrw cr3 cr2 crw tif arw"],  # nikon, canon, sony
-    "jupyter": [VERSION, "ipynb"],
-    "e-mail": [VERSION, "eml mbox"],
-    "xpm": [VERSION, "xpm"],
-    "stl": [VERSION, "stl"],
-    "fits": [VERSION, "fits fit"],
-    "healpix": "",  # extension is same as fits.
-    "excel": [VERSION, "xls xlsx xlsm"],
-    "root": [VERSION, "root"],
-    "plist": [VERSION, "plist"],
+    "hdf5": [VERSION, "hdf5", None],
+    "pickle": [VERSION, "pkl pickle", None],
+    "numpy": [VERSION, "npy npz", None],
+    "np_pickle": [VERSION, "", None],
+    "tar": [VERSION, "", None],  # tar is identified by tarfile module.
+    "zip": [VERSION, "zip", None],
+    "sqlite3": [VERSION, "db db3 sqp sqp3 sqlite sqlite3", None],
+    "raw_image": [VERSION, "raw nef nrw cr3 cr2 crw tif arw", None],  # nikon, canon, sony
+    "jupyter": [VERSION, "ipynb", None],
+    "e-mail": [VERSION, "eml mbox", None],
+    "xpm": [VERSION, "xpm", None],
+    "stl": [VERSION, "stl", None],
+    "fits": [VERSION, "fits fit", None],
+    "healpix": [VERSION, "", None],  # extension is same as fits.
+    "excel": [VERSION, "xls xlsx xlsm", None],
+    "root": [VERSION, "root", None],
+    "plist": [VERSION, "plist", None],
 }
 __update_add_types()
 __type_config.update(__add_libs)
@@ -630,13 +628,6 @@ def __set_filetype(args: Args) -> None:
     __logger.debug('file type is not set.')
 
 
-def __add_lib2path():
-    add_lib_str = str(__conf_dir/'.lib')
-    if add_lib_str not in sys.path:
-        __logger.debug(f'add {add_lib_str} to sys.path.')
-        sys.path.insert(0, add_lib_str)
-
-
 def __load_lib(args: Args) -> tuple[None | ModuleType, str]:
     if args.type is None:
         logmsg = 'file type is None'
@@ -650,9 +641,8 @@ def __load_lib(args: Args) -> tuple[None | ModuleType, str]:
     # lib_path  -> python import style
     # lib_path2 -> file path
     if args.type in __add_libs:
-        __add_lib2path()
-        lib_path = f'add_viewers.{args.type}'
-        lib_path2 = __conf_dir/f'.lib/add_viewers/{args.type}.py'
+        lib_path = f'viewers.{args.type}'
+        lib_path2 = Path(__add_libs[args.type][2])/'viewers/{args.type}.py'
     else:
         lib_path = f'aftviewer.viewers.{args.type}'
         lib_path2 = Path(__file__).parent.parent
