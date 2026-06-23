@@ -12,7 +12,7 @@ import shutil
 import textwrap
 
 from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
-                    __add_libs, __get_opt_keys, __get_color_names,
+                    __get_opt_keys, __get_color_names,
                     print_key, print_error, cprint,
                     args_chk, get_config, get_col)
 from ..core import __set_args as set_args
@@ -136,10 +136,12 @@ def show_opts(filetype: str | None) -> None:
         return
 
     # filetype is None -> show all.
-    if len(__add_libs.keys()) != 0:
-        print_key('additional_types')
-        for ft in __add_libs:
-            print(f'  {ft}: {__add_libs[ft]}')
+    types = GLOBAL_CONF.types
+    add_viewers = GLOBAL_CONF.add_viewers
+    if len(add_viewers.keys()) != 0:
+        print_key('additional viewers')
+        for ft in add_viewers:
+            print(f'  {ft}: {types[ft]}')
     print_key('config')
     print_key('defaults')
     for key in opts['defaults']:
@@ -206,8 +208,8 @@ def show_version():
   command: {sys.argv[0]}
   source: {__file__}
 ''')
-    print('--- additional libraries ---')
-    for ty, info in __add_libs.items():
+    print('--- additional viewers ---')
+    for ty, info in GLOBAL_CONF.add_viewers.items():
         print(f'    {ty}: {info[0]}')
 
 

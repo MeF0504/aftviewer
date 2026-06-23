@@ -36,6 +36,7 @@ else:
 __debug = False
 __def = False
 __add_libs = {}
+__add_ivs = {}
 __user_opts = {}
 __filetype: str | None = None
 __args: Args | None = None
@@ -112,42 +113,56 @@ def __update_add_types():
     if __def:
         __logger.info('force default.')
         return
-    for fy in (__conf_dir/'.lib/exlibs').glob('*/config.toml'):
+    for vdir in (__conf_dir/'.lib/exlibs').glob('*'):
         try:
-            with open(fy, 'rb') as f:
-                conf = tomllib.load(f)
-                for name in conf:
+            __add_lib2path(str(vdir))
+            if (vdir/'config.toml').is_file():
+                with open(vdir/'config.toml', 'rb') as f:
+                    conf = tomllib.load(f)
+            for fy in vdir.glob('viewers/*.py'):
+                name = fy.name[:-3]
+                if name in conf:
                     ext = conf[name].get('ext', '')
-                    ver = conf[name]['version']
-                    __add_libs[name] = [ver, ext, str(fy.parent)]
-                    __add_lib2path(str(fy.parent))
-                    __logger.debug(f'add {name}, "{ext}" in add_types.')
+                    ver = conf[name].get('version', '???')
+                else:
+                    ext = ''
+                    ver = '???'
+                __type_config[name] = ext
+                __add_libs[name] = [ver, str(vdir)]
+                __logger.debug(f'add {name}, "{ext}" in add_viewers.')
+            for fy in vdir.glob('image_viewers/*.py'):
+                name = fy.name[:-3]
+                if name in conf:
+                    ver = conf[name].get('version', '???')
+                else:
+                    ver = '???'
+                __add_ivs[name] = [ver, str(vdir)]
+                __logger.debug(f'add {name} in add_image_viewers.')
         except Exception as e:
-            __logger.error(f'failed to import {fy}: {e}')
+            __logger.error(f'failed to import {vdir}: {e}')
 
 
 # set supported file types
 __type_config = {
-    "hdf5": [VERSION, "hdf5", None],
-    "pickle": [VERSION, "pkl pickle", None],
-    "numpy": [VERSION, "npy npz", None],
-    "np_pickle": [VERSION, "", None],
-    "tar": [VERSION, "", None],  # tar is identified by tarfile module.
-    "zip": [VERSION, "zip", None],
-    "sqlite3": [VERSION, "db db3 sqp sqp3 sqlite sqlite3", None],
-    "raw_image": [VERSION, "raw nef nrw cr3 cr2 crw tif arw", None],  # nikon, canon, sony
-    "jupyter": [VERSION, "ipynb", None],
-    "e-mail": [VERSION, "eml mbox", None],
-    "xpm": [VERSION, "xpm", None],
-    "stl": [VERSION, "stl", None],
-    "fits": [VERSION, "fits fit", None],
-    "healpix": [VERSION, "", None],  # extension is same as fits.
-    "excel": [VERSION, "xls xlsx xlsm", None],
-    "root": [VERSION, "root", None],
-    "plist": [VERSION, "plist", None],
+    "hdf5": "hdf5",
+    "pickle": "pkl pickle",
+    "numpy": "npy npz",
+    "np_pickle": "",
+    "tar": "",  # tar is identified by tarfile module.
+    "zip": "zip",
+    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
+    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
+    "jupyter": "ipynb",
+    "e-mail": "eml mbox",
+    "xpm": "xpm",
+    "stl": "stl",
+    "fits": "fits fit",
+    "healpix": "",  # extension is same as fits.
+    "excel": "xls xlsx xlsm",
+    "root": "root",
+    "plist": "plist",
 }
 __update_add_types()
-__type_config.update(__add_libs)
 
 
 def __set_user_opts(config: None | dict[str, Any],
@@ -179,6 +194,8 @@ GLOBAL_CONF = CONF(__debug,
                    MappingProxyType(__type_config),
                    __logname,
                    tuple(__get_packs()),
+                   __add_libs,
+                   __add_ivs,
                    )
 
 
@@ -642,7 +659,7 @@ def __load_lib(args: Args) -> tuple[None | ModuleType, str]:
     # lib_path2 -> file path
     if args.type in __add_libs:
         lib_path = f'viewers.{args.type}'
-        lib_path2 = Path(__add_libs[args.type][2])/f'viewers/{args.type}.py'
+        lib_path2 = Path(__add_libs[args.type][1])/f'viewers/{args.type}.py'
     else:
         lib_path = f'aftviewer.viewers.{args.type}'
         lib_path2 = Path(__file__).parent.parent
