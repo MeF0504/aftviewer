@@ -70,7 +70,11 @@ def set_projection(args: LocalArgs) -> str:
 def set_limits() -> tuple[float | None, float | None]:
     try:
         m_limit = get_config('map_limit')
-        mmin, mmax = m_limit
+        if len(m_limit) == 2:
+            mmin, mmax = m_limit
+        else:
+            mmin = None
+            mmax = None
     except Exception as e:
         logger.error(f'failed to get map limits: {type(e).__name__}, {e}\n'
                      f'  data: {m_limit}')
@@ -105,6 +109,7 @@ def set_coordinate(args: LocalArgs) -> list[str] | None:
         coord = get_config('coord')
         logger.info(f'coord from config: {coord}')
     else:
+        # failed to get config.
         coord = []
         logger.info(f'coord from default: {coord}')
 

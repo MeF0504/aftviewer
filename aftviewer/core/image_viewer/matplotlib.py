@@ -29,7 +29,7 @@ def clear_mpl_axes(axes):
 def get_size_dpi(shape: tuple[int, ...]) -> tuple[tuple[float, float], int]:
     assert len(shape) > 1, f'Image dimension must be >= 2, now {len(shape)}'
     width = get_config('image_width')
-    if width is not None:
+    if width > 1:
         rate = shape[1]/width
     elif get_screen:
         height = get_monitors()[0].height*0.7  # pixel

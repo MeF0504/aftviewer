@@ -93,10 +93,10 @@ def __set_image_viewer(args: Args) -> None:
     if args_chk(args, 'image_viewer'):
         logger.info('set image viewer from args')
         tmp_iv = args.image_viewer
-    elif args_chk(args, 'cui') and iv_cui_config is not None:
+    elif args_chk(args, 'cui') and iv_cui_config != "":
         logger.info('set image viewer from config file (CUI)')
         tmp_iv = iv_cui_config
-    elif iv_config is not None:
+    elif iv_config != "":
         logger.info('set image viewer from config file')
         tmp_iv = iv_config
     else:

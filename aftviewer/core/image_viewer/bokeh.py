@@ -21,7 +21,7 @@ def show_data(data: np.ndarray):
     h, w, _ = data.shape
     logger.debug(f'Image shape: {data.shape}')
     width = get_config('image_width')
-    if width is None:
+    if width < 1:
         width = w
         height = h
     else:

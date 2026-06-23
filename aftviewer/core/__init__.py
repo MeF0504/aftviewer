@@ -123,12 +123,18 @@ def __update_add_types():
                 if name in conf:
                     ext = conf[name].get('ext', '')
                     ver = conf[name].get('version', '???')
+                    if 'config' in conf[name]:
+                        __def_opts['config'][name] = conf[name]['config']
+                        __logger.debug(f'update config in {name}')
+                    if 'colors' in conf[name]:
+                        __def_opts['colors'][name] = conf[name]['colors']
+                        __logger.debug(f'update colors in {name}')
                 else:
                     ext = ''
                     ver = '???'
                 __type_config[name] = ext
                 __add_libs[name] = [ver, str(vdir)]
-                __logger.debug(f'add {name}, "{ext}" in add_viewers.')
+                __logger.debug(f'add {name}, "{ext}", {ver} in add_viewers.')
             for fy in vdir.glob('image_viewers/*.py'):
                 name = fy.name[:-3]
                 if name in conf:
@@ -136,7 +142,7 @@ def __update_add_types():
                 else:
                     ver = '???'
                 __add_ivs[name] = [ver, str(vdir)]
-                __logger.debug(f'add {name} in add_image_viewers.')
+                __logger.debug(f'add {name}, {ver} in add_image_viewers.')
         except Exception as e:
             __logger.error(f'failed to import {vdir}: {e}')
 
@@ -368,11 +374,20 @@ def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
 
     Returns
     -------
-    str, int, or None
+    str or int
         foreground color id. If the name is incorrect, return None.
-    str, int, or None
-        foreground color id. If the name is incorrect, return None.
+    str or int
+        background color id. If the name is incorrect, return None.
     """
+    def ret_val(vals):
+        ret = []
+        for v in vals:
+            if v == "":
+                ret.append(None)
+            else:
+                ret.append(v)
+        return ret
+
     if filetype is None:
         filetype = __filetype
     if filetype is None:
@@ -381,15 +396,15 @@ def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
     def_cols = __def_opts['colors']
 
     if filetype in user_cols and name in user_cols[filetype]:
-        return user_cols[filetype][name]
+        return ret_val(user_cols[filetype][name])
     elif 'defaults' in user_cols and \
          name in def_cols['defaults'] and \
          name in user_cols['defaults']:
-        return user_cols['defaults'][name]
+        return ret_val(user_cols['defaults'][name])
     elif filetype in def_cols and name in def_cols[filetype]:
-        return def_cols[filetype][name]
+        return ret_val(def_cols[filetype][name])
     elif name in def_cols['defaults']:
-        return def_cols['defaults'][name]
+        return ret_val(def_cols['defaults'][name])
     else:
         __logger.error(f'color name "{name}" not found in default file.')
         return None, None
@@ -411,7 +426,7 @@ def get_timezone() -> None | ZoneInfo:
         Otherwise, return None.
     """
     tz = get_config('timezone')
-    if tz is None:
+    if tz == "":
         ret = None
     else:
         try:
@@ -574,7 +589,7 @@ def run_system_cmd(fname: str) -> bool:
         Return True if the command succeeded, otherwise False.
     """
     cmd = get_config('system_cmd')
-    if cmd is None:
+    if cmd == "":
         if platform.system() == 'Windows':
             cmd = 'start'
         elif platform.uname()[0] == 'Darwin':

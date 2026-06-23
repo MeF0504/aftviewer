@@ -126,6 +126,8 @@ def show_opts(filetype: str | None) -> None:
         keys = list(set(opts['defaults'] + opts[filetype]))
         for key in keys:
             val = get_config(key, filetype)
+            if type(val) is str:
+                val = f'"{val}"'
             print(f'  {key}: {val}')
         print_key('colors')
         cnames = list(set(__get_color_names('defaults')
@@ -146,6 +148,8 @@ def show_opts(filetype: str | None) -> None:
     print_key('defaults')
     for key in opts['defaults']:
         val = get_config(key, 'defaults')
+        if type(val) is str:
+            val = f'"{val}"'
         print(f'  {key}: {val}')
     opts.pop('defaults')
     for ft in opts:

@@ -18,7 +18,10 @@ def check_color(col):
     colors = ['black', 'white', 'red', 'green', 'blue',
               'cyan', 'magenta', 'yellow', 'gray']
     if type(col) is str:
-        if re.match('^#[0-9a-f]{6}$', col) is not None:
+        if col == "":
+            # not set
+            return False
+        elif re.match('^#[0-9a-f]{6}$', col) is not None:
             # color code
             return True
         elif col in colors:
@@ -28,8 +31,6 @@ def check_color(col):
             logger.warning(f'incorrect color setting: {col}')
             print_error(f'incorrect color setting: {col}')
             return False
-    elif col is None:
-        return True
     else:
         logger.warning(f'incorrect color setting type: {col}')
         print_error('incorrect color setting type.')
@@ -65,6 +66,8 @@ def main(fpath: Path, args: Args) -> int:
     assert hasattr(args, 'viewer'), 'something wrong; viewer is not in args.'
     if args.viewer is None:
         viewer = get_config('viewer')
+        if viewer == "":
+            viewer = None
         logger.info(f'set viewer from config file; {viewer}.')
     else:
         viewer = args.viewer
@@ -78,9 +81,9 @@ def main(fpath: Path, args: Args) -> int:
 
     mesh_data = mesh.Mesh.from_file(str(fpath))
     logger.debug(f'mesh shape: {mesh_data.vectors.shape}')
-    ecol: None | str = get_config('edgecolors')
-    fcol: None | str = get_config('facecolors')
-    bcol: None | str = get_config('backgroundcolors')
+    ecol: str = get_config('edgecolors')
+    fcol: str = get_config('facecolors')
+    bcol: str = get_config('backgroundcolors')
     if not check_color(ecol):
         ecol = None
     if not check_color(fcol):

@@ -2,7 +2,7 @@
 image_viewer = ""
 image_viewer_cui = ""
 iv_cmds = {}
-image_width = ""
+image_width = 0
 system_cmd = ""
 system_cmd_args = ["%c", "%s"]
 timezone = ""
