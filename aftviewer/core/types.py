@@ -26,9 +26,9 @@ class CONF:
     pack_list: tuple[str, ...]
         List of package names that are installed.
     add_viewers: dict[str, list[str, str]]
-        Additional viewers information.
+        Additional viewers information (version, library path).
     add_image_viewers: dict[str, list[str, str]]
-        Additional image viewers information.
+        Additional image viewers information (version, library path).
     """
     debug: bool
     conf_dir: Path

@@ -189,16 +189,22 @@ def update(branch: str, test: bool) -> bool:
 
 
 def update_packages(ftype: str, test: bool) -> bool:
-    base_dir = Path(__file__).parent.parent
-    req_file = base_dir/f'requirements/{ftype}.txt'
-    logger.info(f'requirement file: {req_file}')
-    if not req_file.is_file():
-        print('Requirement file is not found.'
-              ' Requirements are already satisfied.')
+    add_viewers = GLOBAL_CONF.add_viewers
+    ok_cmt = 'Requirement file is not found.' + \
+        ' Requirements may already be satisfied.'
+    if ftype in add_viewers:
+        libpath = Path(add_viewers[ftype][1])
+        req_file = libpath/'requirements.txt'
+        logger.info(f'requirement file: {req_file}')
+        if not req_file.is_file():
+            print(ok_cmt)
+            return True
+        pip_opt = ['-r', str(req_file)]
+        ret = update_core(pip_opt, test)
+        return ret
+    else:
+        print(ok_cmt)
         return True
-    pip_opt = ['-r', str(req_file)]
-    ret = update_core(pip_opt, test)
-    return ret
 
 
 def show_version():
