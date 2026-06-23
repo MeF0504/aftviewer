@@ -631,7 +631,7 @@ def __set_filetype(args: Args) -> None:
         return
     else:
         for typ, exts in __type_config.items():
-            if ext in exts[1].split():
+            if ext in exts.split():
                 __logger.debug(f'set file type: {typ}')
                 args.type = typ
                 __filetype = args.type
