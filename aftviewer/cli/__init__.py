@@ -57,6 +57,8 @@ Supported file types ... {', '.join(supported_type)}."""
        runs the update of this software.
  - aftviewer - update -t TYPE
        install/update the packages required in the TYPE.
+ - aftviewer - libinstall URL
+       install/update additional viewers/image viewers.
  - aftviewer - config_list [-t TYPE]
        shows the current optional configuration.
        If TYPE is specified, shows the configuration for the TYPE.
