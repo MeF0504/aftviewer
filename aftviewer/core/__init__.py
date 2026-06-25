@@ -118,6 +118,8 @@ def __update_add_types():
             if (vdir/'config.toml').is_file():
                 with open(vdir/'config.toml', 'rb') as f:
                     conf = tomllib.load(f)
+            else:
+                conf = {}
             for fy in vdir.glob('viewers/*.py'):
                 name = fy.name[:-3]
                 if name in conf:
@@ -144,7 +146,7 @@ def __update_add_types():
                 __add_ivs[name] = [ver, str(vdir)]
                 __logger.debug(f'add {name}, {ver} in add_image_viewers.')
         except Exception as e:
-            __logger.error(f'failed to import {vdir}: {e}')
+            __logger.error(f'failed to import {vdir}: {type(e).__name__} {e}')
 
 
 # set supported file types
