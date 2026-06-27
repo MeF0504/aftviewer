@@ -41,12 +41,12 @@ def install_viewer(args: argparse.Namespace) -> int:
         libdir.mkdir(parents=True)
         __add_lib2path(str(libdir))
         cmds = ['git', 'clone', url, libdir]
-        res = subprocess.run(cmds)
-        if res.returncode != 0:
+        cmdres = subprocess.run(cmds)
+        if cmdres.returncode != 0:
             print_error(f'failed to clone. remove {name}.')
             logger.error(f'remove {libdir}')
             shutil.rmtree(libdir)
-            return res.returncode
+            return cmdres.returncode
 
     print('checking viewers.')
     res = 0
