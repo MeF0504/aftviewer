@@ -1,7 +1,7 @@
 # test functions in aftviewer/core/__init__.py
+import sys
 import argparse
 import warnings
-import json
 from pathlib import Path
 from importlib import reload
 
@@ -13,12 +13,23 @@ import aftviewer.core
 from aftviewer.core import (args_chk, __load_lib, get_config, cprint,
                             get_col, print_error, print_warning, print_key,
                             __set_filetype, __get_opt_keys, __get_color_names,
-                            __set_user_opts, __def_opts, __type_config)
+                            __set_user_opts, __def_opts, __type_config,
+                            __conv_col_val)
 from aftviewer.core.helpmsg import (add_args_imageviewer, add_args_encoding,
                                     add_args_output, add_args_verbose,
                                     add_args_key, add_args_interactive,
                                     add_args_cui)
 from aftviewer.cli import get_parser_arg, get_args
+
+sysver = sys.version_info
+if sysver.major*100+sysver.minor >= 311:
+    import tomllib
+else:
+    try:
+        import tomli as tomllib
+    except ImportError as e:
+        print(f'aftviewer requires Python >= 3.11 or tomli: {e}')
+        sys.exit(1)
 
 fts = [(ft) for ft in __type_config]
 
@@ -88,11 +99,10 @@ def test_def_get_config():
 
 @pytest.mark.parametrize(('key', 'val', 'filetype'), [
     ('image_viewer', 'display', 'defaults'),
-    ('system_cmd', 'ls', 'hdf5'),
-    ('iv_exec_cmd', ['%c', '%s', '-v'], 'raw_image'),
+    ('system_cmd', 'ls', 'zip'),
+    ('iv_exec_cmd', ['%c', '%s', '-v'], 'tar'),
     ('numpy_printoptions', {}, 'numpy'),
     ('encoding', 'utf-8', 'pickle'),
-    ('facecolor', '#505050', 'stl'),
     ])
 def test_user_get_config(key, val, filetype):
     def_opts = __def_opts['config']['defaults']
@@ -128,7 +138,7 @@ def test_def_get_col():
         else:
             ft2 = ft
         for key in def_colors[ft]:
-            def1 = def_colors[ft][key]
+            def1 = __conv_col_val(def_colors[ft][key])
             def2 = get_col(key, ft2)
             assert len(def2) == 2, 'len(color) is not 2'
             assert type(def2[0]) in col_type, 'incorrect type (fg)'
@@ -137,10 +147,10 @@ def test_def_get_col():
 
 
 @pytest.mark.parametrize(('key', 'val', 'filetype'), [
-    ('msg_error', [0, None], 'defaults'),
+    ('msg_error', [0, ''], 'defaults'),
     ('cui_main', [255, 'k'], 'defaults'),
     ('input_color', ['r', 150], 'jupyter'),
-    ('interactive_path', [None, 'm'], 'tar'),
+    ('interactive_path', ['', 'm'], 'tar'),
     ])
 def test_user_get_col(key, val, filetype):
     def_colors = __def_opts['colors']['defaults']
@@ -150,7 +160,8 @@ def test_user_get_col(key, val, filetype):
     assert len(res1) == 2, 'len(color) is not 2 @ 1'
     assert type(res1[0]) in col_type, 'incorrect type (fg) @ 1'
     assert type(res1[1]) in col_type, 'incorrect type (bg) @ 1'
-    assert res1 == val, f'get colors ({filetype}) is not match, {res1}, {val}'
+    assert res1 == __conv_col_val(val), \
+        f'get colors ({filetype}) is not match, {res1}, {val}'
     res2 = get_col(key)
     if filetype == 'defaults':
         def1 = val
@@ -158,6 +169,7 @@ def test_user_get_col(key, val, filetype):
         def1 = def_colors[key]
     else:
         return
+    def1 = __conv_col_val(def1)
     assert len(res2) == 2, 'len(color) is not 2 @ 2'
     assert type(res2[0]) in col_type, 'incorrect type (fg) @ 2'
     assert type(res2[1]) in col_type, 'incorrect type (bg) @ 2'
@@ -201,17 +213,17 @@ def test_set_filetype():
 def test_get_opt_keys():
     reload(aftviewer.core)
     # check keys in setting files are in opt_keys.
-    with open(Path(__file__).parent.parent/'core/default.json') as f:
-        opts = json.load(f)
+    with open(Path(__file__).parent.parent/'core/default.toml', 'rb') as f:
+        opts = tomllib.load(f)
     opt_keys = __get_opt_keys()
     for ft in opts['config']:
         for opt in opts['config'][ft]:
             assert opt in opt_keys[ft], f'def opt {ft}-{opt} not found.'
 
-    user_optfile = Path('~/.config/aftviewer/setting.json').expanduser()
+    user_optfile = Path('~/.config/aftviewer/setting.toml').expanduser()
     if user_optfile.is_file():
-        with open(user_optfile) as f:
-            user_opts = json.load(f)
+        with open(user_optfile, 'rb') as f:
+            user_opts = tomllib.load(f)
     else:
         user_opts = {}
     if 'force_default' in user_opts and user_opts['force_default']:
@@ -246,16 +258,16 @@ def test_get_opt_keys():
 def test_get_color_names():
     reload(aftviewer.core)
     # check col in setting files are in col_names.
-    with open(Path(__file__).parent.parent/'core/default.json') as f:
-        opts = json.load(f)
+    with open(Path(__file__).parent.parent/'core/default.toml', 'rb') as f:
+        opts = tomllib.load(f)
     col_names = __get_color_names(None)
     for colname in opts['colors']['defaults']:
         assert colname in col_names, f'{colname} not found in defaults.'
 
-    user_optfile = Path('~/.config/aftviewer/setting.json').expanduser()
+    user_optfile = Path('~/.config/aftviewer/setting.toml').expanduser()
     if user_optfile.is_file():
-        with open(user_optfile) as f:
-            user_opts = json.load(f)
+        with open(user_optfile, 'rb') as f:
+            user_opts = tomllib.load(f)
     else:
         user_opts = {}
     if 'force_default' in user_opts and user_opts['force_default']:
@@ -274,12 +286,12 @@ def test_get_color_names():
 @pytest.mark.parametrize(('filetype'), fts)
 def test_get_color_names_ft(filetype):
     col_names = __get_color_names(filetype)
-    with open(Path(__file__).parent.parent/'core/default.json') as f:
-        opts = json.load(f)
-    user_optfile = Path('~/.config/aftviewer/setting.json').expanduser()
+    with open(Path(__file__).parent.parent/'core/default.toml', 'rb') as f:
+        opts = tomllib.load(f)
+    user_optfile = Path('~/.config/aftviewer/setting.toml').expanduser()
     if user_optfile.is_file():
-        with open(user_optfile) as f:
-            user_opts = json.load(f)
+        with open(user_optfile, 'rb') as f:
+            user_opts = tomllib.load(f)
     else:
         user_opts = {}
 

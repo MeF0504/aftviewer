@@ -5,9 +5,14 @@ from unittest.mock import patch
 import pytest
 
 from aftviewer.cli import (main, get_args, show_opts, set_shell_comp, update,
-                           update_packages, get_parser_arg)
+                           update_packages, get_parser_arg,
+                           install_viewer, add_args_install)
 from aftviewer.cli.get_types import main as get_types
-from aftviewer.cli.installer import main as libinstaller
+from . import FTs
+
+fts = [(None)]
+for ft in FTs:
+    fts.append((ft))
 
 
 def test_main():
@@ -21,37 +26,12 @@ def test_get_types():
     get_types()
 
 
-def test_libinstaller():
-    # syntax check?
-    with patch('sys.argv', ["aftviewer-libinstaller", "file", "ext"]):
-        libinstaller()
-
-
 def test_get_args():
     # check the function run correctly.
     get_args(['file'])
 
 
-@pytest.mark.parametrize(('filetype'), [
-    (None),
-    ('hdf5'),
-    ('pickle'),
-    ('sqlite3'),
-    ('np_pickle'),
-    ('tar'),
-    ('zip'),
-    ('jupyter'),
-    ('e-mail'),
-    ('numpy'),
-    ('raw_image'),
-    ('xpm'),
-    ('stl'),
-    ('fits'),
-    ('healpix'),
-    ('excel'),
-    ('root'),
-    ('plist'),
-    ])
+@pytest.mark.parametrize(('filetype'), fts)
 def test_show_opts(filetype):
     # check the function run correctly.
     show_opts(filetype)
@@ -73,3 +53,10 @@ def test_shell_comp(shell):
 def test_update():
     assert update('main', True)
     assert update_packages('tar', True)
+
+
+def test_installer():
+    parser = argparse.ArgumentParser(**get_parser_arg())
+    add_args_install(parser)
+    args = parser.parse_args(['https://github.com/MeF0504/aftviewer-viewer-util.git'])
+    install_viewer(args)

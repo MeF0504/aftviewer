@@ -368,14 +368,6 @@ def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
     str or int
         background color id. If the name is incorrect, return None.
     """
-    def ret_val(vals):
-        ret = []
-        for v in vals:
-            if v == "":
-                ret.append(None)
-            else:
-                ret.append(v)
-        return ret
 
     if filetype is None:
         filetype = __filetype
@@ -385,15 +377,15 @@ def get_col(name: str, filetype: str | None = None) -> tuple[COLType, COLType]:
     def_cols = __def_opts['colors']
 
     if filetype in user_cols and name in user_cols[filetype]:
-        return ret_val(user_cols[filetype][name])
+        return __conv_col_val(user_cols[filetype][name])
     elif 'defaults' in user_cols and \
          name in def_cols['defaults'] and \
          name in user_cols['defaults']:
-        return ret_val(user_cols['defaults'][name])
+        return __conv_col_val(user_cols['defaults'][name])
     elif filetype in def_cols and name in def_cols[filetype]:
-        return ret_val(def_cols[filetype][name])
+        return __conv_col_val(def_cols[filetype][name])
     elif name in def_cols['defaults']:
-        return ret_val(def_cols['defaults'][name])
+        return __conv_col_val(def_cols['defaults'][name])
     else:
         __logger.error(f'color name "{name}" not found in default file.')
         return None, None
@@ -702,6 +694,16 @@ def __get_opt_keys() -> dict[str, list[str]]:
             res[t] = list(set(res[t]))
         res[t].sort()
     return res
+
+
+def __conv_col_val(vals):
+    ret = []
+    for v in vals:
+        if v == "":
+            ret.append(None)
+        else:
+            ret.append(v)
+    return ret
 
 
 def __get_color_names(filetype: str | None) -> list[str]:

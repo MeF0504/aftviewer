@@ -24,13 +24,10 @@ for c in cmds:
         cmd = c
         break
 
-ivs = [('None'), ('matplotlib'), ('PIL'), ('cv2'), ('bokeh'),
-       (cmd), ('not a command')]
+ivs = [('None'), ('PIL'), (cmd), ('not a command')]
 
-addlib = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
-if addlib.is_dir():
-    for ivfile in addlib.glob('*.py'):
-        ivs.append((ivfile.stem))
+for iv in GLOBAL_CONF.add_image_viewers:
+    ivs.append((iv))
 
 
 @pytest.mark.parametrize(('iv'), ivs)
