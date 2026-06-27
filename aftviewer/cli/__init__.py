@@ -12,14 +12,16 @@ import shutil
 import textwrap
 
 from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
-                    __add_types, __get_opt_keys, __get_color_names,
+                    __get_opt_keys, __get_color_names,
                     print_key, print_error, cprint,
                     args_chk, get_config, get_col)
 from ..core import __set_args as set_args
 from ..core.__version__ import VERSION
-from ..core.helpmsg import add_args_shell_cmp, add_args_update
+from ..core.helpmsg import (add_args_shell_cmp,
+                            add_args_update, add_args_install)
 from ..core.types import Args
 from .updater import update_core
+from .installer import install_viewer
 
 if GLOBAL_CONF.debug:
     term_width = 80-2
@@ -27,7 +29,8 @@ else:
     term_width = shutil.get_terminal_size().columns-2
 
 logger = getLogger(GLOBAL_CONF.logname)
-__subcmds = ['help', 'update', 'config_list', 'shell_completion', 'version']
+__subcmds = ['help', 'version', 'update', 'libinstall',
+             'config_list', 'shell_completion']
 
 
 class MyHelpFormatter(argparse.RawDescriptionHelpFormatter):
@@ -54,6 +57,8 @@ Supported file types ... {', '.join(supported_type)}."""
        runs the update of this software.
  - aftviewer - update -t TYPE
        install/update the packages required in the TYPE.
+ - aftviewer - libinstall URL
+       install/update additional viewers/image viewers.
  - aftviewer - config_list [-t TYPE]
        shows the current optional configuration.
        If TYPE is specified, shows the configuration for the TYPE.
@@ -96,6 +101,8 @@ def get_args(argv: None | list[str] = None) -> Args:
         add_args_shell_cmp(parser)
     elif tmpargs.subcmd == 'update':
         add_args_update(parser)
+    elif tmpargs.subcmd == 'libinstall':
+        add_args_install(parser)
     __set_filetype(tmpargs)
     lib, err = __load_lib(tmpargs)
     if lib is not None:
@@ -121,6 +128,8 @@ def show_opts(filetype: str | None) -> None:
         keys = list(set(opts['defaults'] + opts[filetype]))
         for key in keys:
             val = get_config(key, filetype)
+            if type(val) is str:
+                val = f'"{val}"'
             print(f'  {key}: {val}')
         print_key('colors')
         cnames = list(set(__get_color_names('defaults')
@@ -131,14 +140,18 @@ def show_opts(filetype: str | None) -> None:
         return
 
     # filetype is None -> show all.
-    if len(__add_types.keys()) != 0:
-        print_key('additional_types')
-        for ft in __add_types:
-            print(f'  {ft}: {__add_types[ft]}')
+    types = GLOBAL_CONF.types
+    add_viewers = GLOBAL_CONF.add_viewers
+    if len(add_viewers.keys()) != 0:
+        print_key('additional viewers')
+        for ft in add_viewers:
+            print(f'  {ft}: {types[ft]}')
     print_key('config')
     print_key('defaults')
     for key in opts['defaults']:
         val = get_config(key, 'defaults')
+        if type(val) is str:
+            val = f'"{val}"'
         print(f'  {key}: {val}')
     opts.pop('defaults')
     for ft in opts:
@@ -182,16 +195,41 @@ def update(branch: str, test: bool) -> bool:
 
 
 def update_packages(ftype: str, test: bool) -> bool:
-    base_dir = Path(__file__).parent.parent
-    req_file = base_dir/f'requirements/{ftype}.txt'
-    logger.info(f'requirement file: {req_file}')
-    if not req_file.is_file():
-        print('Requirement file is not found.'
-              ' Requirements are already satisfied.')
+    add_viewers = GLOBAL_CONF.add_viewers
+    ok_cmt = 'Requirement file is not found.' + \
+        ' Requirements may already be satisfied.'
+    if ftype in add_viewers:
+        libpath = Path(add_viewers[ftype][1])
+        req_file = libpath/'requirements.txt'
+        logger.info(f'requirement file: {req_file}')
+        if not req_file.is_file():
+            print(ok_cmt)
+            return True
+        pip_opt = ['-r', str(req_file)]
+        ret = update_core(pip_opt, test)
+        return ret
+    else:
+        print(ok_cmt)
         return True
-    pip_opt = ['-r', str(req_file)]
-    ret = update_core(pip_opt, test)
-    return ret
+
+
+def show_version():
+    print(f'''aftviewer: {VERSION}
+  Python version: {sys.version}
+      @ {sys.executable}
+  command: {sys.argv[0]}
+  source: {__file__}
+''')
+    if len(GLOBAL_CONF.add_viewers) > 0:
+        print('--- additional viewers ---')
+        for ty, info in GLOBAL_CONF.add_viewers.items():
+            name = os.path.basename(info[1])
+            print(f'    {ty} ({name}): v{info[0]}')
+    if len(GLOBAL_CONF.add_image_viewers) > 0:
+        print('--- additional image viewers ---')
+        for ty, info in GLOBAL_CONF.add_image_viewers.items():
+            name = os.path.basename(info[1])
+            print(f'    {ty} ({name}): v{info[0]}')
 
 
 def run_subcmd(args: Args) -> int:
@@ -227,12 +265,10 @@ def run_subcmd(args: Args) -> int:
             print('please set --type to see the details.')
             return 2
     elif args.subcmd == 'version':
-        print(f'''aftviewer: {VERSION}
-  Python version: {sys.version}
-      @ {sys.executable}
-  command: {sys.argv[0]}
-  source: {__file__}''')
+        show_version()
         return 0
+    elif args.subcmd == 'libinstall':
+        return install_viewer(args)
     else:
         print_error(f'Invalid subcommand: {args.subcmd}.')
         return 2

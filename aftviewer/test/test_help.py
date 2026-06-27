@@ -6,29 +6,15 @@ from types import FunctionType
 import pytest
 
 from aftviewer.core import __load_lib
-from . import chk_deps
+from . import chk_deps, FTs
 from aftviewer.cli import get_parser_arg
 
+fts = []
+for ft in FTs:
+    fts.append(ft)
 
-@pytest.mark.parametrize(('filetype'), [
-    ('hdf5'),
-    ('pickle'),
-    ('sqlite3'),
-    ('np_pickle'),
-    ('tar'),
-    ('zip'),
-    ('jupyter'),
-    ('e-mail'),
-    ('numpy'),
-    ('raw_image'),
-    ('xpm'),
-    ('stl'),
-    ('fits'),
-    ('healpix'),
-    ('excel'),
-    ('root'),
-    ('plist'),
-    ])
+
+@pytest.mark.parametrize(('filetype'), fts)
 def test_help_message(filetype):
     if not chk_deps(filetype):
         warnings.warn(f'skip cheking {filetype}')

@@ -8,38 +8,18 @@ Sample GIFs can be found [here](samples/gif/README.md).
 
 ## Concept
 
-This software is designed to be a universal viewer for any files.
+This software is designed to be an universal viewer for any files.
 Also, the basic functions of this software work with only the standard libraries of recent Python 3.
-Third-party libraries are required and loaded only when specific file types are handled; e.g. `npz` file requires the `numpy` library.
+Third-party libraries are required and loaded only when specific file types are handled.
 
 ## Requirements
 
-The basic process of this software is designed to work with standard libraries of recent [Python3](https://www.python.org/).  
-To show some kinds of files, external libraries are required.
+The basic process of this software is designed to work on standard libraries of recent [Python3](https://www.python.org/).  
+[Pygments](https://pygments.org/) is an optional requirement for `Jupyter`.
 
-e.g.)
-- [numpy](https://numpy.org/) for numpy, xpm, np_pickle.
-- [h5py](https://docs.h5py.org/) for hdf5.
-- [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
-- [numpy-stl](https://pypi.org/project/numpy-stl/) for stl.
-- [Astropy](https://www.astropy.org/) for fits.
-- [healpy](https://healpy.readthedocs.io/) for healpix.
-- [xlrd](https://xlrd.readthedocs.io/en/latest/) and/or [openpyxl](https://openpyxl.readthedocs.io/en/stable/) for excel.
-- [uproot](https://uproot.readthedocs.io/en/latest/) for root.
-
-The following libraries are not always necessary but are useful if available.
-- [numpy](https://numpy.org/) for hdf5.
-- [tabulate](https://pypi.org/project/tabulate/) for sqlite3 and excel.
-- [Matplotlib](https://matplotlib.org/) or [Plotly](https://plotly.com/python/) for stl to display 3-D model.
-- [pygments](https://pygments.org/) for jupyter.
-
-To show images, imaging-related libraries
-(Currently supporting libraries are
-[PIL (Pillow)](https://pillow.readthedocs.io/),
-[Matplotlib](https://matplotlib.org/),
-[OpenCV](https://pypi.org/project/opencv-python/),
-or [bokeh](https://bokeh.org/))
-or shell commands (e.g. "open" in macOS) with supporting bitmap (.bmp) files are required.
+To show images, imaging-related libraries ([PIL (Pillow)](https://pillow.readthedocs.io/)
+by default)
+or shell commands (e.g., "open" in macOS) with supporting bitmap (.bmp) files are required.
 
 ## Install
 
@@ -56,28 +36,42 @@ py -m pip install git+https://github.com/MeF0504/aftviewer
 aftviewer [-t TYPE] file
 ```
 shows the constitution of a file.
-To see the detailed options, subcommands, and supported file types, type
+To see the detailed options, subcommands, and supported file types, enter
 ```bash
 aftviewer -h
 ```
 
 ---
-To see the details of available options for each file type, type
+To see the details of available options for each file type, enter
 ```bash
 aftviewer - help -t TYPE
 ```
-To update this command, type
+To update this command, enter
 ```bash
 aftviewer - update
 ```
-To show the list of current [configurations](https://github.com/MeF0504/aftviewer/wiki/Customization#parameters), type
+To install/update the required packages for the supported file type, enter
+```
+aftviewer - update -t TYPE
+```
+To install an [additional viewer](https://github.com/topics/aftviewer), enter
+```
+aftviewer - libinstall URL
+```
+To show the list of current [configurations](https://github.com/MeF0504/aftviewer/wiki/Customization#parameters), enter
 ```bash
 aftviewer - config_list
 ```
-To set the shell completion, type
+To set the shell completion, enter
 ```bash
 # bash
 aftviewer - shell_completion --bash >> ~/.bashrc
 # zsh
 aftviewer - shell_completion --zsh >> ~/.zshrc
 ```
+
+## License
+[MIT](./LICENSE)
+
+## Author
+[MeF0504](https://github.com/MeF0504)

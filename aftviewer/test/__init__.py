@@ -1,23 +1,18 @@
 from importlib import metadata
 import warnings
 
-from aftviewer.core import __def
+from aftviewer.core import __def, GLOBAL_CONF
 
 if __def:
     warnings.warn('These tests assume fource default is OFF.')
 
+FTs = ['pickle', 'tar', 'zip', 'jupyter']
+for av in GLOBAL_CONF.add_viewers:
+    FTs.append(av)
+
 
 def chk_deps(filetype: str) -> bool:
     deps = {
-            'numpy': ['numpy'],
-            'np_pickle': ['numpy'],
-            'raw_image': ['rawpy'],
-            'hdf5': ['h5py'],
-            'stl': ['numpy-stl'],
-            'fits': ['astropy'],
-            'healpix': ['healpy'],
-            'excel': ['openpyxl', 'xlrd'],
-            'root': ['uproot'],
             }
     if filetype not in deps:
         return True

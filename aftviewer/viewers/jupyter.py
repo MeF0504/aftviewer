@@ -162,6 +162,8 @@ def main(fpath: Path, args: Args) -> int:
         lang = args.language
     else:
         lang = get_config('language')
+    if lang == "":
+        lang = None
     if lang is None and 'language_info' in meta:
         lang = meta['language_info'].get('name', None)
     logger.info(f'language: {lang}')

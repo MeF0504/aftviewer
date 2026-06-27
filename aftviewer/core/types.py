@@ -19,18 +19,24 @@ class CONF:
     conf_dir: pathlib.Path
         Configuration directory.
         default: "$XDG_CONFIG_HOME/aftviewer" or "~/.config/aftviewer"
-    types: MappingProxyType[str, str]
+    types: MappingProxyType[str]
         Supported file types and its extensions.
     logname: str
         Log name used in logger.
     pack_list: tuple[str, ...]
         List of package names that are installed.
+    add_viewers: dict[str, list[str, str]]
+        Additional viewers information (version, library path).
+    add_image_viewers: dict[str, list[str, str]]
+        Additional image viewers information (version, library path).
     """
     debug: bool
     conf_dir: Path
     types: MappingProxyType[str, str]
     logname: str
     pack_list: tuple[str, ...]
+    add_viewers: dict[str, list[str]]
+    add_image_viewers: dict[str, list[str]]
 
 
 @dataclass

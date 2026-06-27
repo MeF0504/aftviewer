@@ -1,0 +1,7 @@
+[config.defaults]
+iv_cmds.imgcat = ["imgcat", "%s"]
+image_viewer = "imgcat"
+system_cmd = "open"
+system_cmd_args = ["%c", "%s"]
+[config.pickle]
+encoding = "ascii"

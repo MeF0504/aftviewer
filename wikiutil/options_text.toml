@@ -39,28 +39,27 @@ Available values are following:
 'k' (Black), 'r' (Red), 'g' (Green), 'y' (Yellow),
 'b' (Blue), 'c' (Cyan), 'm' (Magenta), 'w' (White),
 0-255 (terminal 256 colors if supported),
-or None (not set)  
+or '' (not set)  
 Keys of this dictionary is same as "config" dictionary: "defaults" or file-type names.
 Parametes and values in each key also works as the same.
 The parameters that can be set are as follows.
 """
 
 [config.defaults.image_viewer]
-type = "string/null"
+type = "string"
 desc = """The name of the method to show images.
 This option sets the default value of the image viewer.
-If "PIL", "matplotlib", "cv2", or "bokeh" are set, use
-[PIL.Image.show()](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.show),
-[matplotlib.pyplot.imshow()](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html),
-[cv2.imshow()](https://docs.opencv.org/),
-or [bokeh.plotting.figure.image_rgba](https://bokeh.org/) respectively.
+In default, "None" and "PIL" are available.
+If "None" is set, image no library is called and image is not shown.
+If "PIL" is set,
+[PIL.Image.show()](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.show) is used to show an image.
 Key names in "iv_cmds" are also settable.
 See the "iv_cmds" section below for more details.
-If null is set, search the possible modules from "PIL", "matplotlib", "cv2", and "bokeh".
+If set to empty, search the possible modules from "PIL", "matplotlib", "cv2", and "bokeh".
 If the image viewer is specified in both the json file and a command-line argument, the command-line argument is applied."""
 
 [config.defaults.image_viewer_cui]
-type = "string/null"
+type = "string"
 desc = """This is the same as "image_viewer", but used when opening a file with CUI mode.
 If both "image_viewer" and "image_viewer_cui" are set, the value of "image_viewer_cui" is used in CUI mode, and that of "image_viewer" is used in other cases.
 If this option is not set and "image_viewer" is set, the value of "image_viewer" is used in CUI mode and other cases.
@@ -77,15 +76,15 @@ Note that the first component is assumed to be a command and checks its existenc
 """
 
 [config.defaults.image_width]
-type = "null or integer"
-desc = """Set the shown width of the image. If null, use the image width itself.
+type = "integer"
+desc = """Set the shown width of the image. If the set value < 1, use the image width itself.
 The implementation depends on each image viewer."""
 
 [config.defaults.system_cmd]
-type = "string/null"
+type = "string"
 desc = """A command called when opening a file with a system command.
 In interactive_cui mode, you can open a file with the system (shell) command through the [subprocess.run()](https://docs.python.org//3/library/subprocess.html#subprocess.run) function by shift+↓ key.
-If set to null, "start", "open" or "xdg-open" is set in Windows OS, macOS, and Linux OS respectively."""
+If set to empty, "start", "open" or "xdg-open" is set in Windows OS, macOS, and Linux OS respectively."""
 
 [config.defaults.system_cmd_args]
 type = "list of string"
@@ -94,9 +93,9 @@ desc = """Arguments used when opening a file with system command in interactive_
 "%c" is replaced by "system_cmd" and "%s" is replaced by the file path to open."""
 
 [config.defaults.timezone]
-type = "null/string"
+type = "string"
 desc = """Timezone of the current system.
-If null is set, use the system default timezone.
+If set to empty, use the system default timezone.
 Available timezone names are based on [zoneinfo](https://docs.python.org/ja/3/library/zoneinfo.html).
 """
 
@@ -131,12 +130,6 @@ desc = """The encoding used to load the pickle file.
 If you mainly use pickle files made by Python2 script, please set "latin1".
 This option is overwritten by the '--encoding' command-line option."""
 
-[config.np_pickle.encoding]
-type = "string"
-desc = """The encoding used to load the Npz file.
-If you mainly use pickle files made by Python2 script, please set "latin1".
-This option is overwritten by the '--encoding' command-line option."""
-
 [config.jupyter.show_number]
 type = "bool"
 desc = """ If true, show `(current index)/(number of cells)` at the cell number line."""
@@ -150,66 +143,14 @@ type = "bool"
 desc = """If true and 'pygments' is installed, syntax highlight is applied to the code cells in Jupyter file."""
 
 [config.jupyter.language]
-type = "null/string"
+type = "string"
 desc = """default language for pygments syntax highlight.
-If null is set, try to set language from meta data of notebook.
+If set to empty, try to set language from meta data of notebook.
 See https://pygments.org/languages/ for available languages."""
 
 [config.jupyter.highlight_style]
 type = "string"
 desc = """The style of syntax highlight. See [Pygments styles](https://pygments.org/styles/) for available styles."""
-
-[config.stl.viewer]
-type = "\"matplotlib\" or \"plotly\""
-desc = """module to display STL file.
-Currently "matplotlib" or "plotly" is supported."""
-
-[config.stl.facecolors]
-type = "null/string"
-desc = """face color of the displayed model.
-Since this parameter is used in both Matplotlib and Plotly, available values are limited.
-null, full-color code (#xxxxxx), or color name (black, white, red, green, blue, cyan, magenta, or yellow) is available."""
-
-[config.stl.edgecolors]
-type = "null/string"
-desc = """edge color of the displayed model.
-This is only used in Matplotlib.
-The available value is the same as "facecolors"."""
-
-[config.stl.backgroundcolors]
-type = "null/string"
-desc = """background color of the display.
-The available value is the same as "facecolors"."""
-
-[config.e-mail.headers]
-type = "list of string"
-desc = """List of header names to show."""
-
-[config.healpix.projection]
-type = "mollweide, gnomonic, cartesian, or orthographic"
-desc = """The projection method used to show the map."""
-
-[config.healpix.map_limit]
-type = "[min: float or null, max: float or null]"
-desc = """The minimum and maximum values to show in the map.
-If min is null or min < minimum value of map array data, the minimum value of map array data is used.
-If max is null or max > maximum value of map array data, the maximum value of map array data is used.
-"""
-
-[config.healpix.norm]
-type = "hist, log, or None"
-desc = """The color normalization method used to show the map."""
-
-[config.healpix.coord]
-type = "null or sequence of character (G, E, or C)"
-desc = """Setting to describe the coordinate system of the map,
-or a sequence of 2 of these to rotate the map
-from the first to the second coordinate system."""
-
-[config.root.drawer]
-type = "string/null"
-desc = """The method to draw the contents in the ROOT file.
-Selectable methods are null, "matplotlib" and "ROOT"."""
 
 
 [color.defaults]
@@ -232,9 +173,3 @@ cui_file_index = "Color of index number of files in side bar of the CUI mode."
 input_color = "Color to highlight input index in jupyter file."
 output_color = "Color to highlight output index in jupyter file."
 type_color = "Color to highlight cell type in jupyter file."
-
-[color.hdf5]
-type_color = "Color to highlight attributes of data in hdf5 file."
-
-[color.root]
-header_color = "Color to highlight some headers in the root file."

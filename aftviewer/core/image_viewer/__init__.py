@@ -11,7 +11,7 @@ from pathlib import Path
 from logging import getLogger
 
 from .. import (GLOBAL_CONF, args_chk, get_config, print_error, print_warning,
-                Args, __add_lib2path, __def)
+                Args, __def)
 from pymeflib.color import make_bitmap
 from pymeflib.util import chk_cmd
 
@@ -53,15 +53,7 @@ def __collect_image_viewers() -> tuple[list[str], ...]:
         # arbitary setting?
         viewers_module.append(iv_name)
     if not __def:
-        add_dir = GLOBAL_CONF.conf_dir/'.lib/add_image_viewers'
-        for fy in add_dir.glob('*'):
-            if not fy.is_file():
-                continue
-            if fy.name.startswith('__'):
-                continue
-            iv_name = os.path.splitext(fy.name)[0]
-            logger.debug(f'add {iv_name} to viewers_module from add dir')
-            viewers_module.append(iv_name)
+        viewers_module += list(GLOBAL_CONF.add_image_viewers.keys())
 
     for vc in viewers_cmd:
         assert vc not in viewers_none \
@@ -72,17 +64,21 @@ def __collect_image_viewers() -> tuple[list[str], ...]:
 
 
 def __get_mod(img_viewer: None | str) -> None | ModuleType:
-    __add_lib2path()
+    if img_viewer is None:
+        logger.warning('image viewer is None.')
+        return None
+    add_ivs = GLOBAL_CONF.add_image_viewers
     try:
-        add_path = GLOBAL_CONF.conf_dir/f'.lib/add_image_viewers/{img_viewer}.py'
-        if (Path(__file__).parent/f'{img_viewer}.py').is_file():
+        if img_viewer in add_ivs:
+            mod = import_module(f'image_viewers.{img_viewer}')
+        elif (Path(__file__).parent/f'{img_viewer}.py').is_file():
             mod = import_module(f'aftviewer.core.image_viewer.{img_viewer}')
-        elif add_path.is_file():
-            mod = import_module(f'add_image_viewers.{img_viewer}')
         else:
             raise OSError(f'library {img_viewer} is not found.')
     except Exception as e:
-        logger.error(f'load image viewer failed({type(e).__name__}: {e})')
+        errmsg = f'load image viewer failed ({type(e).__name__}: {e})'
+        logger.error(errmsg)
+        print_error(errmsg)
         return None
     return mod
 
@@ -97,10 +93,10 @@ def __set_image_viewer(args: Args) -> None:
     if args_chk(args, 'image_viewer'):
         logger.info('set image viewer from args')
         tmp_iv = args.image_viewer
-    elif args_chk(args, 'cui') and iv_cui_config is not None:
+    elif args_chk(args, 'cui') and iv_cui_config != "":
         logger.info('set image viewer from config file (CUI)')
         tmp_iv = iv_cui_config
-    elif iv_config is not None:
+    elif iv_config != "":
         logger.info('set image viewer from config file')
         tmp_iv = iv_config
     else:
