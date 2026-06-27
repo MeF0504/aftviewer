@@ -151,23 +151,10 @@ def __update_add_types():
 
 # set supported file types
 __type_config = {
-    "hdf5": "hdf5",
     "pickle": "pkl pickle",
-    "numpy": "npy npz",
-    "np_pickle": "",
     "tar": "",  # tar is identified by tarfile module.
     "zip": "zip",
-    "sqlite3": "db db3 sqp sqp3 sqlite sqlite3",
-    "raw_image": "raw nef nrw cr3 cr2 crw tif arw",  # nikon, canon, sony
     "jupyter": "ipynb",
-    "e-mail": "eml mbox",
-    "xpm": "xpm",
-    "stl": "stl",
-    "fits": "fits fit",
-    "healpix": "",  # extension is same as fits.
-    "excel": "xls xlsx xlsm",
-    "root": "root",
-    "plist": "plist",
 }
 __update_add_types()
 

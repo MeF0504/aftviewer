@@ -5,6 +5,7 @@ from typing import Callable, Any
 from logging import getLogger
 
 from . import GLOBAL_CONF
+from .image_viewer import __collect_image_viewers
 
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -24,14 +25,9 @@ def add_args_imageviewer(parser: argparse.ArgumentParser, **kwargs) -> None:
     -------
     None
     """
-    args = dict(help="set image viewer. Supported args are "
-                "'None' (do not show any images), "
-                "'matplotlib' (use matplotlib.pyplot.imshow), "
-                "'PIL' (use PIL.Image.show), "
-                "'cv2' (use cv2.imshow), "
-                "'bokeh' (use bokeh.plotting.figure.image_rgba), "
-                "and other string is treated as an external command "
-                "(e.g. display, eog, open).",
+    none_iv, mod_iv, cmd_iv = __collect_image_viewers()
+    ivs = '", "'.join(none_iv+mod_iv+cmd_iv)
+    args = dict(help=f'set image viewer. Supported args are "{ivs}".',
                 type=str
                 )
     args.update(kwargs)
@@ -299,7 +295,7 @@ def help_template(filetype: str, description: str,
     if filetype not in GLOBAL_CONF.types:
         logger.warning(f'not a valid type: {filetype}')
         return ''
-    ex = GLOBAL_CONF.types[filetype][1].split()
+    ex = GLOBAL_CONF.types[filetype].split()
     if len(ex) != 0:
         exs = ', '.join(ex)
         description += f' The corresponding extensions are [{exs}].'

@@ -220,9 +220,16 @@ def show_version():
   command: {sys.argv[0]}
   source: {__file__}
 ''')
-    print('--- additional viewers ---')
-    for ty, info in GLOBAL_CONF.add_viewers.items():
-        print(f'    {ty}: {info[0]}')
+    if len(GLOBAL_CONF.add_viewers) > 0:
+        print('--- additional viewers ---')
+        for ty, info in GLOBAL_CONF.add_viewers.items():
+            name = os.path.basename(info[1])
+            print(f'    {ty} ({name}): v{info[0]}')
+    if len(GLOBAL_CONF.add_image_viewers) > 0:
+        print('--- additional image viewers ---')
+        for ty, info in GLOBAL_CONF.add_image_viewers.items():
+            name = os.path.basename(info[1])
+            print(f'    {ty} ({name}): v{info[0]}')
 
 
 def run_subcmd(args: Args) -> int:
