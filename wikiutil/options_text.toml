@@ -49,11 +49,10 @@ The parameters that can be set are as follows.
 type = "string"
 desc = """The name of the method to show images.
 This option sets the default value of the image viewer.
-If "PIL", "matplotlib", "cv2", or "bokeh" are set, use
-[PIL.Image.show()](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.show),
-[matplotlib.pyplot.imshow()](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.imshow.html),
-[cv2.imshow()](https://docs.opencv.org/),
-or [bokeh.plotting.figure.image_rgba](https://bokeh.org/) respectively.
+In default, "None" and "PIL" are available.
+If "None" is set, image no library is called and image is not shown.
+If "PIL" is set,
+[PIL.Image.show()](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.show) is used to show an image.
 Key names in "iv_cmds" are also settable.
 See the "iv_cmds" section below for more details.
 If set to empty, search the possible modules from "PIL", "matplotlib", "cv2", and "bokeh".
@@ -131,12 +130,6 @@ desc = """The encoding used to load the pickle file.
 If you mainly use pickle files made by Python2 script, please set "latin1".
 This option is overwritten by the '--encoding' command-line option."""
 
-[config.np_pickle.encoding]
-type = "string"
-desc = """The encoding used to load the Npz file.
-If you mainly use pickle files made by Python2 script, please set "latin1".
-This option is overwritten by the '--encoding' command-line option."""
-
 [config.jupyter.show_number]
 type = "bool"
 desc = """ If true, show `(current index)/(number of cells)` at the cell number line."""
@@ -159,57 +152,6 @@ See https://pygments.org/languages/ for available languages."""
 type = "string"
 desc = """The style of syntax highlight. See [Pygments styles](https://pygments.org/styles/) for available styles."""
 
-[config.stl.viewer]
-type = "\"matplotlib\" or \"plotly\""
-desc = """module to display STL file.
-Currently "matplotlib" or "plotly" is supported."""
-
-[config.stl.facecolors]
-type = "string"
-desc = """face color of the displayed model.
-Since this parameter is used in both Matplotlib and Plotly, available values are limited.
-empty (not set), full-color code (#xxxxxx), or color name (black, white, red, green, blue, cyan, magenta, or yellow) is available."""
-
-[config.stl.edgecolors]
-type = "string"
-desc = """edge color of the displayed model.
-This is only used in Matplotlib.
-The available value is the same as "facecolors"."""
-
-[config.stl.backgroundcolors]
-type = "string"
-desc = """background color of the display.
-The available value is the same as "facecolors"."""
-
-[config.e-mail.headers]
-type = "list of string"
-desc = """List of header names to show."""
-
-[config.healpix.projection]
-type = "mollweide, gnomonic, cartesian, or orthographic"
-desc = """The projection method used to show the map."""
-
-[config.healpix.map_limit]
-type = "[min: float, max: float] or []"
-desc = """The minimum and maximum values to show in the map.
-If empty list is set, the minimum/maximum values of the map data are used.
-"""
-
-[config.healpix.norm]
-type = "hist, log, or None"
-desc = """The color normalization method used to show the map."""
-
-[config.healpix.coord]
-type = "sequence of character (G, E, or C)"
-desc = """Setting to describe the coordinate system of the map,
-or a sequence of 2 of these to rotate the map
-from the first to the second coordinate system."""
-
-[config.root.drawer]
-type = "string"
-desc = """The method to draw the contents in the ROOT file.
-Selectable methods are "matplotlib" and "ROOT"."""
-
 
 [color.defaults]
 msg_error = "Color of error messages."
@@ -231,9 +173,3 @@ cui_file_index = "Color of index number of files in side bar of the CUI mode."
 input_color = "Color to highlight input index in jupyter file."
 output_color = "Color to highlight output index in jupyter file."
 type_color = "Color to highlight cell type in jupyter file."
-
-[color.hdf5]
-type_color = "Color to highlight attributes of data in hdf5 file."
-
-[color.root]
-header_color = "Color to highlight some headers in the root file."

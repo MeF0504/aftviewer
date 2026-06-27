@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from pathlib import Path
-import json
+import tomllib
 import subprocess
 
 debug = False
 default = False
-setting_file = Path('~/.config/aftviewer/setting.json').expanduser()
+setting_file = Path('~/.config/aftviewer/setting.toml').expanduser()
 if setting_file.is_file():
-    with open(setting_file, 'r') as f:
-        setting = json.load(f)
+    with open(setting_file, 'rb') as f:
+        setting = tomllib.load(f)
     if 'debug' in setting and setting['debug']:
         debug = True
     if 'force_default' in setting and setting['force_default']:
@@ -39,26 +39,11 @@ Any File Type Viewer (AFTViewer) is a CUI/TUI tool made by Python to view any ki
 # Requirements
 
 The basic process of this software is designed to work with standard libraries of recent [Python3](https://www.python.org/).  
-To show some kinds of files, external libraries are required.
+[Pygments](https://pygments.org/) is an optional requirement for `Jupyter`.
 
-e.g.)
-- [numpy](https://numpy.org/) for numpy, xpm, np_pickle
-- [h5py](https://docs.h5py.org/) for hdf5
-- [rawpy](https://letmaik.github.io/rawpy/api/rawpy.RawPy.html) for raw_image
-- [numpy-stl](https://pypi.org/project/numpy-stl/) for stl.
-
-The following libraries are not always necessary but are useful if available.
-- [numpy](https://numpy.org/) for hdf5
-- [tabulate](https://pypi.org/project/tabulate/) for sqlite3
-- [Matplotlib](https://matplotlib.org/) or [Plotly](https://plotly.com/python/) for stl to display 3-D model.
-
-To show images, imaging-related libraries
-(Currently supporting libraries are
-[PIL (Pillow)](https://pillow.readthedocs.io/),
-[Matplotlib](https://matplotlib.org/),
-[OpenCV](https://pypi.org/project/opencv-python/),
-or [bokeh](https://bokeh.org/))
-or shell commands (e.g. "open" in macOS) with supporting bitmap (.bmp) files are required.
+To show images, imaging-related libraries ([PIL (Pillow)](https://pillow.readthedocs.io/)
+by default)
+or shell commands (e.g., "open" in macOS) with supporting bitmap (.bmp) files are required.
 
 # Installation
 
@@ -72,10 +57,10 @@ or in Windows OS,
 py -m pip install git+https://github.com/MeF0504/aftviewer
 ```
 
-If you want to install all modules used in AFTViewer,
-```bash
-python -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
-# or
-py -m pip install "aftviewer[all] @ git+https://github.com/MeF0504/aftviewer"
+# Add viewers and image viewers
+You can install additional viewers and image viewers by following;
 ```
+aftviewer - libinstall URL
+```
+See https://github.com/topics/aftviewer for available viewers.
 '''.format(helpmsg))
