@@ -32,11 +32,11 @@ class CONF:
     """
     debug: bool
     conf_dir: Path
-    types: MappingProxyType[str, str, None | str]
+    types: MappingProxyType[str, str]
     logname: str
     pack_list: tuple[str, ...]
-    add_viewers: dict[str, list[str, str]]
-    add_image_viewers: dict[str, list[str, str]]
+    add_viewers: dict[str, list[str]]
+    add_image_viewers: dict[str, list[str]]
 
 
 @dataclass
