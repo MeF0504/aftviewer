@@ -2,9 +2,19 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
-import tomllib
 import subprocess
+
+sysver = sys.version_info
+if sysver.major*100+sysver.minor >= 311:
+    import tomllib
+else:
+    try:
+        import tomli as tomllib
+    except ImportError as e:
+        print(f'aftviewer requires Python >= 3.11 or tomli: {e}')
+        sys.exit(1)
 
 debug = False
 default = False
