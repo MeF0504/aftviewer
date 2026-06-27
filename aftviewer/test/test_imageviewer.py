@@ -131,7 +131,7 @@ def test_get_image_viewer_conf(iv):
 def test_get_image_viewer_search():
     # not set case
     image_viewer.__set_ImgViewer = False
-    __set_user_opts({'defaults': {'image_viewer': None}}, None)
+    __set_user_opts({'defaults': {'image_viewer': ""}}, None)
     parser = argparse.ArgumentParser(**get_parser_arg())
     parser.add_argument('file', help='input file')
     parser.add_argument('--type')
