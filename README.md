@@ -69,3 +69,9 @@ aftviewer - shell_completion --bash >> ~/.bashrc
 # zsh
 aftviewer - shell_completion --zsh >> ~/.zshrc
 ```
+
+## License
+[MIT](./LICENSE)
+
+## Author
+[MeF0504](https://github.com/MeF0504)

@@ -11,7 +11,7 @@ from importlib import import_module
 from logging import getLogger
 from types import FunctionType
 
-from ..core import GLOBAL_CONF, print_error, print_warning
+from ..core import GLOBAL_CONF, print_error, print_warning, __add_lib2path
 
 logger = getLogger(GLOBAL_CONF.logname)
 
@@ -39,6 +39,7 @@ def install_viewer(args: argparse.Namespace) -> int:
     else:
         logger.info(f'make dir: {libdir}')
         libdir.mkdir(parents=True)
+        __add_lib2path(str(libdir))
         cmds = ['git', 'clone', url, libdir]
         res = subprocess.run(cmds)
         if res.returncode != 0:
@@ -47,6 +48,7 @@ def install_viewer(args: argparse.Namespace) -> int:
             shutil.rmtree(libdir)
             return res.returncode
 
+    print('checking viewers.')
     res = 0
     for fy in libdir.glob('viewers/*.py'):
         res += check_viewer(fy.name[:-3])  # remove ".py"
