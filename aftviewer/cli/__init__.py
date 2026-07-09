@@ -113,7 +113,7 @@ def get_args(argv: None | list[str] = None) -> Args:
 
 
 def show_opts(filetype: str | None) -> None:
-    def show_col(cname, filetype):
+    def show_col(cname: str, filetype: str | None):
         try:
             fg, bg = get_col(cname, filetype)
             print(f'  {cname}: ', end='')
@@ -121,17 +121,31 @@ def show_opts(filetype: str | None) -> None:
         except Exception as e:
             print(f'Failed to display color {cname} ({e})')
 
+    def print_val(key: str, filetype: str | None):
+        val = get_config(key, filetype)
+        if type(val) is str:
+            print(f'  {key}: "{val}"')
+        elif type(val) is dict:
+            print(f'  {key}: {{')
+            for k, v in val.items():
+                print(f'    {k}: {v}')
+            print('    }')
+        else:
+            print(f'  {key}: {val}')
+
+    def print_header(header: str):
+        len_eq = int((term_width-len(header)-2)/2)
+        fg, bg = get_col('msg_key_name')
+        cprint(f'{"="*len_eq} {header} {"="*len_eq}', fg=fg, bg=bg)
+
     opts = __get_opt_keys()
     if filetype is not None:
         print_key(filetype)
-        print_key('config')
+        print_header('config')
         keys = list(set(opts['defaults'] + opts[filetype]))
         for key in keys:
-            val = get_config(key, filetype)
-            if type(val) is str:
-                val = f'"{val}"'
-            print(f'  {key}: {val}')
-        print_key('colors')
+            print_val(key, filetype)
+        print_header('colors')
         cnames = list(set(__get_color_names('defaults')
                           + __get_color_names(filetype)))
         cnames.sort()
@@ -146,21 +160,17 @@ def show_opts(filetype: str | None) -> None:
         print_key('additional viewers')
         for ft in add_viewers:
             print(f'  {ft}: {types[ft]}')
-    print_key('config')
+    print_header('config')
     print_key('defaults')
     for key in opts['defaults']:
-        val = get_config(key, 'defaults')
-        if type(val) is str:
-            val = f'"{val}"'
-        print(f'  {key}: {val}')
+        print_val(key, 'defaults')
     opts.pop('defaults')
     for ft in opts:
         if len(opts[ft]) != 0:
             print_key(ft)
             for key in opts[ft]:
-                val = get_config(key, ft)
-                print(f'  {key}: {val}')
-    print_key('colors')
+                print_val(key, ft)
+    print_header('colors')
     print_key('defaults')
     for cname in __get_color_names('defaults'):
         show_col(cname, 'defaults')
