@@ -677,22 +677,16 @@ def __get_opt_keys() -> dict[str, list[str]]:
     res: dict[str, list[str]] = {}
     res['defaults'] = list(def_opts['defaults'].keys())
     for t in __type_config:
-        if t in __add_libs:
-            # only user_set config
-            res[t] = []
-            if t in user_opts:
-                res[t] += list(user_opts[t].keys())
-        else:
-            # def + user_set (if in 'config') config
-            res[t] = []
-            if t in def_opts:
-                res[t] += list(def_opts[t].keys())
-            if t in user_opts:
-                for k in user_opts[t]:
-                    if k in def_opts['defaults']:
-                        res[t].append(k)
-            res[t] = list(set(res[t]))
-        res[t].sort()
+        # def + user_set (if in 'config') config
+        res[t] = []
+        if t in def_opts:
+            res[t] += list(def_opts[t].keys())
+        if t in user_opts:
+            for k in user_opts[t]:
+                if k in def_opts['defaults']:
+                    res[t].append(k)
+        res[t] = list(set(res[t]))
+    res[t].sort()
     return res
 
 
@@ -712,22 +706,16 @@ def __get_color_names(filetype: str | None) -> list[str]:
     if filetype is None:
         return list(def_cols['defaults'].keys())
     else:
-        if filetype in __add_libs:
-            if filetype in user_cols:
-                return list(user_cols[filetype].keys())
-            else:
-                return []
-        else:
-            res = []
-            if filetype in user_cols:
-                for cname in user_cols[filetype].keys():
-                    if cname in def_cols['defaults']:
-                        res.append(cname)
-            if filetype in def_cols:
-                res += list(def_cols[filetype].keys())
-            res = list(set(res))
-            res.sort()
-            return res
+        res = []
+        if filetype in user_cols:
+            for cname in user_cols[filetype].keys():
+                if cname in def_cols['defaults']:
+                    res.append(cname)
+        if filetype in def_cols:
+            res += list(def_cols[filetype].keys())
+        res = list(set(res))
+        res.sort()
+        return res
 
 
 def __set_args(args: Args):
