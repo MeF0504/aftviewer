@@ -686,7 +686,7 @@ def __get_opt_keys() -> dict[str, list[str]]:
                 if k in def_opts['defaults']:
                     res[t].append(k)
         res[t] = list(set(res[t]))
-    res[t].sort()
+        res[t].sort()
     return res
 
 

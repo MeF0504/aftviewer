@@ -14,7 +14,7 @@ from aftviewer.core import (args_chk, __load_lib, get_config, cprint,
                             get_col, print_error, print_warning, print_key,
                             __set_filetype, __get_opt_keys, __get_color_names,
                             __set_user_opts, __def_opts, __type_config,
-                            __conv_col_val)
+                            __conv_col_val, GLOBAL_CONF)
 from aftviewer.core.helpmsg import (add_args_imageviewer, add_args_encoding,
                                     add_args_output, add_args_verbose,
                                     add_args_key, add_args_interactive,
@@ -215,12 +215,19 @@ def test_get_opt_keys():
     # check keys in setting files are in opt_keys.
     with open(Path(__file__).parent.parent/'core/default.toml', 'rb') as f:
         opts = tomllib.load(f)
+    for sf in (GLOBAL_CONF.conf_dir/'.lib/exlibs/').glob('*/config.toml'):
+        with open(sf, 'rb') as f:
+            sub_opts = tomllib.load(f)
+        for ft, val in sub_opts.items():
+            if 'config' in val:
+                opts['config'][ft] = val['config']
+
     opt_keys = __get_opt_keys()
     for ft in opts['config']:
         for opt in opts['config'][ft]:
             assert opt in opt_keys[ft], f'def opt {ft}-{opt} not found.'
 
-    user_optfile = Path('~/.config/aftviewer/setting.toml').expanduser()
+    user_optfile = GLOBAL_CONF.conf_dir/'setting.toml'
     if user_optfile.is_file():
         with open(user_optfile, 'rb') as f:
             user_opts = tomllib.load(f)
@@ -252,7 +259,7 @@ def test_get_opt_keys():
                 pass
             else:
                 raise AssertionError(
-                        f'unlisted option {opt} got by __get_opt_keys')
+                        f'unlisted option {opt}, {ft} got by __get_opt_keys')
 
 
 def test_get_color_names():
@@ -264,7 +271,7 @@ def test_get_color_names():
     for colname in opts['colors']['defaults']:
         assert colname in col_names, f'{colname} not found in defaults.'
 
-    user_optfile = Path('~/.config/aftviewer/setting.toml').expanduser()
+    user_optfile = GLOBAL_CONF.conf_dir/'setting.toml'
     if user_optfile.is_file():
         with open(user_optfile, 'rb') as f:
             user_opts = tomllib.load(f)
@@ -288,7 +295,7 @@ def test_get_color_names_ft(filetype):
     col_names = __get_color_names(filetype)
     with open(Path(__file__).parent.parent/'core/default.toml', 'rb') as f:
         opts = tomllib.load(f)
-    user_optfile = Path('~/.config/aftviewer/setting.toml').expanduser()
+    user_optfile = GLOBAL_CONF.conf_dir/'setting.toml'
     if user_optfile.is_file():
         with open(user_optfile, 'rb') as f:
             user_opts = tomllib.load(f)
