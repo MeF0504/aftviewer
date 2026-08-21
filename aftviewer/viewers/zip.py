@@ -27,7 +27,7 @@ def get_pwd():
     return pwd.encode()
 
 
-def get_contents(zip_file, path):
+def get_contents(zip_file, path: PurePosixPath):
     if str(path) == '.':
         cpath = ''
         lenpath = 0

@@ -1,5 +1,5 @@
 import pprint
-from pathlib import PurePath
+from pathlib import PurePath, PurePosixPath, PureWindowsPath
 from logging import getLogger
 from typing import Any
 
@@ -52,8 +52,10 @@ def get_item_dict(data: dict, cpath: str):
 
     Returns
     -------
-    None
+    Value in the specified path.
     """
+    if type(cpath) is not str:
+        logger.warning(f'type is not str, "{type(cpath).__name__}" (GI)')
     tmp_data = data
     for k in PurePath(cpath).parts:
         tmp_data_update = False
@@ -64,11 +66,12 @@ def get_item_dict(data: dict, cpath: str):
                 break
         if not tmp_data_update:
             logger.error(f'key not found: {cpath}, {k}')
-            return None
+            return f'!!! failed to load the data, "{k}"!!!'
     return tmp_data
 
 
-def get_contents_dict(data: dict, path: str) -> tuple[list[str], list[str]]:
+def get_contents_dict(data: dict,
+                      path: PurePath) -> tuple[list[str], list[str]]:
     """
     Get lists of directories and files for a specified path.
     This function is available as the input to the interactive
@@ -79,7 +82,7 @@ def get_contents_dict(data: dict, path: str) -> tuple[list[str], list[str]]:
     ----------
     data: dict
         target data.
-    path: str
+    path: PurePath
         path to the item.
 
     Returns
@@ -87,9 +90,11 @@ def get_contents_dict(data: dict, path: str) -> tuple[list[str], list[str]]:
     list[str], list[str]
         lists of directories and files.
     """
+    if type(path) not in [PurePath, PurePosixPath, PureWindowsPath]:
+        logger.warning(f'type is not Path, "{type(path).__name__}" (GC)')
     dirs = []
     files = []
-    tmp_data = get_item_dict(data, path)
+    tmp_data = get_item_dict(data, str(path))
     if tmp_data is None:
         return [], []
     if isinstance(tmp_data, dict):
@@ -123,6 +128,8 @@ def show_func_dict(data: dict, cpath: str, **kwargs) -> RM:
         result message. This includes the detailed information message
         of the specified path and the flag of the error message.
     """
+    if type(cpath) is not str:
+        logger.warning(f'type is not str, "{type(cpath).__name__}" (SF)')
     tmp_data = get_item_dict(data, cpath)
     pargs = get_config('pp_kwargs')
     if tmp_data is None:
