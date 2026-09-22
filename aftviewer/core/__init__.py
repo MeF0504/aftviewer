@@ -429,19 +429,12 @@ def interactive_view(fname: str, get_contents: GC, show_func: SF,
         An opened file name.
     get_contents: Callable[[PurePath], tuple[List[str], List[str]]]
         A function to get lists of directories and files.
-        The argument is the path to an item.
-        The first return value is a list of directory names,
-        and the second return value is a list of file names.
-        In this context, a directory means something that includes
-        files and directories, and a file means something that includes data.
+        See https://github.com/MeF0504/aftviewer/wiki/Extension#get_contents
+        for more details.
     show_func: Callable[[str, **kwargs], ReturnMessage]
         A function to show the contents.
-        The first argument is the path to a file.
-        Other arguments are treated as keyword arguments.
-        Please see the wiki for possible keywords.
-        The return value is the ReturnMessage. It is treated as
-        an error message if ReturnMessage.error is True. Otherwise, it is
-        treated as a standard message.
+        See https://github.com/MeF0504/aftviewer/wiki/Extension#show_func
+        for more details.
     purepath: PurePath, PurePosixPath, or PureWindowsPath
         Specify the class to treat the path-like object.
         This is because in some case, the separator shoud be '/' not '\\'
