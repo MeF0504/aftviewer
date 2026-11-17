@@ -109,6 +109,7 @@ def get_contents_dict(data: dict,
                 dirs.append(str(k))
             else:
                 files.append(str(k))
+        dirs.sort()
     elif isinstance(tmp_data, list):
         for i in range(len(tmp_data)):
             if isinstance(tmp_data[i], dict):
@@ -117,7 +118,6 @@ def get_contents_dict(data: dict,
                 dirs.append(str(i))
             else:
                 files.append(str(i))
-    dirs.sort()
     files.sort()
     return dirs, files
 
