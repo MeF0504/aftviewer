@@ -59,11 +59,15 @@ def get_item_dict(data: dict, cpath: str):
     tmp_data = data
     for k in PurePath(cpath).parts:
         tmp_data_update = False
-        for key in tmp_data.keys():
-            if str(key) == k:
-                tmp_data = tmp_data[key]
-                tmp_data_update = True
-                break
+        if isinstance(tmp_data, dict):
+            for key in tmp_data.keys():
+                if str(key) == k:
+                    tmp_data = tmp_data[key]
+                    tmp_data_update = True
+                    break
+        elif isinstance(tmp_data, list):
+            tmp_data = tmp_data[int(k)]
+            tmp_data_update = True
         if not tmp_data_update:
             logger.error(f'key not found: {cpath}, {k}')
             return f'!!! failed to load the data, "{k}"!!!'
@@ -101,9 +105,19 @@ def get_contents_dict(data: dict,
         for k in tmp_data.keys():
             if isinstance(tmp_data[k], dict):
                 dirs.append(str(k))
+            elif isinstance(tmp_data[k], list):
+                dirs.append(str(k))
             else:
                 files.append(str(k))
-    dirs.sort()
+        dirs.sort()
+    elif isinstance(tmp_data, list):
+        for i in range(len(tmp_data)):
+            if isinstance(tmp_data[i], dict):
+                dirs.append(str(i))
+            elif isinstance(tmp_data[i], list):
+                dirs.append(str(i))
+            else:
+                files.append(str(i))
     files.sort()
     return dirs, files
 
