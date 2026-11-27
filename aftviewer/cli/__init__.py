@@ -49,8 +49,8 @@ def get_parser_arg() -> dict[str, Any]:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     args_desc_ori = f"""displays the contents of a file.
 Supported file types ... {', '.join(supported_type)}."""
-    args_ep_ori = """AFTViewer has some optional subcommands.
-See `aftviewer - help -t TYPE | -s subcmd` for details."""
+    args_ep_ori = """To see available options for each file type or details of subcommands,
+please run `aftviewer - help -t TYPE | -s subcmd`."""
     args_desc = ''
     args_ep = ''
     for ad in args_desc_ori.splitlines():
@@ -75,9 +75,7 @@ def get_args(argv: None | list[str] = None) -> Args:
                         version=f'%(prog)s {VERSION}')
     parser.add_argument('-t', '--type', dest='type',
                         help='specify the file type.'
-                        ' See above for available file types.'
-                        ' "aftviewer - help -t TYPE"'
-                        ' will show the detailed help')
+                        ' See above for available file types.')
     parser.add_argument('-', help='run subcommand and exit',
                         default=None, dest='subcmd')
     tmpargs, rems = parser.parse_known_args(argv, namespace=Args())
