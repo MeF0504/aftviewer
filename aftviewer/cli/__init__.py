@@ -17,11 +17,10 @@ from ..core import (GLOBAL_CONF, __set_filetype, __load_lib,
                     args_chk, get_config, get_col)
 from ..core import __set_args as set_args
 from ..core.__version__ import VERSION
-from ..core.helpmsg import (add_args_shell_cmp,
-                            add_args_update, add_args_install)
 from ..core.types import Args
 from .updater import update_core
 from .installer import install_viewer
+from ..core import helpmsg as hm
 
 if GLOBAL_CONF.debug:
     term_width = 80-2
@@ -50,23 +49,8 @@ def get_parser_arg() -> dict[str, Any]:
     supported_type = list(GLOBAL_CONF.types.keys()).copy()
     args_desc_ori = f"""displays the contents of a file.
 Supported file types ... {', '.join(supported_type)}."""
-    args_ep_ori = """AFTViewer has some optional subcommands;
- - aftviewer - help -t TYPE
-       shows detailed help and available options for the TYPE.
- - aftviewer - update
-       runs the update of this software.
- - aftviewer - update -t TYPE
-       install/update the packages required in the TYPE.
- - aftviewer - libinstall URL
-       install/update additional viewers/image viewers.
- - aftviewer - config_list [-t TYPE]
-       shows the current optional configuration.
-       If TYPE is specified, shows the configuration for the TYPE.
- - aftviewer - version
-       shows detailed version information.
- - aftviewer - shell_completion --bash >> ~/.bashrc
-   aftviewer - shell_completion --zsh >> ~/.zshrc
-        sets the completion script for bash/zsh."""
+    args_ep_ori = """AFTViewer has some optional subcommands.
+See `aftviewer - help -t TYPE | -s subcmd` for details."""
     args_desc = ''
     args_ep = ''
     for ad in args_desc_ori.splitlines():
@@ -95,14 +79,16 @@ def get_args(argv: None | list[str] = None) -> Args:
                         ' "aftviewer - help -t TYPE"'
                         ' will show the detailed help')
     parser.add_argument('-', help='run subcommand and exit',
-                        choices=__subcmds, default=None, dest='subcmd')
+                        default=None, dest='subcmd')
     tmpargs, rems = parser.parse_known_args(argv, namespace=Args())
     if tmpargs.subcmd == 'shell_completion':
-        add_args_shell_cmp(parser)
+        hm.__add_args_shell_cmp(parser)
     elif tmpargs.subcmd == 'update':
-        add_args_update(parser)
+        hm.__add_args_update(parser)
     elif tmpargs.subcmd == 'libinstall':
-        add_args_install(parser)
+        hm.__add_args_install(parser)
+    elif tmpargs.subcmd == 'help':
+        hm.__add_args_help(parser)
     __set_filetype(tmpargs)
     lib, err = __load_lib(tmpargs)
     if lib is not None:
@@ -242,6 +228,64 @@ def show_version():
             print(f'    {ty} ({name}): v{info[0]}')
 
 
+def show_help(args: Args) -> int:
+    show_type = args_chk(args, 'type')
+    show_subcmd = hasattr(args, 'help_subcmd') and args.help_subcmd is not None
+    if show_type and show_subcmd:
+        print('--type and --subcmd cannot be used together.')
+        return 2
+    elif show_type:
+        lib, err = __load_lib(args)
+        if lib is None:
+            print_error(f'Failed to load the library ({err}).')
+            return 3
+        else:
+            if hasattr(lib, 'show_help') and \
+               type(lib.show_help) is FunctionType:
+                lib.show_help()
+            else:
+                print("this type does not support showing help.")
+            return 0
+    elif show_subcmd:
+        prog = f'aftviewer - {args.help_subcmd}'
+        description = ''
+        add_args = None
+        if args.help_subcmd not in __subcmds:
+            print('incorrect subcommand.'
+                  f' Please choose from {", ".join(__subcmds)}.')
+            return 2
+        elif args.help_subcmd == 'help':
+            add_args = hm.__add_args_help2
+            description = 'Show the detailed help and available options for the filetype (-t) or subcommand (-s).'
+        elif args.help_subcmd == 'update':
+            add_args = hm.__add_args_type
+            description = 'Run the update of this software. If TYPE is specified, install/update the packages required in the TYPE.'
+        elif args.help_subcmd == 'libinstall':
+            add_args = hm.__add_args_install
+            description = 'Install/update additional viewers/image viewers.'
+        elif args.help_subcmd == 'config_list':
+            add_args = hm.__add_args_type
+            description = 'Show the current optional configuration. If TYPE is specified, show the configuration for the TYPE.'
+        elif args.help_subcmd == 'version':
+            add_args = None
+            description = 'Show detailed version information.'
+        elif args.help_subcmd == 'shell_completion':
+            add_args = hm.__add_args_shell_cmp
+            description = 'Show the completion script for bash/zsh. Please use redirection, e.g., `aftviewer - shell_completion --SHELL >> SHELLrc`.'
+        else:
+            print('The help message for this subcommand is not prepared yet.')
+            return 0
+        parser = argparse.ArgumentParser(description=description,
+                                         prog=prog, add_help=False)
+        if add_args is not None:
+            add_args(parser)
+        print(parser.format_help())
+        return 0
+    else:
+        print('please set --type or --subcmd to see the detailed help.')
+        return 2
+
+
 def run_subcmd(args: Args) -> int:
     if args.subcmd == 'config_list':
         show_opts(args.type)
@@ -259,28 +303,15 @@ def run_subcmd(args: Args) -> int:
             ret = update_packages(args.type, args.test)
             return 0 if ret else 2
     elif args.subcmd == 'help':
-        if args_chk(args, 'type'):
-            lib, err = __load_lib(args)
-            if lib is None:
-                print_error(f'Failed to load the library ({err}).')
-                return 3
-            else:
-                if hasattr(lib, 'show_help') and \
-                   type(lib.show_help) is FunctionType:
-                    lib.show_help()
-                else:
-                    print("this type does not support showing help.")
-                return 0
-        else:
-            print('please set --type to see the details.')
-            return 2
+        return show_help(args)
     elif args.subcmd == 'version':
         show_version()
         return 0
     elif args.subcmd == 'libinstall':
         return install_viewer(args)
     else:
-        print_error(f'Invalid subcommand: {args.subcmd}.')
+        print_error(f'Invalid subcommand: {args.subcmd}.'
+                    f' Please choose from {", ".join(__subcmds)}.')
         return 2
 
 

@@ -214,61 +214,6 @@ def add_args_specification(parser: argparse.ArgumentParser,
         add_args_cui(group, **kwargs_c)
 
 
-def add_args_shell_cmp(parser: argparse.ArgumentParser) -> None:
-    """
-    add optional argument for shell completion.
-
-    Parameters
-    ----------
-    parser: ArgumentParser
-        ArgumentParser which optional arguments will be added.
-
-    Returns
-    -------
-    None
-    """
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--bash', action='store_true',
-                       help='set bash completion')
-    group.add_argument('--zsh', action='store_true',
-                       help='set zsh completion')
-
-
-def add_args_update(parser: argparse.ArgumentParser) -> None:
-    """
-    add optional argument for update subcommand.
-
-    Parameters
-    ----------
-    parser: ArgumentParser
-        ArgumentParser which optional arguments will be added.
-
-    Returns
-    -------
-    None
-    """
-    parser.add_argument('--branch', help='set branch name',
-                        default='main')
-    parser.add_argument('--test', help='test run',
-                        action='store_true')
-
-
-def add_args_install(parser: argparse.ArgumentParser) -> None:
-    """
-    add optional argument for install subcommand.
-
-    Parameters
-    ----------
-    parser: ArgumentParser
-        ArgumentParser which optional arguments will be added.
-
-    Returns
-    -------
-    None
-    """
-    parser.add_argument('url', help='URL of external viewer.',)
-
-
 def help_template(filetype: str, description: str,
                   add_args: None | Callable[[argparse.ArgumentParser],
                                             None] = None
@@ -306,3 +251,39 @@ def help_template(filetype: str, description: str,
         add_args(parser)
 
     return parser.format_help()
+
+
+def __add_args_type(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument('-t', '--type', dest='type',
+                        help='specify the file type.')
+
+
+def __add_args_shell_cmp(parser: argparse.ArgumentParser) -> None:
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--bash', action='store_true',
+                       help='set bash completion')
+    group.add_argument('--zsh', action='store_true',
+                       help='set zsh completion')
+
+
+def __add_args_update(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument('--branch', help='set branch name',
+                        default='main')
+    parser.add_argument('--test', help='test run',
+                        action='store_true')
+
+
+def __add_args_install(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument('url', help='URL of external viewer.',)
+
+
+def __add_args_help(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument('-s', '--subcmd', dest='help_subcmd',
+                        help='specify the subcommand to see the help.')
+
+
+def __add_args_help2(parser: argparse.ArgumentParser) -> None:
+    # for `aftviewer - help -s help`
+    group = parser.add_mutually_exclusive_group()
+    __add_args_help(group)
+    __add_args_type(group)
